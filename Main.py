@@ -66,10 +66,10 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     }}
             
     QScrollBar {{
-        border: 1px solid #999999;
+        border: 1px solid #111111;
         background: solid #111111;
 
-        width:20px;
+        {sizeMod}
         margin: 0px 0px 0px 0px;
     }}
     QScrollBar::handle {{
@@ -91,7 +91,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         subcontrol-position: top;
         subcontrol-origin: margin;
     }}
-                                            """.format(handelColor = "#444444")
+                                            """
     
     
     def __init__(self):
@@ -100,7 +100,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.setStyleSheet("background-color: #333333; color: #ffffff; border: 0px;")
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
         
-        self.verticalScrollBar().setStyleSheet(self.xScrollStyle)
+        self.verticalScrollBar().setStyleSheet(self.xScrollStyle.format(  sizeMod = "width:20px;", handelColor = "#444444"))
+        self.horizontalScrollBar().setStyleSheet(self.xScrollStyle.format(sizeMod = "hight:20px;", handelColor = "#444444"))
         
         
 class cWindow(QtWidgets.QMainWindow):

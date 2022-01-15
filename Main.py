@@ -5,8 +5,8 @@ import sys
 
 
 
-
-
+class cSender(QtCore.QObject):
+    UpdateEditors = QtCore.pyqtSignal()
 
 
 
@@ -94,8 +94,27 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                                             """
     
     
-    def __init__(self):
+    def __init__(self, xSender):
         super().__init__()
+        self.xFilePath = ""
+        self.xSender = xSender
+        xSender.UpdateEditors.connect(self.UpdateFromPath)
+        
+        
+        self.InitUI()
+    
+    
+    def UpdateFromPath(self):
+        try:
+            with open(self.xFilePath, "r") as xFileHandle:
+                self.setPlainText(xFileHandle.read())
+                
+        except FileNotFoundError:
+            #if path was not found kill instance
+            self.close()
+            
+    
+    def InitUI(self):
         self.setFont(QtGui.QFont("Consolas"))
         self.setStyleSheet("background-color: #333333; color: #ffffff; border: 0px;")
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
@@ -108,29 +127,70 @@ class cWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.xTabInstances = []
+        self.xSender = cSender()
         self.InitUI()
 
     def InitUI(self):
-        self.setStyleSheet("background-color:#555555;")
+        self.setStyleSheet("""
+        QMainWindow {
+            background-color:#555555;
+        }
+    
+        QMenuBar {
+            background-color: #333333;
+            color: white;
+         
+         
+        }               
+        """)
 
         xCentralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(xCentralWidget)
         self.xMainLayout = QtWidgets.QGridLayout(xCentralWidget)
 
-        self.xMainEditor = cCodeEditor()
-        self.xMainLayout.addWidget(self.xMainEditor)
         
-        self.xSyntaxHighlighter = cSyntaxHighlighter(self.xMainEditor.document())
+        self.xTabHost = QtWidgets.QTabWidget()
+        self.xMainLayout.addWidget(self.xTabHost)
+
+        self.xMenu = self.menuBar()
+        self.xMenuFile = self.xMenu.addMenu("&File")
+        self.xMenuOptions = self.xMenu.addMenu("&Options")
+
+        self.xMenuFile.addAction(self.NewMenuSubOption("Open", self.OpenFileGui))
 
 
 
         self.show()
 
 
+    def NewMenuSubOption(self, xName, xActionFunc):
+        xNewAction = QtWidgets.QAction(xName, self)
+        xNewAction.triggered.connect(xActionFunc)
+        return xNewAction
+
+    
+    def OpenFileGui(self):
+        xPath, _ = QtWidgets.QFileDialog.getOpenFileName(None, 'Open File', '', 'Baabnq File (*.baabnq)')
+        if xPath != "": 
+            self.OpenCodeEditorTab(xPath)
 
 
-
-
+    def OpenCodeEditorTab(self, xPath): 
+        xCodeEditor = cCodeEditor(self.xSender)
+        xSyntaxHighlighter = cSyntaxHighlighter(xCodeEditor.document())
+        
+        self.xTabHost.addTab(xCodeEditor, self.Path2Name(xPath))
+        
+        #save reference to both the editor and it's highlighter
+        self.xTabInstances.append((xCodeEditor, xSyntaxHighlighter))
+        
+        xCodeEditor.xFilePath = xPath
+        self.xSender.UpdateEditors.emit()
+        
+    @staticmethod
+    def Path2Name(xPath):
+        return re.search("\/([^\/]+)\.", xPath).group(1)
 
     def keyPressEvent(self, xEvent):
         if xEvent.key() == QtCore.Qt.Key_Escape:

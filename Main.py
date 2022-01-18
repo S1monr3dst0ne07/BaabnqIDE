@@ -13,6 +13,7 @@ class cSender(QtCore.QObject):
     UpdateTabSaveColor = QtCore.pyqtSignal()
 
 class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
+    #color for syntax highlighting
     xStyles = {
             "constItal":        [[255, 127, 000], True],
             "const":            [[255, 127, 000], False],
@@ -26,6 +27,7 @@ class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         }
     
     
+    #regex rules for syntax highlighting
     xRules = [
             
             ('put|print|input|putstr|asm|use',          xStyles["normalCommands"]),
@@ -33,7 +35,7 @@ class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
             ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<',    xStyles["ops"]),
             ('->|<-|new|free',                          xStyles["memAlloc"]),
             ('lab|jump',                                xStyles["jumpOps"]),
-            ("\d+",                                   xStyles["const"]),
+            ("\d+",                                     xStyles["const"]),
             ('_[^ ]*',                                  xStyles["vars"]),
             ("'[^']*'",                                 xStyles["constItal"]),
             ('\".*$',                                   xStyles["fazzedOut"]),
@@ -107,16 +109,18 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     def __init__(self, xSender):
         super().__init__()
         self.xFilePath = ""
-        self.xIsSaved = True
-        self.xRestoreIsSavedState = None
+        self.xIsSaved = True #keep track of if the file in this editor instance is saved to it's source
+        self.xRestoreIsSavedState = None #switch state for restoring saved state when doing weird stuff
+        
+        self.xFontFamily = "Consolas"
         
         self.xSender = xSender
         xSender.UpdateEditors.connect(self.UpdateFromPath)
         self.textChanged.connect(self.Change)        
         
-        self.InitUI()
+        self.InitUI()    
     
-    
+    #load file from path and update content of editor
     def UpdateFromPath(self):
         try:
             with open(self.xFilePath, "r") as xFileHandle:
@@ -127,6 +131,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             QtWidgets.QMessageBox.about(self, "File lost", f"Reference to file at {self.xFilePath} has been lost\nThis my be due to the deletion or renaming of that file".format())
             self.xSender.CloseTab4QWidget.emit(self)
             
+    #write editor content back to path
     def Save(self):
         try:
             with open(self.xFilePath, "w") as xFileHandle:
@@ -139,13 +144,15 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                 
     
     def InitUI(self):
-        self.setFont(QtGui.QFont("Consolas"))
+        self.setFont(QtGui.QFont(self.xFontFamily))
         self.setStyleSheet("background-color: #333333; color: #ffffff; border: 0px;")
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
-        
+
+        #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)        
         self.verticalScrollBar().setStyleSheet(self.xScrollStyle.format(  sizeMod = "width:20px;", handelColor = "#444444"))
         self.horizontalScrollBar().setStyleSheet(self.xScrollStyle.format(sizeMod = "hight:20px;", handelColor = "#444444"))
 
+    #drag and drop events
     def dragEnterEvent(self, xEvent):
         self.xSender.RemoteDragEnterEvent.emit(xEvent)
         self.xRestoreIsSavedState = self.xIsSaved
@@ -155,6 +162,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xIsSaved = self.xRestoreIsSavedState
         self.xSender.UpdateTabSaveColor.emit()
         
+    #trigger that's called when the editor content changes, need for updating status stuff and such
     def Change(self):
         self.xIsSaved = False
         self.xSender.UpdateTabSaveColor.emit()
@@ -203,6 +211,7 @@ class cWindow(QtWidgets.QMainWindow):
 
         self.xMenu = self.menuBar()
         self.xMenuFile = self.xMenu.addMenu("&File")
+        self.xMenuView = self.xMenu.addMenu("&View")
         self.xMenuOptions = self.xMenu.addMenu("&Options")
 
         self.xMenuFile.addAction(self.NewMenuSubOption("Open File", self.OpenFileGui, "Ctrl+O"))
@@ -211,17 +220,22 @@ class cWindow(QtWidgets.QMainWindow):
         self.xMenuFile.addAction(self.NewMenuSubOption("Refresh Editors", self.RefreshGui, ""))
         self.xMenuFile.addAction(self.NewMenuSubOption("Exit", self.ExitGui, "Esc"))
         
-
+        #very ugly line for zooming, directly calls zoomIn method of the qplaintextedit
+        self.xMenuView.addAction(self.NewMenuSubOption("Zoom in", lambda: self.xTabHost.currentWidget().zoomIn(+1), "Ctrl++"))
+        self.xMenuView.addAction(self.NewMenuSubOption("Zoom in", lambda: self.xTabHost.currentWidget().zoomIn(-1), "Ctrl+-"))
 
 
         self.show()
 
+
+    #helper method used for constructing the menu bar
     def NewMenuSubOption(self, xName, xActionFunc, xShort):
         xNewAction = QtWidgets.QAction(xName, self)
         xNewAction.triggered.connect(xActionFunc)
         xNewAction.setShortcut(QtGui.QKeySequence(xShort))
         return xNewAction
 
+    #user refresh
     def RefreshGui(self):
         xExitSaveDialog = QtWidgets.QMessageBox(self)
         xExitSaveDialog.setWindowTitle("Confirm?")
@@ -232,12 +246,13 @@ class cWindow(QtWidgets.QMainWindow):
         xReturnCode = xExitSaveDialog.exec()
         if xReturnCode == QtWidgets.QMessageBox.Ok: self.xSender.UpdateEditors.emit()
         
-        
+    #user file open request
     def OpenFileGui(self):
         xPath, _ = QtWidgets.QFileDialog.getOpenFileName(None, 'Open File', '', 'Baabnq File (*.baabnq);;Text File (*.txt)')
         if xPath != "": 
             self.OpenCodeEditorTab(xPath)
 
+    #if reference to a file is lost the editor will kill itself and call this to close the tab
     def CloseTab4QWidget(self, QWidget):
         self.CloseTab(self.xTabHost.indexOf(QWidget))
 
@@ -248,10 +263,12 @@ class cWindow(QtWidgets.QMainWindow):
         self.xTabContent[xTabIndex][0].close()
         self.xTabContent.pop(xTabIndex)
 
+    #user file save
     def SaveFileGui(self):
         self.xTabHost.currentWidget().Save()
         self.xSender.UpdateTabSaveColor.emit()
-        
+    
+    
     def OpenCodeEditorTab(self, xPath): 
         xCodeEditor = cCodeEditor(self.xSender)
         xSyntaxHighlighter = cSyntaxHighlighter(xCodeEditor.document())
@@ -283,7 +300,6 @@ class cWindow(QtWidgets.QMainWindow):
         return xMatch[0]
 
 
-            
     def dragEnterEvent(self, xEvent):
         if xEvent.mimeData().hasText():
             xEvent.accept()

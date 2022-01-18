@@ -14,23 +14,31 @@ class cSender(QtCore.QObject):
 
 class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     xStyles = {
+            "constItal":        [[255, 127, 000], True],
             "const":            [[255, 127, 000], False],
             "normalCommands":   [[000, 255, 000], False],
             "ops":              [[255, 000, 000], False],
             "vars":             [[000, 255, 255], False],
             "jumpOps":          [[255, 255, 000], False],
+            "stackCommands":    [[255, 000, 255], False],
+            "fazzedOut":        [[127, 127, 127], True],
+            "memAlloc":         [[127, 142, 255], False],
         }
     
     
     xRules = [
             
             ('put|print|input|putstr|asm|use',          xStyles["normalCommands"]),
+            ('pull|push|sub|return',                    xStyles["stackCommands"]),
             ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<',    xStyles["ops"]),
+            ('->|<-|new|free',                          xStyles["memAlloc"]),
             ('lab|jump',                                xStyles["jumpOps"]),
+            ("\d+",                                   xStyles["const"]),
             ('_[^ ]*',                                  xStyles["vars"]),
-            ("\d+",                                     xStyles["const"]),
-            ("'[^']*'",                                 xStyles["const"]),
-        
+            ("'[^']*'",                                 xStyles["constItal"]),
+            ('\".*$',                                   xStyles["fazzedOut"]),
+            (';$',                                      xStyles["fazzedOut"]),
+            
         
         ]
 

@@ -125,6 +125,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         try:
             with open(self.xFilePath, "r") as xFileHandle:
                 self.setPlainText(xFileHandle.read())
+                self.xIsSaved = True
                 
         except FileNotFoundError:
             #if path was not found kill instance
@@ -164,6 +165,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         
     #trigger that's called when the editor content changes, need for updating status stuff and such
     def Change(self):
+        print(f"State Change on {self.xFilePath}".format())
+        
         self.xIsSaved = False
         self.xSender.UpdateTabSaveColor.emit()
         
@@ -180,6 +183,10 @@ class cWindow(QtWidgets.QMainWindow):
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
         
         self.setAcceptDrops(True)
+
+        self.xTabHost = QtWidgets.QTabWidget()
+        self.xSettingsHandle = QtCore.QSettings("BaabnqIde", "MainSettings")
+        self.LoadSetttings(self.xSettingsHandle)
         
         self.InitUI()
 
@@ -204,7 +211,6 @@ class cWindow(QtWidgets.QMainWindow):
         self.xMainLayout = QtWidgets.QGridLayout(xCentralWidget)
 
         
-        self.xTabHost = QtWidgets.QTabWidget()
         self.xTabHost.setStyleSheet("QWidget {background-color: #333333} QTabWidget::pane {border: 0;} QTabBar::tab {background: #333333;} ")
         self.xTabHost.setTabsClosable(False)
         self.xMainLayout.addWidget(self.xTabHost)
@@ -213,6 +219,7 @@ class cWindow(QtWidgets.QMainWindow):
         self.xMenuFile = self.xMenu.addMenu("&File")
         self.xMenuView = self.xMenu.addMenu("&View")
         self.xMenuOptions = self.xMenu.addMenu("&Options")
+        self.xDebug = self.xMenu.addMenu("&DEV DEBUG(don't use this)")
 
         self.xMenuFile.addAction(self.NewMenuSubOption("Open File", self.OpenFileGui, "Ctrl+O"))
         self.xMenuFile.addAction(self.NewMenuSubOption("Close File", lambda: self.CloseTab(self.xTabHost.currentIndex()), "Ctrl+W"))
@@ -222,9 +229,12 @@ class cWindow(QtWidgets.QMainWindow):
         
         #very ugly line for zooming, directly calls zoomIn method of the qplaintextedit
         self.xMenuView.addAction(self.NewMenuSubOption("Zoom in", lambda: self.xTabHost.currentWidget().zoomIn(+1), "Ctrl++"))
-        self.xMenuView.addAction(self.NewMenuSubOption("Zoom in", lambda: self.xTabHost.currentWidget().zoomIn(-1), "Ctrl+-"))
+        self.xMenuView.addAction(self.NewMenuSubOption("Zoom out", lambda: self.xTabHost.currentWidget().zoomIn(-1), "Ctrl+-"))
+
+        self.xDebug.addAction(self.NewMenuSubOption("Reload Tab Colors", self.UpdateTabSaveColor, ""))
 
 
+        self.setWindowTitle("Baabnq IDE")
         self.show()
 
 
@@ -293,6 +303,40 @@ class cWindow(QtWidgets.QMainWindow):
     def ExitGui(self):
         
         self.close()
+
+    def LoadSetttings(self, xSettingsHandle):
+        self.resize(self.xSettingsHandle.value("windowSize"))
+        self.move(self.xSettingsHandle.value("windowPos"))
+
+        xTabDataList = eval(self.xSettingsHandle.value("tabInstanceList"))
+        for xTabDataIter in xTabDataList:
+            self.OpenCodeEditorTab(xTabDataIter["filePath"])
+            
+        
+        self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
+        
+        
+    def SaveSettings(self, xSettingsHandle):
+        xSettingsHandle.setValue("windowPos", self.pos())
+        xSettingsHandle.setValue("windowSize", self.size())
+
+        xTabDataList = []
+        
+        #get data from tab content
+        for xTabIter in self.xTabContent:
+            xTabDataList.append({
+                "filePath" : xTabIter[0].xFilePath,
+                
+                })
+        
+        xSettingsHandle.setValue("tabInstanceList",  str(xTabDataList))
+        xSettingsHandle.setValue("selectedTabIndex", self.xTabHost.currentIndex())
+        
+        
+        
+        
+        
+        
         
     @staticmethod
     def Path2Name(xPath):
@@ -311,6 +355,9 @@ class cWindow(QtWidgets.QMainWindow):
         xPath = re.search("file:\/\/\/(.+)", xRawPath).group(1)
         self.OpenCodeEditorTab(xPath)
 
+    def closeEvent(self, xEvent):
+        self.SaveSettings(self.xSettingsHandle)
+        print(self.xSettingsHandle.fileName())
         
 
 if __name__ == '__main__':

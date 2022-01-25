@@ -6,69 +6,92 @@ import sys
 
 
 class cSender(QtCore.QObject):
-    UpdateEditors = QtCore.pyqtSignal()
-    CloseTab4QWidget = QtCore.pyqtSignal(QtWidgets.QWidget)
-    RemoteDragEnterEvent = QtCore.pyqtSignal(QtGui.QDragEnterEvent)
-    RemoteDropEvent = QtCore.pyqtSignal(QtGui.QDropEvent)
-    UpdateTabSaveColor = QtCore.pyqtSignal()
-
-class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
-    #color for syntax highlighting
-    xStyles = {
-            "constItal":        [[255, 127, 000], True],
-            "const":            [[255, 127, 000], False],
-            "normalCommands":   [[000, 255, 000], False],
-            "ops":              [[255, 000, 000], False],
-            "vars":             [[000, 255, 255], False],
-            "jumpOps":          [[255, 255, 000], False],
-            "stackCommands":    [[255, 000, 255], False],
-            "fazzedOut":        [[127, 127, 127], True],
-            "memAlloc":         [[127, 142, 255], False],
-        }
-    
-    
-    #regex rules for syntax highlighting
-    xRules = [
-            
-            ('put|print|input|putstr|asm|use',          xStyles["normalCommands"]),
-            ('pull|push|sub|return',                    xStyles["stackCommands"]),
-            ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<',    xStyles["ops"]),
-            ('->|<-|new|free',                          xStyles["memAlloc"]),
-            ('lab|jump',                                xStyles["jumpOps"]),
-            ("\d+",                                     xStyles["const"]),
-            ('_[^ ]*',                                  xStyles["vars"]),
-            ("'[^']*'",                                 xStyles["constItal"]),
-            ('\".*$',                                   xStyles["fazzedOut"]),
-            (';$',                                      xStyles["fazzedOut"]),
-            
-        
-        ]
-
-    xRulesQRegExp = [(QtCore.QRegExp(xExp), xStyle) for (xExp, xStyle) in xRules]
-    
-    def __init__(self, xDoc):
-        QtGui.QSyntaxHighlighter.__init__(self, xDoc)
-
-    def getFormat(self, xStyle):
-        xFormat = QtGui.QTextCharFormat()
-        if len(xStyle) > 0: xFormat.setForeground(QtGui.QColor(*xStyle[0]))
-        if len(xStyle) > 1: xFormat.setFontItalic(xStyle[1])
-        return xFormat
-
-    def highlightBlock(self, xText):
-        
-        for (xExp, xStyle) in self.xRulesQRegExp:
-            
-            #xIndex = xText.indexOf(xExp)
-            xIndex = xExp.indexIn(xText)            
-            while xIndex >= 0:
-                xLengh = xExp.matchedLength()
-                
-                self.setFormat(xIndex, xLengh, self.getFormat(xStyle))
-                xIndex = xExp.indexIn(xText, xIndex + xLengh)
-
+    UpdateEditors           = QtCore.pyqtSignal()
+    CloseTab4QWidget        = QtCore.pyqtSignal(QtWidgets.QWidget)
+    RemoteDragEnterEvent    = QtCore.pyqtSignal(QtGui.QDragEnterEvent)
+    RemoteDropEvent         = QtCore.pyqtSignal(QtGui.QDropEvent)
+    UpdateTabSaveColor      = QtCore.pyqtSignal()
+    UpdateCorrectorState    = QtCore.pyqtSignal(bool)
+    UpdateCompleter         = QtCore.pyqtSignal()
 
 class cCodeEditor(QtWidgets.QPlainTextEdit):
+    class cCompleter(QtWidgets.QCompleter):
+        def __init__(self):
+            QtWidgets.QCompleter.__init__(self)
+
+
+        def splitPath(self, xPath):
+            return xPath.split(" ")
+
+        def pathFromIndex(self, xIndex):
+            return self.model().data(xIndex, QtCore.Qt.DisplayRole)
+
+        def SetCompleterModel(self, xNewModel):
+            xModel = QtGui.QStandardItemModel(self)
+            
+            for xModelItemIter in xNewModel:
+                xModel.appendRow(QtGui.QStandardItem(xModelItemIter))
+            
+            self.setModel(xModel)
+            
+    
+    class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
+        #color for syntax highlighting
+        xStyles = {
+                "constItal":        [[255, 127, 000], True],
+                "const":            [[255, 127, 000], False],
+                "normalCommands":   [[000, 255, 000], False],
+                "ops":              [[255, 000, 000], False],
+                "vars":             [[000, 255, 255], False],
+                "jumpOps":          [[255, 255, 000], False],
+                "stackCommands":    [[255, 000, 255], False],
+                "fazzedOut":        [[127, 127, 127], True],
+                "memAlloc":         [[127, 142, 255], False],
+            }
+        
+        
+        #regex rules for syntax highlighting
+        xRules = [
+                
+                ('put|print|input|putstr|asm|use',          xStyles["normalCommands"]),
+                ('pull|push|sub|return',                    xStyles["stackCommands"]),
+                ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<',    xStyles["ops"]),
+                ('->|<-|new|free',                          xStyles["memAlloc"]),
+                ('lab|jump',                                xStyles["jumpOps"]),
+                ("\d+",                                     xStyles["const"]),
+                ('_[^ ]*',                                  xStyles["vars"]),
+                ("'[^']*'",                                 xStyles["constItal"]),
+                ('\".*$',                                   xStyles["fazzedOut"]),
+                (';$',                                      xStyles["fazzedOut"]),
+                
+            
+            ]
+    
+        xRulesQRegExp = [(QtCore.QRegExp(xExp), xStyle) for (xExp, xStyle) in xRules]
+        
+        def __init__(self, xDoc):
+            QtGui.QSyntaxHighlighter.__init__(self, xDoc)
+    
+        def getFormat(self, xStyle):
+            xFormat = QtGui.QTextCharFormat()
+            if len(xStyle) > 0: xFormat.setForeground(QtGui.QColor(*xStyle[0]))
+            if len(xStyle) > 1: xFormat.setFontItalic(xStyle[1])
+            return xFormat
+    
+        def highlightBlock(self, xText):
+            
+            for (xExp, xStyle) in self.xRulesQRegExp:
+                
+                #xIndex = xText.indexOf(xExp)
+                xIndex = xExp.indexIn(xText)            
+                while xIndex >= 0:
+                    xLengh = xExp.matchedLength()
+                    
+                    self.setFormat(xIndex, xLengh, self.getFormat(xStyle))
+                    xIndex = xExp.indexIn(xText, xIndex + xLengh)
+
+
+    
     xScrollStyle = """
     QScrollBar::up-arrow, QScrollBar::down-arrow {{
         background: none;
@@ -105,20 +128,47 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     }}
                                             """
     
-    
-    def __init__(self, xSender):
+
+    def __init__(self, xSender, xFontFamily):
         super().__init__()
         self.xFilePath = ""
         self.xIsSaved = True #keep track of if the file in this editor instance is saved to it's source
         self.xRestoreIsSavedState = None #switch state for restoring saved state when doing weird stuff
         
-        self.xFontFamily = "Consolas"
+        self.xSyntaxHighlighter = self.cSyntaxHighlighter(self.document())
+        self.xCompleter         = self.cCompleter()
+        self.xCompleter.setWidget(self)
+        self.xCompleter.SetCompleterModel(["a1", "b1"])
+        self.xCompleterStatus = False
+
+        self.xCompleter.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+        self.xCompleter.activated.connect(self.InsertCompletion)
+        
+        self.xFontFamily = xFontFamily
         
         self.xSender = xSender
         xSender.UpdateEditors.connect(self.UpdateFromPath)
-        self.textChanged.connect(self.Change)        
+        self.textChanged.connect(self.Change)  
+        self.xSender.UpdateCorrectorState.connect(self.SetCompleterStatus)
+        self.xSender.UpdateCompleter.connect(self.UpdateCompleter)
         
-        self.InitUI()    
+        self.InitUI()
+    
+    
+    def InsertCompletion(self, xFinalCompletion):
+        if self.xCompleter.widget() is not self:
+            return
+
+        xTextCursor = self.textCursor()
+        xExtra = len(xFinalCompletion) - len(self.xCompleter.completionPrefix())
+        xTextCursor.movePosition(QtGui.QTextCursor.Left)
+        xTextCursor.movePosition(QtGui.QTextCursor.EndOfWord)
+        xTextCursor.insertText(xFinalCompletion[-xExtra:])
+        self.setTextCursor(xTextCursor)
+        
+            
+    def SetCompleterStatus(self, xNewStatus):
+        self.xCompleterStatus = xNewStatus
     
     #load file from path and update content of editor
     def UpdateFromPath(self):
@@ -162,14 +212,42 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xSender.RemoteDropEvent.emit(xEvent)
         self.xIsSaved = self.xRestoreIsSavedState
         self.xSender.UpdateTabSaveColor.emit()
-        
+
+    def TextUnderCursor(self):
+        xTextCursor = self.textCursor()
+        xTextCursor.select(QtGui.QTextCursor.WordUnderCursor)
+        return xTextCursor.selectedText()
+
     #trigger that's called when the editor content changes, need for updating status stuff and such
-    def Change(self):
-        print(f"State Change on {self.xFilePath}".format())
-        
+    def Change(self):        
         self.xIsSaved = False
         self.xSender.UpdateTabSaveColor.emit()
+        self.xSender.UpdateCompleter.emit()
+
+
+    def UpdateCompleter(self):
+        #update completer
+        xCompletionPrefix = self.TextUnderCursor()
+        self.xCompleter.setCompletionPrefix(xCompletionPrefix)
+
+
+        xCursorRect = self.cursorRect()
+        xCursorRect.setWidth(self.xCompleter.popup().sizeHintForColumn(0) + self.xCompleter.popup().verticalScrollBar().sizeHint().width())
+        self.xCompleter.complete(xCursorRect)
+
+        xMatchCount = self.xCompleter.completionCount()
+        xVisible = xCompletionPrefix != "" and xMatchCount > 0 and self.xCompleterStatus and self.xCompleter.model().findItems(xCompletionPrefix) == []
         
+        #set visibility of pop-up
+        self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()
+
+    def keyPressEvent(self, xEvent):
+        if xEvent.key() == QtCore.Qt.Key_Tab and self.xCompleterStatus:
+            self.InsertCompletion(self.xCompleter.currentCompletion())
+            
+
+        else:
+            super().keyPressEvent(xEvent)
         
 class cWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -181,8 +259,9 @@ class cWindow(QtWidgets.QMainWindow):
         self.xSender.RemoteDragEnterEvent.connect(self.dragEnterEvent)
         self.xSender.RemoteDropEvent.connect(self.dropEvent)
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
-        
+                
         self.setAcceptDrops(True)
+        self.xFontFamily = "consolas"
 
         self.xTabHost = QtWidgets.QTabWidget()
         self.xSettingsHandle = QtCore.QSettings("BaabnqIde", "MainSettings")
@@ -191,27 +270,33 @@ class cWindow(QtWidgets.QMainWindow):
         self.InitUI()
 
     def InitUI(self):
+
         self.setStyleSheet("""
-        QMainWindow {
-            background-color:#555555;
-        }
+        QMainWindow {background-color:#555555;}
     
         QMenuBar {
             background-color: #333333;
             color: white;
-        }               
-        QTabBar {background: gray;}
-        QTabBar::tab:selected {                            
-            background: #0000ff;                             
-        } 
+        }
+        QTabBar               {background: gray;}
+        QTabBar::tab:selected {background: red;} 
         """)
+
+
+
 
         xCentralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(xCentralWidget)
         self.xMainLayout = QtWidgets.QGridLayout(xCentralWidget)
 
         
-        self.xTabHost.setStyleSheet("QWidget {background-color: #333333} QTabWidget::pane {border: 0;} QTabBar::tab {background: #333333;} ")
+        self.xTabHost.setStyleSheet("""
+        QWidget {background-color: #333333} 
+        QTabWidget::pane {border: 0;} 
+        QTabBar::tab {background: #454545;} 
+        QTabBar::tab::selected {background-color: #202020;}
+        
+        """)
         self.xTabHost.setTabsClosable(False)
         self.xMainLayout.addWidget(self.xTabHost)
 
@@ -230,6 +315,7 @@ class cWindow(QtWidgets.QMainWindow):
         #very ugly line for zooming, directly calls zoomIn method of the qplaintextedit
         self.xMenuView.addAction(self.NewMenuSubOption("Zoom in", lambda: self.xTabHost.currentWidget().zoomIn(+1), "Ctrl++"))
         self.xMenuView.addAction(self.NewMenuSubOption("Zoom out", lambda: self.xTabHost.currentWidget().zoomIn(-1), "Ctrl+-"))
+        self.xMenuView.addAction(self.NewMenuSubOption("Corrector Enabled", self.ToggleCorrector, "Ctrl+Space", True))
 
         self.xDebug.addAction(self.NewMenuSubOption("Reload Tab Colors", self.UpdateTabSaveColor, ""))
 
@@ -238,9 +324,15 @@ class cWindow(QtWidgets.QMainWindow):
         self.show()
 
 
+
+    def ToggleCorrector(self):
+        xCheckedState = self.xMenuView.actions()[2].isChecked()
+        self.xSender.UpdateCorrectorState.emit(xCheckedState)
+        self.xSender.UpdateCompleter.emit()
+
     #helper method used for constructing the menu bar
-    def NewMenuSubOption(self, xName, xActionFunc, xShort):
-        xNewAction = QtWidgets.QAction(xName, self)
+    def NewMenuSubOption(self, xName = "", xActionFunc = None, xShort = "", xCheckable = False):
+        xNewAction = QtWidgets.QAction(xName, self, checkable = xCheckable)
         xNewAction.triggered.connect(xActionFunc)
         xNewAction.setShortcut(QtGui.QKeySequence(xShort))
         return xNewAction
@@ -278,13 +370,16 @@ class cWindow(QtWidgets.QMainWindow):
         self.xTabHost.currentWidget().Save()
         self.xSender.UpdateTabSaveColor.emit()
     
+    def SaveAll(self):
+        for xTabIter in self.xTabContent:
+            xTabIter[0].Save()
+    
     
     def OpenCodeEditorTab(self, xPath): 
-        xCodeEditor = cCodeEditor(self.xSender)
-        xSyntaxHighlighter = cSyntaxHighlighter(xCodeEditor.document())
+        xCodeEditor = cCodeEditor(self.xSender, self.xFontFamily)
         
         self.xTabHost.addTab(xCodeEditor, self.Path2Name(xPath))
-        self.xTabContent.append((xCodeEditor, xSyntaxHighlighter))
+        self.xTabContent.append((xCodeEditor, ))
         
         xCodeEditor.xFilePath = xPath
         self.xSender.UpdateEditors.emit()
@@ -311,6 +406,8 @@ class cWindow(QtWidgets.QMainWindow):
         xTabDataList = eval(self.xSettingsHandle.value("tabInstanceList"))
         for xTabDataIter in xTabDataList:
             self.OpenCodeEditorTab(xTabDataIter["filePath"])
+            self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
+            
             
         
         self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
@@ -326,14 +423,12 @@ class cWindow(QtWidgets.QMainWindow):
         for xTabIter in self.xTabContent:
             xTabDataList.append({
                 "filePath" : xTabIter[0].xFilePath,
+                "zoom"     : xTabIter[0].font().pointSize()
                 
                 })
         
         xSettingsHandle.setValue("tabInstanceList",  str(xTabDataList))
-        xSettingsHandle.setValue("selectedTabIndex", self.xTabHost.currentIndex())
-        
-        
-        
+        xSettingsHandle.setValue("selectedTabIndex", self.xTabHost.currentIndex())            
         
         
         
@@ -356,8 +451,33 @@ class cWindow(QtWidgets.QMainWindow):
         self.OpenCodeEditorTab(xPath)
 
     def closeEvent(self, xEvent):
+        #check for unsaved editor instances
+        xIsUnsaved = False
+        for xTabIter in self.xTabContent:
+            if not xTabIter[0].xIsSaved:
+                xIsUnsaved = True
+        
+        if xIsUnsaved:
+            #ask if the user wants to save progress
+            xExitSaveDialog = QtWidgets.QMessageBox(self)
+            xExitSaveDialog.setWindowTitle("Save?")
+            xExitSaveDialog.setText("Save changes before closing?")
+            xExitSaveDialog.setStandardButtons(QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel)
+            xExitSaveDialog.setDefaultButton(QtWidgets.QMessageBox.Save)
+            
+            xSaveDecision = xExitSaveDialog.exec_()
+            if xSaveDecision == QtWidgets.QMessageBox.Save:
+                self.SaveAll()
+                
+            elif xSaveDecision == QtWidgets.QMessageBox.Discard:
+                pass
+            
+            elif xSaveDecision == QtWidgets.QMessageBox.Cancel:
+                xEvent.ignore()
+                return
+            
         self.SaveSettings(self.xSettingsHandle)
-        print(self.xSettingsHandle.fileName())
+            
         
 
 if __name__ == '__main__':

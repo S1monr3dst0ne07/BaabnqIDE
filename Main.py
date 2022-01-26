@@ -4,6 +4,13 @@ import sys
 
 
 
+class cUtils:
+    
+    @staticmethod
+    def RemoveDups(x):
+        return list(set(x))
+
+
 
 class cSender(QtCore.QObject):
     UpdateEditors           = QtCore.pyqtSignal()
@@ -19,7 +26,6 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         def __init__(self):
             QtWidgets.QCompleter.__init__(self)
 
-
         def splitPath(self, xPath):
             return xPath.split(" ")
 
@@ -33,8 +39,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                 xModel.appendRow(QtGui.QStandardItem(xModelItemIter))
             
             self.setModel(xModel)
-            
-    
+        
     class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         #color for syntax highlighting
         xStyles = {
@@ -128,6 +133,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     }}
                                             """
     
+    xBaseCommands = ["put", "print", "input", "putstr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump"]
+    
 
     def __init__(self, xSender, xFontFamily):
         super().__init__()
@@ -138,12 +145,12 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xSyntaxHighlighter = self.cSyntaxHighlighter(self.document())
         self.xCompleter         = self.cCompleter()
         self.xCompleter.setWidget(self)
-        self.xCompleter.SetCompleterModel(["a1", "b1"])
+        self.UpdateCompleterModel("")
         self.xCompleterStatus = False
 
         self.xCompleter.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
         self.xCompleter.activated.connect(self.InsertCompletion)
-        
+
         self.xFontFamily = xFontFamily
         
         self.xSender = xSender
@@ -168,7 +175,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         
             
     def SetCompleterStatus(self, xNewStatus):
-        self.xCompleterStatus = xNewStatus
+        self.xCompleterStatus = xNewStatus    
     
     #load file from path and update content of editor
     def UpdateFromPath(self):
@@ -224,11 +231,39 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xSender.UpdateTabSaveColor.emit()
         self.xSender.UpdateCompleter.emit()
 
+    def ChopChopSplit(self, xStr, xDelimiters):
+        xList = [xStr]
+        
+        
+        for xDelimIter in xDelimiters:
+            xNewList = []
+            
+            for x in xList: xNewList += x.split(xDelimIter)
+            xList = xNewList
+
+        return xList
+
+    #xCompletionPrefix is give to be excluded
+    def UpdateCompleterModel(self, xCompletionPrefix):        
+        xDelims = (" ", ";", "\n")
+
+        xRawChop  = self.ChopChopSplit(self.toPlainText(), xDelims)
+        xNewModel = self.xBaseCommands + [x for x in xRawChop \
+                       if x not in (xCompletionPrefix, '')
+                       
+                       
+                    ]
+        
+        print(cUtils.RemoveDups(xNewModel))
+        self.xCompleter.SetCompleterModel(cUtils.RemoveDups(xNewModel))
+
 
     def UpdateCompleter(self):
+        
         #update completer
         xCompletionPrefix = self.TextUnderCursor()
         self.xCompleter.setCompletionPrefix(xCompletionPrefix)
+        self.UpdateCompleterModel(xCompletionPrefix)
 
 
         xCursorRect = self.cursorRect()
@@ -236,16 +271,17 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.complete(xCursorRect)
 
         xMatchCount = self.xCompleter.completionCount()
-        xVisible = xCompletionPrefix != "" and xMatchCount > 0 and self.xCompleterStatus and self.xCompleter.model().findItems(xCompletionPrefix) == []
+        xVisible = xCompletionPrefix != "" and xMatchCount > 0 and self.xCompleterStatus
         
         #set visibility of pop-up
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()
 
     def keyPressEvent(self, xEvent):
-        if xEvent.key() == QtCore.Qt.Key_Tab and self.xCompleterStatus:
-            self.InsertCompletion(self.xCompleter.currentCompletion())
-            
 
+
+        if xEvent.key() == QtCore.Qt.Key_Return and self.xCompleterStatus:
+            self.InsertCompletion(self.xCompleter.popup().currentIndex().data())
+            
         else:
             super().keyPressEvent(xEvent)
         

@@ -10,7 +10,15 @@ class cUtils:
     def RemoveDups(x):
         return list(set(x))
 
+    @staticmethod
+    def SaveDialog(xPopupHostWidgetInstance):
+        xSaveDialog = QtWidgets.QMessageBox(xPopupHostWidgetInstance)
+        xSaveDialog.setWindowTitle("Save?")
+        xSaveDialog.setText("Save changes before closing?")
+        xSaveDialog.setStandardButtons(QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel)
+        xSaveDialog.setDefaultButton(QtWidgets.QMessageBox.Save)
 
+        return xSaveDialog.exec_()
 
 class cSender(QtCore.QObject):
     UpdateEditors           = QtCore.pyqtSignal()
@@ -22,6 +30,18 @@ class cSender(QtCore.QObject):
     UpdateCompleter         = QtCore.pyqtSignal()
 
 class cCodeEditor(QtWidgets.QPlainTextEdit):
+    class cLineNumberArea(QtWidgets.QWidget):
+        def __init__(self, xEditor):
+            super().__init__(xEditor)
+            self.xEditor = xEditor
+    
+        def sizeHint(self):
+            return Qsize(self.xEditor.lineNumberAreaWidth(), 0)
+        
+        def paintEvent(self, event):
+            self.xEditor.lineNumberAreaPaintEvent(event)
+    
+    
     class cCompleter(QtWidgets.QCompleter):
         def __init__(self):
             QtWidgets.QCompleter.__init__(self)
@@ -158,12 +178,25 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.textChanged.connect(self.Change)  
         self.xSender.UpdateCorrectorState.connect(self.SetCompleterStatus)
         self.xSender.UpdateCompleter.connect(self.UpdateCompleter)
+
+
+
+        self.lineNumberArea = self.cLineNumberArea(self)
+
+        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.updateRequest.connect(self.updateLineNumberArea)
+        self.cursorPositionChanged.connect(self.highlightCurrentLine)
+        
+        self.updateLineNumberAreaWidth(0)
+
+
+
         
         self.InitUI()
     
     
     def InsertCompletion(self, xFinalCompletion):
-        if self.xCompleter.widget() is not self:
+        if self.xCompleter.widget() is not self or xFinalCompletion is None:
             return
 
         xTextCursor = self.textCursor()
@@ -247,15 +280,14 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     def UpdateCompleterModel(self, xCompletionPrefix):        
         xDelims = (" ", ";", "\n")
 
-        xRawChop  = self.ChopChopSplit(self.toPlainText(), xDelims)
-        xNewModel = self.xBaseCommands + [x for x in xRawChop \
+        xNewModel = self.xBaseCommands + self.ChopChopSplit(self.toPlainText(), xDelims)
+        xNewModelFilter = [x for x in xNewModel \
                        if x not in (xCompletionPrefix, '')
                        
                        
                     ]
         
-        print(cUtils.RemoveDups(xNewModel))
-        self.xCompleter.SetCompleterModel(cUtils.RemoveDups(xNewModel))
+        self.xCompleter.SetCompleterModel(cUtils.RemoveDups(xNewModelFilter))
 
 
     def UpdateCompleter(self):
@@ -277,14 +309,126 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()
 
     def keyPressEvent(self, xEvent):
-
-
-        if xEvent.key() == QtCore.Qt.Key_Return and self.xCompleterStatus:
+        if xEvent.key() == QtCore.Qt.Key_Tab and self.xCompleterStatus:
             self.InsertCompletion(self.xCompleter.popup().currentIndex().data())
             
         else:
+            self.xSender.UpdateCompleter.emit()
             super().keyPressEvent(xEvent)
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def lineNumberAreaWidth(self):
+        digits = 1
+        count = max(1, self.blockCount())
+        while count >= 10:
+            count /= 10
+            digits += 1
+        space = 3 + self.fontMetrics().width('9') * digits
+        return space
+
+
+    def updateLineNumberAreaWidth(self, _):
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
+
+
+    def updateLineNumberArea(self, rect, dy):
+
+        if dy:
+            self.lineNumberArea.scroll(0, dy)
+        else:
+            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(),
+                       rect.height())
+
+        if rect.contains(self.viewport().rect()):
+            self.updateLineNumberAreaWidth(0)
+
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+
+        cr = self.contentsRect();
+        self.lineNumberArea.setGeometry(QtCore.QRect(cr.left(), cr.top(),
+                    self.lineNumberAreaWidth(), cr.height()))
+
+
+    def lineNumberAreaPaintEvent(self, event):
+        mypainter = QtGui.QPainter(self.lineNumberArea)
+
+        mypainter.fillRect(event.rect(), QtGui.QColor("#2a2a2a"))
+        mypainter.setPen(                QtGui.QColor('#8E8E8E'))
+        mypainter.setFont(QtGui.QFont(self.xFontFamily, self.font().pointSize()))
+
+        block = self.firstVisibleBlock()
+        blockNumber = block.blockNumber()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+
+        # Just to make sure I use the right font
+        height = self.fontMetrics().height()
+        while block.isValid() and (top <= event.rect().bottom()):
+            if block.isVisible() and (bottom >= event.rect().top()):
+                number = str(blockNumber + 1)
+                mypainter.drawText(0, int(top), self.lineNumberArea.width(), height,
+                 QtCore.Qt.AlignRight, number)
+
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            blockNumber += 1
+
+
+    def highlightCurrentLine(self):
+        extraSelections = []
+
+        if not self.isReadOnly():
+            selection = QtWidgets.QTextEdit.ExtraSelection()
+
+            lineColor = QtGui.QColor("#4C4C4C")
+
+            selection.format.setBackground(lineColor)
+            selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
+            selection.cursor = self.textCursor()
+            selection.cursor.clearSelection()
+            extraSelections.append(selection)
+        self.setExtraSelections(extraSelections)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class cWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -307,6 +451,8 @@ class cWindow(QtWidgets.QMainWindow):
 
     def InitUI(self):
 
+#        QTabBar               {background: gray;}
+#        QTabBar::tab:selected {background: red;} 
         self.setStyleSheet("""
         QMainWindow {background-color:#555555;}
     
@@ -314,9 +460,9 @@ class cWindow(QtWidgets.QMainWindow):
             background-color: #333333;
             color: white;
         }
-        QTabBar               {background: gray;}
-        QTabBar::tab:selected {background: red;} 
         """)
+
+
 
 
 
@@ -343,7 +489,7 @@ class cWindow(QtWidgets.QMainWindow):
         self.xDebug = self.xMenu.addMenu("&DEV DEBUG(don't use this)")
 
         self.xMenuFile.addAction(self.NewMenuSubOption("Open File", self.OpenFileGui, "Ctrl+O"))
-        self.xMenuFile.addAction(self.NewMenuSubOption("Close File", lambda: self.CloseTab(self.xTabHost.currentIndex()), "Ctrl+W"))
+        self.xMenuFile.addAction(self.NewMenuSubOption("Close File", self.CloseTabGui, "Ctrl+W"))
         self.xMenuFile.addAction(self.NewMenuSubOption("Save File", self.SaveFileGui, "Ctrl+S"))
         self.xMenuFile.addAction(self.NewMenuSubOption("Refresh Editors", self.RefreshGui, ""))
         self.xMenuFile.addAction(self.NewMenuSubOption("Exit", self.ExitGui, "Esc"))
@@ -393,6 +539,21 @@ class cWindow(QtWidgets.QMainWindow):
     #if reference to a file is lost the editor will kill itself and call this to close the tab
     def CloseTab4QWidget(self, QWidget):
         self.CloseTab(self.xTabHost.indexOf(QWidget))
+
+    def CloseTabGui(self):
+        #check if tab to be closed is saved
+        if not self.xTabContent[self.xTabHost.currentIndex()][0].xIsSaved:
+            xSaveDecision = cUtils.SaveDialog(self)
+            if xSaveDecision == QtWidgets.QMessageBox.Save: 
+                self.SaveFileGui()
+                
+            elif xSaveDecision == QtWidgets.QMessageBox.Discard:
+                pass
+            
+            elif xSaveDecision == QtWidgets.QMessageBox.Cancel:
+                return
+             
+        self.CloseTab(self.xTabHost.currentIndex())
 
     def CloseTab(self, xTabIndex):
         if xTabIndex < 0: return
@@ -495,13 +656,8 @@ class cWindow(QtWidgets.QMainWindow):
         
         if xIsUnsaved:
             #ask if the user wants to save progress
-            xExitSaveDialog = QtWidgets.QMessageBox(self)
-            xExitSaveDialog.setWindowTitle("Save?")
-            xExitSaveDialog.setText("Save changes before closing?")
-            xExitSaveDialog.setStandardButtons(QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel)
-            xExitSaveDialog.setDefaultButton(QtWidgets.QMessageBox.Save)
             
-            xSaveDecision = xExitSaveDialog.exec_()
+            xSaveDecision = cUtils.SaveDialog(self)
             if xSaveDecision == QtWidgets.QMessageBox.Save:
                 self.SaveAll()
                 

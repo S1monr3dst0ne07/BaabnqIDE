@@ -36,10 +36,10 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             self.xEditor = xEditor
     
         def sizeHint(self):
-            return Qsize(self.xEditor.lineNumberAreaWidth(), 0)
+            return Qsize(self.xEditor.LineNumberAreaWidth(), 0)
         
         def paintEvent(self, event):
-            self.xEditor.lineNumberAreaPaintEvent(event)
+            self.xEditor.LineNumberAreaPaintEvent(event)
     
     
     class cCompleter(QtWidgets.QCompleter):
@@ -181,13 +181,13 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
 
-        self.lineNumberArea = self.cLineNumberArea(self)
+        self.xLineNumberArea = self.cLineNumberArea(self)
 
-        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
-        self.updateRequest.connect(self.updateLineNumberArea)
-        self.cursorPositionChanged.connect(self.highlightCurrentLine)
+        self.blockCountChanged.connect(self.UpdateLineNumberAreaWidth)
+        self.updateRequest.connect(self.UpdateLineNumberArea)
+        self.cursorPositionChanged.connect(self.HighlightCurrentLine)
         
-        self.updateLineNumberAreaWidth(0)
+        self.UpdateLineNumberAreaWidth(0)
 
 
 
@@ -322,88 +322,80 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
 
+    def LineNumberAreaWidth(self):
+        xDigits = 1
+        xCount = max(1, self.blockCount())
+        while xCount >= 10:
+            xCount /= 10
+            xDigits += 1
+        xSpace = 3 + self.fontMetrics().width('9') * xDigits
+        return xSpace
 
 
+    def UpdateLineNumberAreaWidth(self, _):
+        self.setViewportMargins(self.LineNumberAreaWidth(), 0, 0, 0)
 
 
+    def UpdateLineNumberArea(self, xRect, xDy):
 
-
-
-
-    def lineNumberAreaWidth(self):
-        digits = 1
-        count = max(1, self.blockCount())
-        while count >= 10:
-            count /= 10
-            digits += 1
-        space = 3 + self.fontMetrics().width('9') * digits
-        return space
-
-
-    def updateLineNumberAreaWidth(self, _):
-        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
-
-
-    def updateLineNumberArea(self, rect, dy):
-
-        if dy:
-            self.lineNumberArea.scroll(0, dy)
+        if xDy:
+            self.xLineNumberArea.scroll(0, xDy)
         else:
-            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(),
-                       rect.height())
+            self.xLineNumberArea.update(0, xRect.y(), self.xLineNumberArea.width(),
+                       xRect.height())
 
-        if rect.contains(self.viewport().rect()):
-            self.updateLineNumberAreaWidth(0)
-
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-
-        cr = self.contentsRect();
-        self.lineNumberArea.setGeometry(QtCore.QRect(cr.left(), cr.top(),
-                    self.lineNumberAreaWidth(), cr.height()))
+        if xRect.contains(self.viewport().rect()):
+            self.UpdateLineNumberAreaWidth(0)
 
 
-    def lineNumberAreaPaintEvent(self, event):
-        mypainter = QtGui.QPainter(self.lineNumberArea)
+    def resizeEvent(self, xEvent):
+        super().resizeEvent(xEvent)
 
-        mypainter.fillRect(event.rect(), QtGui.QColor("#2a2a2a"))
-        mypainter.setPen(                QtGui.QColor('#8E8E8E'))
-        mypainter.setFont(QtGui.QFont(self.xFontFamily, self.font().pointSize()))
+        xContRect = self.contentsRect();
+        self.xLineNumberArea.setGeometry(QtCore.QRect(xContRect.left(), xContRect.top(),
+                    self.LineNumberAreaWidth(), xContRect.height()))
 
-        block = self.firstVisibleBlock()
-        blockNumber = block.blockNumber()
-        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
-        bottom = top + self.blockBoundingRect(block).height()
+
+    def LineNumberAreaPaintEvent(self, xEvent):
+        xPainter = QtGui.QPainter(self.xLineNumberArea)
+
+        xPainter.fillRect(xEvent.rect(), QtGui.QColor("#2a2a2a"))
+        xPainter.setPen(                QtGui.QColor('#8E8E8E'))
+        xPainter.setFont(QtGui.QFont(self.xFontFamily, self.font().pointSize()))
+
+        xBlock = self.firstVisibleBlock()
+        xBlockNumber = xBlock.blockNumber()
+        xTop = self.blockBoundingGeometry(xBlock).translated(self.contentOffset()).top()
+        xBottom = xTop + self.blockBoundingRect(xBlock).height()
 
         # Just to make sure I use the right font
-        height = self.fontMetrics().height()
-        while block.isValid() and (top <= event.rect().bottom()):
-            if block.isVisible() and (bottom >= event.rect().top()):
-                number = str(blockNumber + 1)
-                mypainter.drawText(0, int(top), self.lineNumberArea.width(), height,
-                 QtCore.Qt.AlignRight, number)
+        xHeight = self.fontMetrics().height()
+        while xBlock.isValid() and (xTop <= xEvent.rect().bottom()):
+            if xBlock.isVisible() and (xBottom >= xEvent.rect().top()):
+                xNumber = str(xBlockNumber + 1)
+                xPainter.drawText(0, int(xTop), self.xLineNumberArea.width(), xHeight,
+                 QtCore.Qt.AlignRight, xNumber)
 
-            block = block.next()
-            top = bottom
-            bottom = top + self.blockBoundingRect(block).height()
-            blockNumber += 1
+            xBlock = xBlock.next()
+            xTop = xBottom
+            xBottom = xTop + self.blockBoundingRect(xBlock).height()
+            xBlockNumber += 1
 
 
-    def highlightCurrentLine(self):
-        extraSelections = []
+    def HighlightCurrentLine(self):
+        xExtraSelections = []
 
         if not self.isReadOnly():
-            selection = QtWidgets.QTextEdit.ExtraSelection()
+            xSelection = QtWidgets.QTextEdit.ExtraSelection()
 
-            lineColor = QtGui.QColor("#4C4C4C")
+            xLineColor = QtGui.QColor("#4C4C4C")
 
-            selection.format.setBackground(lineColor)
-            selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
-            selection.cursor = self.textCursor()
-            selection.cursor.clearSelection()
-            extraSelections.append(selection)
-        self.setExtraSelections(extraSelections)
+            xSelection.format.setBackground(xLineColor)
+            xSelection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
+            xSelection.cursor = self.textCursor()
+            xSelection.cursor.clearSelection()
+            xExtraSelections.append(xSelection)
+        self.setExtraSelections(xExtraSelections)
 
 
 

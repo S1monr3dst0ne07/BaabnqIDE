@@ -20,6 +20,7 @@ class cUtils:
 
         return xSaveDialog.exec_()
 
+
 class cSender(QtCore.QObject):
     UpdateEditors           = QtCore.pyqtSignal()
     CloseTab4QWidget        = QtCore.pyqtSignal(QtWidgets.QWidget)
@@ -28,6 +29,8 @@ class cSender(QtCore.QObject):
     UpdateTabSaveColor      = QtCore.pyqtSignal()
     UpdateCorrectorState    = QtCore.pyqtSignal(bool)
     UpdateCompleter         = QtCore.pyqtSignal()
+    SetCompilerPath         = QtCore.pyqtSignal(str)
+    SetVirtMachPath         = QtCore.pyqtSignal()
 
 class cCodeEditor(QtWidgets.QPlainTextEdit):
     class cLineNumberArea(QtWidgets.QWidget):
@@ -406,22 +409,83 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class cWindow(QtWidgets.QMainWindow):
+    class cRunConfigDialog(QtWidgets.QWidget):
+        def __init__(self, xSender):
+            super().__init__()
+            self.xSender = xSender
+
+            xPointSize = 10
+
+            self.setStyleSheet("background-color:#555555; color:#ffffff")
+
+            
+            self.xLayout = QtWidgets.QGridLayout(self)
+            
+            
+            self.xCompilerPath = QtWidgets.QLabel()
+            self.xVirtMachPath = QtWidgets.QLabel()           
+            self.xCompilerPath.setFont(QtGui.QFont("Consolas", xPointSize))
+            self.xVirtMachPath.setFont(QtGui.QFont("Consolas", xPointSize))
+            self.xCompilerPath.setStyleSheet("border: 1px solid white; ")
+            self.xVirtMachPath.setStyleSheet("border: 1px solid white;")
+            self.xCompilerPath.setFixedHeight(self.xCompilerPath.font().pointSize() * 2)
+            self.xVirtMachPath.setFixedHeight(self.xVirtMachPath.font().pointSize() * 2)
+
+            self.xLayout.addWidget(self.xCompilerPath, 0, 1)
+            self.xLayout.addWidget(self.xVirtMachPath, 1, 1)
+
+
+
+            xCompilerText = QtWidgets.QLabel("Compiler: ")
+            xVirtMachText = QtWidgets.QLabel("VirtMach: ")
+            xCompilerText.setFont(QtGui.QFont("Consolas", xPointSize))
+            xVirtMachText.setFont(QtGui.QFont("Consolas", xPointSize))
+            xCompilerText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+            xVirtMachText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)            
+            
+            self.xLayout.addWidget(xCompilerText, 0, 0)
+            self.xLayout.addWidget(xVirtMachText, 1, 0)
+            
+            
+            
+            xCompilerBrow = QtWidgets.QPushButton("Browse")
+            xVirtMachBrow = QtWidgets.QPushButton("Browse")
+            xCompilerBrow.setStyleSheet("border: 1px solid white; color: white")
+            xVirtMachBrow.setStyleSheet("border: 1px solid white; color: white") 
+            xCompilerBrow.clicked.connect(self.SetCompilerPath)
+            xVirtMachBrow.clicked.connect(self.SetVirtMachPath)
+            xCompilerBrow.setFixedWidth(len(xCompilerBrow.text()) * xCompilerBrow.font().pointSize())
+            xVirtMachBrow.setFixedWidth(len(xVirtMachBrow.text()) * xVirtMachBrow.font().pointSize())
+            xCompilerBrow.setFixedHeight(self.xCompilerPath.font().pointSize() * 2)
+            xVirtMachBrow.setFixedHeight(self.xVirtMachPath.font().pointSize() * 2)
+            
+            self.xLayout.addWidget(xCompilerBrow, 0, 2)
+            self.xLayout.addWidget(xVirtMachBrow, 1, 2)
+            
+            self.UpdateDisplays()
+            self.show()
+            #fix size after all the components have been edited
+            self.setFixedHeight(self.height())
+            
+        def UpdateDisplays(self):
+            xCurrectLaunchConfig = self.xSender.GetLaunchConfig()
+            self.xCompilerPath.setText(xCurrectLaunchConfig[0])
+            self.xVirtMachPath.setText(xCurrectLaunchConfig[1])
+        
+        def SetCompilerPath(self):
+            xPath, _ = QtWidgets.QFileDialog.getOpenFileName(None, 'Select Compiler', '', 'Python File (*.py)')
+            if xPath != "": 
+                self.xSender.SetCompilerPath.emit(xPath)
+                self.UpdateDisplays()
+
+        def SetVirtMachPath(self):
+            xPath, _ = QtWidgets.QFileDialog.getOpenFileName(None, 'Select Virtual Machine', '', 'Python File (*.py)')
+            if xPath != "": 
+                self.xSender.SetVirtMachPath.emit(xPath)
+                self.UpdateDisplays()
+
+    
     def __init__(self):
         super().__init__()
 
@@ -431,13 +495,28 @@ class cWindow(QtWidgets.QMainWindow):
         self.xSender.RemoteDragEnterEvent.connect(self.dragEnterEvent)
         self.xSender.RemoteDropEvent.connect(self.dropEvent)
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
-                
+        
+        self.xCompilerPath = ""
+        self.xVirtMachPath = ""
+        
+        #assignment methods
+        def SetCompilerPath(x): self.xCompilerPath = x
+        def SetVirtMachPath(x): self.xVirtMachPath = x
+        def GetLaunchConfig():  return (self.xCompilerPath, self.xVirtMachPath)
+        
+        self.xRunConfigDialogInstance = None
+        self.xSender.SetCompilerPath.connect(SetCompilerPath)
+        self.xSender.SetVirtMachPath.connect(SetVirtMachPath)
+        self.xSender.GetLaunchConfig = GetLaunchConfig
+        
         self.setAcceptDrops(True)
         self.xFontFamily = "consolas"
 
         self.xTabHost = QtWidgets.QTabWidget()
         self.xSettingsHandle = QtCore.QSettings("BaabnqIde", "MainSettings")
         self.LoadSetttings(self.xSettingsHandle)
+        
+        self.xDialogInstance = None
         
         self.InitUI()
 
@@ -478,7 +557,7 @@ class cWindow(QtWidgets.QMainWindow):
         self.xMenuFile = self.xMenu.addMenu("&File")
         self.xMenuView = self.xMenu.addMenu("&View")
         self.xMenuOptions = self.xMenu.addMenu("&Options")
-        self.xDebug = self.xMenu.addMenu("&DEV DEBUG(don't use this)")
+        self.xMenuRun = self.xMenu.addMenu("&Run")
 
         self.xMenuFile.addAction(self.NewMenuSubOption("Open File", self.OpenFileGui, "Ctrl+O"))
         self.xMenuFile.addAction(self.NewMenuSubOption("Close File", self.CloseTabGui, "Ctrl+W"))
@@ -491,11 +570,18 @@ class cWindow(QtWidgets.QMainWindow):
         self.xMenuView.addAction(self.NewMenuSubOption("Zoom out", lambda: self.xTabHost.currentWidget().zoomIn(-1), "Ctrl+-"))
         self.xMenuView.addAction(self.NewMenuSubOption("Corrector Enabled", self.ToggleCorrector, "Ctrl+Space", True))
 
-        self.xDebug.addAction(self.NewMenuSubOption("Reload Tab Colors", self.UpdateTabSaveColor, ""))
+        self.xMenuOptions.addAction(self.NewMenuSubOption("Run Config", self.RunConfigGui, ""))
+
+        self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F9"))
 
 
         self.setWindowTitle("Baabnq IDE")
         self.show()
+
+
+
+    def RunCurrentProgram(self):
+        print("Run")
 
 
 
@@ -559,6 +645,10 @@ class cWindow(QtWidgets.QMainWindow):
         self.xTabHost.currentWidget().Save()
         self.xSender.UpdateTabSaveColor.emit()
     
+    def RunConfigGui(self):
+        self.xRunConfigDialogInstance = self.cRunConfigDialog(self.xSender)
+        
+        
     def SaveAll(self):
         for xTabIter in self.xTabContent:
             xTabIter[0].Save()
@@ -591,6 +681,8 @@ class cWindow(QtWidgets.QMainWindow):
     def LoadSetttings(self, xSettingsHandle):
         self.resize(self.xSettingsHandle.value("windowSize"))
         self.move(self.xSettingsHandle.value("windowPos"))
+        self.xCompilerPath = self.xSettingsHandle.value("compilerPath")
+        self.xVirtMachPath = self.xSettingsHandle.value("virtMachPath")
 
         xTabDataList = eval(self.xSettingsHandle.value("tabInstanceList"))
         for xTabDataIter in xTabDataList:
@@ -605,6 +697,9 @@ class cWindow(QtWidgets.QMainWindow):
     def SaveSettings(self, xSettingsHandle):
         xSettingsHandle.setValue("windowPos", self.pos())
         xSettingsHandle.setValue("windowSize", self.size())
+        xSettingsHandle.setValue("compilerPath", self.xCompilerPath)
+        xSettingsHandle.setValue("virtMachPath", self.xVirtMachPath)
+
 
         xTabDataList = []
         
@@ -612,7 +707,7 @@ class cWindow(QtWidgets.QMainWindow):
         for xTabIter in self.xTabContent:
             xTabDataList.append({
                 "filePath" : xTabIter[0].xFilePath,
-                "zoom"     : xTabIter[0].font().pointSize()
+                "zoom"     : xTabIter[0].font().pointSize(),
                 
                 })
         
@@ -661,6 +756,8 @@ class cWindow(QtWidgets.QMainWindow):
                 return
             
         self.SaveSettings(self.xSettingsHandle)
+        if self.xRunConfigDialogInstance:
+            self.xRunConfigDialogInstance.close()
             
         
 

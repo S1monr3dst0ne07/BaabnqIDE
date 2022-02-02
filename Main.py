@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import re
 import sys
+import ctypes
 
 
 
@@ -30,7 +31,7 @@ class cSender(QtCore.QObject):
     UpdateCorrectorState    = QtCore.pyqtSignal(bool)
     UpdateCompleter         = QtCore.pyqtSignal()
     SetCompilerPath         = QtCore.pyqtSignal(str)
-    SetVirtMachPath         = QtCore.pyqtSignal()
+    SetVirtMachPath         = QtCore.pyqtSignal(str)
 
 class cCodeEditor(QtWidgets.QPlainTextEdit):
     class cLineNumberArea(QtWidgets.QWidget):
@@ -219,11 +220,13 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             with open(self.xFilePath, "r") as xFileHandle:
                 self.setPlainText(xFileHandle.read())
                 self.xIsSaved = True
+                return True
                 
         except FileNotFoundError:
             #if path was not found kill instance
             QtWidgets.QMessageBox.about(self, "File lost", f"Reference to file at {self.xFilePath} has been lost\nThis my be due to the deletion or renaming of that file".format())
-            self.xSender.CloseTab4QWidget.emit(self)
+            self.xSender.CloseTab4QWidget.emit(self)#
+            return False
             
     #write editor content back to path
     def Save(self):
@@ -408,6 +411,24 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
 
+class cRunConsole(QtWidgets.QPlainTextEdit):
+    def __init__(self):
+        super().__init__()
+        self.xAutoScroll = False
+                                    
+        self.textChanged.connect(self.Change)
+    
+    def SetAutoScroll(self, xNewState):
+        self.xAutoScroll = xNewState
+    
+              
+    def Change(self):
+        if self.xAutoScroll:
+            self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+
+        
+    
+
 
 class cWindow(QtWidgets.QMainWindow):
     class cRunConfigDialog(QtWidgets.QWidget):
@@ -418,10 +439,10 @@ class cWindow(QtWidgets.QMainWindow):
             xPointSize = 10
 
             self.setStyleSheet("background-color:#555555; color:#ffffff")
-
+            self.setWindowTitle("Run Config")
             
             self.xLayout = QtWidgets.QGridLayout(self)
-            
+                        
             
             self.xCompilerPath = QtWidgets.QLabel()
             self.xVirtMachPath = QtWidgets.QLabel()           
@@ -432,8 +453,8 @@ class cWindow(QtWidgets.QMainWindow):
             self.xCompilerPath.setFixedHeight(self.xCompilerPath.font().pointSize() * 2)
             self.xVirtMachPath.setFixedHeight(self.xVirtMachPath.font().pointSize() * 2)
 
-            self.xLayout.addWidget(self.xCompilerPath, 0, 1)
-            self.xLayout.addWidget(self.xVirtMachPath, 1, 1)
+            self.xLayout.addWidget(self.xCompilerPath, 1, 1)
+            self.xLayout.addWidget(self.xVirtMachPath, 2, 1)
 
 
 
@@ -442,15 +463,15 @@ class cWindow(QtWidgets.QMainWindow):
             xCompilerText.setFont(QtGui.QFont("Consolas", xPointSize))
             xVirtMachText.setFont(QtGui.QFont("Consolas", xPointSize))
             xCompilerText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-            xVirtMachText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)            
+            xVirtMachText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
             
-            self.xLayout.addWidget(xCompilerText, 0, 0)
-            self.xLayout.addWidget(xVirtMachText, 1, 0)
+            self.xLayout.addWidget(xCompilerText, 1, 0)
+            self.xLayout.addWidget(xVirtMachText, 2, 0)
             
             
             
-            xCompilerBrow = QtWidgets.QPushButton("Browse")
-            xVirtMachBrow = QtWidgets.QPushButton("Browse")
+            xCompilerBrow = QtWidgets.QPushButton("Browse..")
+            xVirtMachBrow = QtWidgets.QPushButton("Browse..")
             xCompilerBrow.setStyleSheet("border: 1px solid white; color: white")
             xVirtMachBrow.setStyleSheet("border: 1px solid white; color: white") 
             xCompilerBrow.clicked.connect(self.SetCompilerPath)
@@ -460,8 +481,8 @@ class cWindow(QtWidgets.QMainWindow):
             xCompilerBrow.setFixedHeight(self.xCompilerPath.font().pointSize() * 2)
             xVirtMachBrow.setFixedHeight(self.xVirtMachPath.font().pointSize() * 2)
             
-            self.xLayout.addWidget(xCompilerBrow, 0, 2)
-            self.xLayout.addWidget(xVirtMachBrow, 1, 2)
+            self.xLayout.addWidget(xCompilerBrow, 1, 2)
+            self.xLayout.addWidget(xVirtMachBrow, 2, 2)
             
             self.UpdateDisplays()
             self.show()
@@ -489,6 +510,7 @@ class cWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
+        
         self.xTabContent = []
         self.xSender = cSender()
         self.xSender.CloseTab4QWidget.connect(self.CloseTab4QWidget)
@@ -510,12 +532,7 @@ class cWindow(QtWidgets.QMainWindow):
         self.xSender.GetLaunchConfig = GetLaunchConfig
         
         self.setAcceptDrops(True)
-        self.xFontFamily = "consolas"
-
-        self.xTabHost = QtWidgets.QTabWidget()
-        self.xSettingsHandle = QtCore.QSettings("BaabnqIde", "MainSettings")
-        self.LoadSetttings(self.xSettingsHandle)
-        
+        self.xFontFamily = "consolas"        
         self.xDialogInstance = None
         
         self.InitUI()
@@ -536,23 +553,37 @@ class cWindow(QtWidgets.QMainWindow):
 
 
 
-
-
         xCentralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(xCentralWidget)
         self.xMainLayout = QtWidgets.QGridLayout(xCentralWidget)
-
+        self.xSplitterContainer = QtWidgets.QSplitter()
+        self.xMainLayout.addWidget(self.xSplitterContainer)
         
+
+
+        #main tab host
+        self.xTabHost = QtWidgets.QTabWidget()
+        self.xSettingsHandle = QtCore.QSettings("BaabnqIde", "MainSettings")
         self.xTabHost.setStyleSheet("""
         QWidget {background-color: #333333} 
         QTabWidget::pane {border: 0;} 
         QTabBar::tab {background: #454545;} 
         QTabBar::tab::selected {background-color: #202020;}
         
+        
         """)
         self.xTabHost.setTabsClosable(False)
-        self.xMainLayout.addWidget(self.xTabHost)
+        self.xSplitterContainer.addWidget(self.xTabHost)
 
+
+
+
+        #integrated console
+        self.xConsoleLayout = QtWidgets.QGridLayout()
+        self.xConsole = cRunConsole()
+        self.xSplitterContainer.addWidget(self.xConsole)
+
+        #menu management
         self.xMenu = self.menuBar()
         self.xMenuFile = self.xMenu.addMenu("&File")
         self.xMenuView = self.xMenu.addMenu("&View")
@@ -566,27 +597,55 @@ class cWindow(QtWidgets.QMainWindow):
         self.xMenuFile.addAction(self.NewMenuSubOption("Exit", self.ExitGui, "Esc"))
         
         #very ugly line for zooming, directly calls zoomIn method of the qplaintextedit
-        self.xMenuView.addAction(self.NewMenuSubOption("Zoom in", lambda: self.xTabHost.currentWidget().zoomIn(+1), "Ctrl++"))
-        self.xMenuView.addAction(self.NewMenuSubOption("Zoom out", lambda: self.xTabHost.currentWidget().zoomIn(-1), "Ctrl+-"))
-        self.xMenuView.addAction(self.NewMenuSubOption("Corrector Enabled", self.ToggleCorrector, "Ctrl+Space", True))
+        def GlobalZoom(xDelta):
+            if any([x[0].hasFocus() for x in self.xTabContent]):
+                self.xTabHost.currentWidget().zoomIn(xDelta)
+                
+            elif self.xConsole.hasFocus():
+                self.xConsole.zoomIn(xDelta)
+                
+                
+        self.xMenuView.addAction(self.NewMenuSubOption("Zoom in",  lambda: GlobalZoom(+1), "Ctrl++"))
+        self.xMenuView.addAction(self.NewMenuSubOption("Zoom out", lambda: GlobalZoom(-1), "Ctrl+-"))
 
+        self.xConsoleSubmenu = self.xMenuOptions.addMenu("Console")        
+        def HandleClickAutoScroll(): return self.xConsole.SetAutoScroll(self.xConsoleSubmenu.actions()[1].isChecked())
+        self.HandleClickAutoScroll = HandleClickAutoScroll
+        self.xConsoleSubmenu.addAction(self.NewMenuSubOption("Clear", self.xConsole.clear, "Ctrl+1"))
+        self.xConsoleSubmenu.addAction(self.NewMenuSubOption("Autoscroll  Enabled", HandleClickAutoScroll, "", True))
+        
+        self.xMenuOptions.addAction(self.NewMenuSubOption("Corrector Enabled", self.ToggleCorrector, "Ctrl+Space", True))
         self.xMenuOptions.addAction(self.NewMenuSubOption("Run Config", self.RunConfigGui, ""))
 
-        self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F9"))
+        self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F1"))
+
 
 
         self.setWindowTitle("Baabnq IDE")
+        self.LoadSetttings(self.xSettingsHandle)
         self.show()
 
 
-
+    def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None):
+        
+        self.xCompilerProcess = QtCore.QProcess()
+        if StdoutHandleFunc:
+            self.xCompilerProcess.readyReadStandardOutput.connect(
+            lambda:
+            StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput().data().decode())
+                                                                  )
+        
+        xArgs = [self.xCompilerPath, "--input", xSourcePath, "--output", xDestPath]
+        self.xCompilerProcess.start("python", xArgs)
+    
+    def Write2Console(self, xNewText):
+        self.xConsole.insertPlainText(xNewText)
+    
     def RunCurrentProgram(self):
-        print("Run")
-
-
+        self.Compile(self.xTabHost.currentWidget().xFilePath, "build.s1", self.Write2Console)
 
     def ToggleCorrector(self):
-        xCheckedState = self.xMenuView.actions()[2].isChecked()
+        xCheckedState = self.xMenuOptions.actions()[0].isChecked()
         self.xSender.UpdateCorrectorState.emit(xCheckedState)
         self.xSender.UpdateCompleter.emit()
 
@@ -654,17 +713,19 @@ class cWindow(QtWidgets.QMainWindow):
             xTabIter[0].Save()
     
     
-    def OpenCodeEditorTab(self, xPath): 
+    def OpenCodeEditorTab(self, xPath):
         xCodeEditor = cCodeEditor(self.xSender, self.xFontFamily)
         
         self.xTabHost.addTab(xCodeEditor, self.Path2Name(xPath))
         self.xTabContent.append((xCodeEditor, ))
         
         xCodeEditor.xFilePath = xPath
-        self.xSender.UpdateEditors.emit()
+        xUpdateSuccess = xCodeEditor.UpdateFromPath()
         
         xCodeEditor.xIsSaved = True
         self.UpdateTabSaveColor()
+        
+        return xUpdateSuccess
         
     #tab changes color based on if saved or not
     def UpdateTabSaveColor(self):
@@ -683,15 +744,26 @@ class cWindow(QtWidgets.QMainWindow):
         self.move(self.xSettingsHandle.value("windowPos"))
         self.xCompilerPath = self.xSettingsHandle.value("compilerPath")
         self.xVirtMachPath = self.xSettingsHandle.value("virtMachPath")
-
+        
+        xSettingsState = self.xSettingsHandle.value("splitterState")
+        if xSettingsState: self.xSplitterContainer.restoreState(xSettingsState)
+        
+        xConsoleZoom = self.xSettingsHandle.value("consoleZoom")
+        if xConsoleZoom: self.xConsole.setFont(QtGui.QFont(self.xFontFamily, xConsoleZoom))
+        
+        xConsoleAutoScroll = self.xSettingsHandle.value("consoleAutoScroll")
+        if xConsoleAutoScroll: self.xConsoleSubmenu.actions()[1].setChecked(xConsoleAutoScroll)
+        
         xTabDataList = eval(self.xSettingsHandle.value("tabInstanceList"))
         for xTabDataIter in xTabDataList:
-            self.OpenCodeEditorTab(xTabDataIter["filePath"])
-            self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
+            xSuccess = self.OpenCodeEditorTab(xTabDataIter["filePath"])
+            if xSuccess:
+                self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
             
             
         
         self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
+        self.HandleClickAutoScroll()
         
         
     def SaveSettings(self, xSettingsHandle):
@@ -700,6 +772,11 @@ class cWindow(QtWidgets.QMainWindow):
         xSettingsHandle.setValue("compilerPath", self.xCompilerPath)
         xSettingsHandle.setValue("virtMachPath", self.xVirtMachPath)
 
+        xSettingsHandle.setValue("splitterState", self.xSplitterContainer.saveState())
+
+        xSettingsHandle.setValue("consoleZoom", self.xConsole.font().pointSize())
+        xBoolAutoScrollState = self.xConsoleSubmenu.actions()[1].isChecked()
+        xSettingsHandle.setValue("consoleAutoScroll", 1 if xBoolAutoScrollState else 0)
 
         xTabDataList = []
         

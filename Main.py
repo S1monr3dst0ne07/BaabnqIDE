@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import re
 import sys
 import ctypes
+import time
 
 
 
@@ -426,11 +427,35 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
         if self.xAutoScroll:
             self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
-        
-    
-
 
 class cWindow(QtWidgets.QMainWindow):
+    class cAsyncProgressTracker(QtCore.QThread):
+        def __init__(self, xDisplayObject, xSourceProcess, xDisplayName):
+            super().__init__()
+            self.xDisplayObject = xDisplayObject #object the progress will be displayed in
+            self.xDisplayName   = xDisplayName
+            self.xSourceProcess = xSourceProcess
+            self.xStopFlag = False
+
+        def __del__(self):
+            self.quit()
+            self.wait()
+        
+        def stop(self):
+            self.xStopFlag = True
+        
+        def run(self):
+            xPointAnimation = 1
+            while self.xSourceProcess.state() != QtCore.QProcess.NotRunning and not self.xStopFlag:
+                time.sleep(0.1)
+                self.xDisplayObject.setText(self.xDisplayName + xPointAnimation * ".")
+
+                if xPointAnimation < 3: xPointAnimation += 1
+                else                  : xPointAnimation = 0
+
+            self.xDisplayObject.setText("")
+
+
     class cRunConfigDialog(QtWidgets.QWidget):
         def __init__(self, xSender):
             super().__init__()
@@ -509,7 +534,9 @@ class cWindow(QtWidgets.QMainWindow):
     
     def __init__(self):
         super().__init__()
-
+        
+        self.xProcessTracker = None
+        self.xCompilerProcess = None
         
         self.xTabContent = []
         self.xSender = cSender()
@@ -557,8 +584,15 @@ class cWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(xCentralWidget)
         self.xMainLayout = QtWidgets.QGridLayout(xCentralWidget)
         self.xSplitterContainer = QtWidgets.QSplitter()
-        self.xMainLayout.addWidget(self.xSplitterContainer)
+        self.xMainLayout.addWidget(self.xSplitterContainer, 0, 0)
         
+        #process status
+        self.xProcessStatus = QtWidgets.QLabel()
+        self.xProcessStatus.setFixedHeight(15)
+        self.xProcessStatus.setFont(QtGui.QFont(self.xFontFamily, 10))
+        self.xProcessStatus.setStyleSheet("color: white")
+        self.xMainLayout.addWidget(self.xProcessStatus, 1, 0)
+
 
 
         #main tab host
@@ -628,7 +662,9 @@ class cWindow(QtWidgets.QMainWindow):
 
     def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None):
         
+        if self.xCompilerProcess: self.xCompilerProcess.kill()
         self.xCompilerProcess = QtCore.QProcess()
+        
         if StdoutHandleFunc:
             self.xCompilerProcess.readyReadStandardOutput.connect(
             lambda:
@@ -637,6 +673,11 @@ class cWindow(QtWidgets.QMainWindow):
         
         xArgs = [self.xCompilerPath, "--input", xSourcePath, "--output", xDestPath]
         self.xCompilerProcess.start("python", xArgs)
+        
+        if self.xProcessTracker and self.xProcessTracker.isRunning(): self.xProcessTracker.stop()
+        self.xProcessTracker = self.cAsyncProgressTracker(self.xProcessStatus, self.xCompilerProcess, "Compiling")
+        self.xProcessTracker.start()
+
     
     def Write2Console(self, xNewText):
         self.xConsole.insertPlainText(xNewText)
@@ -835,7 +876,9 @@ class cWindow(QtWidgets.QMainWindow):
         self.SaveSettings(self.xSettingsHandle)
         if self.xRunConfigDialogInstance:
             self.xRunConfigDialogInstance.close()
-            
+        
+        if self.xCompilerProcess: self.xCompilerProcess.kill()
+
         
 
 if __name__ == '__main__':

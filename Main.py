@@ -7,6 +7,41 @@ import time
 
 
 class cUtils:
+    xScrollStyle = """
+    QScrollBar::up-arrow, QScrollBar::down-arrow {{
+        background: none;
+    }}
+    QScrollBar::add-page, QScrollBar::sub-page {{
+        background: none;
+    }}
+            
+    QScrollBar {{
+        border: 1px solid #111111;
+        background: solid #111111;
+
+        {sizeMod}
+        margin: 0px 0px 0px 0px;
+    }}
+    QScrollBar::handle {{
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop: 0 {handelColor}, stop: 0.5 {handelColor}, stop:1 {handelColor});
+        min-height: 0px;
+    }}
+    QScrollBar::add-line {{
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
+        height: 0px;
+        subcontrol-position: bottom;
+        subcontrol-origin: margin;
+    }}
+    QScrollBar::sub-line {{
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
+        height: 0 px;
+        subcontrol-position: top;
+        subcontrol-origin: margin;
+    }}
+                                            """
     
     @staticmethod
     def RemoveDups(x):
@@ -22,6 +57,17 @@ class cUtils:
 
         return xSaveDialog.exec_()
 
+    @staticmethod
+    def Noop():
+        pass
+    @staticmethod
+    def FindQActionInList(xQActionList, xName):
+        for xQActionIter in xQActionList:
+            if xQActionIter.text() == xName:
+                return xQActionIter
+            
+            
+        return None
 
 class cSender(QtCore.QObject):
     UpdateEditors           = QtCore.pyqtSignal()
@@ -122,42 +168,6 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
     
-    xScrollStyle = """
-    QScrollBar::up-arrow, QScrollBar::down-arrow {{
-        background: none;
-    }}
-    QScrollBar::add-page, QScrollBar::sub-page {{
-        background: none;
-    }}
-            
-    QScrollBar {{
-        border: 1px solid #111111;
-        background: solid #111111;
-
-        {sizeMod}
-        margin: 0px 0px 0px 0px;
-    }}
-    QScrollBar::handle {{
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor}, stop:1 {handelColor});
-        min-height: 0px;
-    }}
-    QScrollBar::add-line {{
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
-        height: 0px;
-        subcontrol-position: bottom;
-        subcontrol-origin: margin;
-    }}
-    QScrollBar::sub-line {{
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
-        height: 0 px;
-        subcontrol-position: top;
-        subcontrol-origin: margin;
-    }}
-                                            """
-    
     xBaseCommands = ["put", "print", "input", "putstr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump"]
     
 
@@ -246,9 +256,9 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.setStyleSheet("background-color: #333333; color: #ffffff; border: 0px;")
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
 
-        #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)        
-        self.verticalScrollBar().setStyleSheet(self.xScrollStyle.format(  sizeMod = "width:20px;", handelColor = "#444444"))
-        self.horizontalScrollBar().setStyleSheet(self.xScrollStyle.format(sizeMod = "hight:20px;", handelColor = "#444444"))
+        #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
+        self.verticalScrollBar().setStyleSheet(  cUtils.xScrollStyle.format(sizeMod = "width:20px;", handelColor = "#444444"))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xScrollStyle.format(sizeMod = "hight:20px;", handelColor = "#444444"))
 
     #drag and drop events
     def dragEnterEvent(self, xEvent):
@@ -284,7 +294,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         return xList
 
     #xCompletionPrefix is give to be excluded
-    def UpdateCompleterModel(self, xCompletionPrefix):        
+    def UpdateCompleterModel(self, xCompletionPrefix):      
         xDelims = (" ", ";", "\n")
 
         xNewModel = self.xBaseCommands + self.ChopChopSplit(self.toPlainText(), xDelims)
@@ -413,10 +423,17 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
 class cRunConsole(QtWidgets.QPlainTextEdit):
-    def __init__(self):
+    def __init__(self, xParent):
         super().__init__()
         self.xAutoScroll = False
-                                    
+        self.setFont(QtGui.QFont())
+        self.setStyleSheet("background-color: #333333; color: #ffffff; border: 0px;")
+        self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+
+        #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
+        self.verticalScrollBar().setStyleSheet(  cUtils.xScrollStyle.format(sizeMod = "width:20px;", handelColor = "#444444"))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xScrollStyle.format(sizeMod = "hight:20px;", handelColor = "#444444"))
+        
         self.textChanged.connect(self.Change)
     
     def SetAutoScroll(self, xNewState):
@@ -537,6 +554,7 @@ class cWindow(QtWidgets.QMainWindow):
         
         self.xProcessTracker = None
         self.xCompilerProcess = None
+        self.xVirtMachProcess = None
         
         self.xTabContent = []
         self.xSender = cSender()
@@ -614,7 +632,7 @@ class cWindow(QtWidgets.QMainWindow):
 
         #integrated console
         self.xConsoleLayout = QtWidgets.QGridLayout()
-        self.xConsole = cRunConsole()
+        self.xConsole = cRunConsole(self)
         self.xSplitterContainer.addWidget(self.xConsole)
 
         #menu management
@@ -647,11 +665,12 @@ class cWindow(QtWidgets.QMainWindow):
         self.HandleClickAutoScroll = HandleClickAutoScroll
         self.xConsoleSubmenu.addAction(self.NewMenuSubOption("Clear", self.xConsole.clear, "Ctrl+1"))
         self.xConsoleSubmenu.addAction(self.NewMenuSubOption("Autoscroll  Enabled", HandleClickAutoScroll, "", True))
-        
+                
         self.xMenuOptions.addAction(self.NewMenuSubOption("Corrector Enabled", self.ToggleCorrector, "Ctrl+Space", True))
         self.xMenuOptions.addAction(self.NewMenuSubOption("Run Config", self.RunConfigGui, ""))
 
         self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F1"))
+        self.xMenuRun.addAction(self.NewMenuSubOption("Terminate", self.KillCurrentProgram, "Shift+F1"))
 
 
 
@@ -660,7 +679,7 @@ class cWindow(QtWidgets.QMainWindow):
         self.show()
 
 
-    def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None):
+    def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
         
         if self.xCompilerProcess: self.xCompilerProcess.kill()
         self.xCompilerProcess = QtCore.QProcess()
@@ -676,25 +695,60 @@ class cWindow(QtWidgets.QMainWindow):
         
         if self.xProcessTracker and self.xProcessTracker.isRunning(): self.xProcessTracker.stop()
         self.xProcessTracker = self.cAsyncProgressTracker(self.xProcessStatus, self.xCompilerProcess, "Compiling")
+        self.xProcessTracker.finished.connect(xFinishInvoke)
         self.xProcessTracker.start()
 
-    
+    def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
+        
+        if self.xVirtMachProcess: self.xVirtMachProcess.kill()
+        self.xVirtMachProcess = QtCore.QProcess()
+        
+        if StdoutHandleFunc:
+            self.xVirtMachProcess.readyReadStandardOutput.connect(
+            lambda:
+            StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput().data().decode())
+                                                                  )
+        
+        xArgs = [self.xVirtMachPath, "--file", xSourcePath]
+        self.xVirtMachProcess.start("python", xArgs)
+        
+        if self.xProcessTracker and self.xProcessTracker.isRunning(): self.xProcessTracker.stop()
+        self.xProcessTracker = self.cAsyncProgressTracker(self.xProcessStatus, self.xVirtMachProcess, "Running")
+        self.xProcessTracker.finished.connect(xFinishInvoke)
+        self.xProcessTracker.start()
+
+
+    def RunCurrentProgram(self):
+        def HandleLaunch():
+            self.Launch("build.s1", self.Write2Console)
+        
+        def HandleCompile():
+            self.Compile(self.xTabHost.currentWidget().xFilePath, "build.s1", self.Write2Console, HandleLaunch)
+        
+        HandleCompile()
+
+
+
     def Write2Console(self, xNewText):
         self.xConsole.insertPlainText(xNewText)
-    
-    def RunCurrentProgram(self):
-        self.Compile(self.xTabHost.currentWidget().xFilePath, "build.s1", self.Write2Console)
+            
+    def KillCurrentProgram(self):
+        if self.xCompilerProcess: self.xCompilerProcess.kill()
+        if self.xVirtMachProcess: self.xVirtMachProcess.kill()
 
     def ToggleCorrector(self):
-        xCheckedState = self.xMenuOptions.actions()[0].isChecked()
-        self.xSender.UpdateCorrectorState.emit(xCheckedState)
-        self.xSender.UpdateCompleter.emit()
+        xMenuQAction = cUtils.FindQActionInList(self.xMenuOptions.actions(), "Corrector Enabled")
+        if xMenuQAction:
+            xCheckedState = xMenuQAction.isChecked()
+            self.xSender.UpdateCorrectorState.emit(xCheckedState)
+            self.xSender.UpdateCompleter.emit()
 
     #helper method used for constructing the menu bar
     def NewMenuSubOption(self, xName = "", xActionFunc = None, xShort = "", xCheckable = False):
         xNewAction = QtWidgets.QAction(xName, self, checkable = xCheckable)
         xNewAction.triggered.connect(xActionFunc)
         xNewAction.setShortcut(QtGui.QKeySequence(xShort))
+        xNewAction.setText(xName)
         return xNewAction
 
     #user refresh

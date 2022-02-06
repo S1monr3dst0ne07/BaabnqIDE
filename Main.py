@@ -66,8 +66,13 @@ class cUtils:
             if xQActionIter.text() == xName:
                 return xQActionIter
             
-            
         return None
+    
+    @staticmethod
+    def Path2Name(xPath):
+        xMatch = re.search("[^\/]+\.[^\/]+$", xPath)
+        return xMatch[0]
+    
 
 class cSender(QtCore.QObject):
     UpdateEditors           = QtCore.pyqtSignal()
@@ -722,8 +727,11 @@ class cWindow(QtWidgets.QMainWindow):
         def HandleLaunch():
             self.Launch("build.s1", self.Write2Console)
         
+        def HandleCompilerOut(xStdout):
+            print(xStdout)
+        
         def HandleCompile():
-            self.Compile(self.xTabHost.currentWidget().xFilePath, "build.s1", self.Write2Console, HandleLaunch)
+            self.Compile(self.xTabHost.currentWidget().xFilePath, "build.s1", HandleCompilerOut, HandleLaunch)
         
         HandleCompile()
 
@@ -811,7 +819,7 @@ class cWindow(QtWidgets.QMainWindow):
     def OpenCodeEditorTab(self, xPath):
         xCodeEditor = cCodeEditor(self.xSender, self.xFontFamily)
         
-        self.xTabHost.addTab(xCodeEditor, self.Path2Name(xPath))
+        self.xTabHost.addTab(xCodeEditor, cUtils.Path2Name(xPath))
         self.xTabContent.append((xCodeEditor, ))
         
         xCodeEditor.xFilePath = xPath
@@ -886,13 +894,6 @@ class cWindow(QtWidgets.QMainWindow):
         xSettingsHandle.setValue("tabInstanceList",  str(xTabDataList))
         xSettingsHandle.setValue("selectedTabIndex", self.xTabHost.currentIndex())            
         
-        
-        
-        
-    @staticmethod
-    def Path2Name(xPath):
-        xMatch = re.search("[^\/]+\.[^\/]+$", xPath)
-        return xMatch[0]
 
 
     def dragEnterEvent(self, xEvent):

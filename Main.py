@@ -3,7 +3,7 @@ import re
 import sys
 import ctypes
 import time
-
+import shlex
 
 
 class cUtils:
@@ -43,6 +43,24 @@ class cUtils:
     }}
                                             """
     
+    xQPushButtonCss = """
+QPushButton:!pressed
+{
+  border: 1px solid #ffffff;
+}
+QPushButton:hover:!pressed
+{
+  border: 1px solid #ffffff;
+  background-color: #666666;
+}
+QPushButton:pressed
+{
+  border: 1px solid #6D81FF;
+}
+
+    
+    """
+    
     @staticmethod
     def RemoveDups(x):
         return list(set(x))
@@ -73,6 +91,10 @@ class cUtils:
         xMatch = re.search("[^\/]+\.[^\/]+$", xPath)
         return xMatch[0]
     
+    @staticmethod
+    def Quotes(xRaw):
+        return '"' + xRaw + '"'
+                
 
 class cSender(QtCore.QObject):
     UpdateEditors           = QtCore.pyqtSignal()
@@ -82,8 +104,8 @@ class cSender(QtCore.QObject):
     UpdateTabSaveColor      = QtCore.pyqtSignal()
     UpdateCorrectorState    = QtCore.pyqtSignal(bool)
     UpdateCompleter         = QtCore.pyqtSignal()
-    SetCompilerPath         = QtCore.pyqtSignal(str)
-    SetVirtMachPath         = QtCore.pyqtSignal(str)
+    SetCompilerCall         = QtCore.pyqtSignal(str)
+    SetVirtMachCall         = QtCore.pyqtSignal(str)
 
 class cCodeEditor(QtWidgets.QPlainTextEdit):
     class cLineNumberArea(QtWidgets.QWidget):
@@ -490,18 +512,28 @@ class cWindow(QtWidgets.QMainWindow):
             
             self.xLayout = QtWidgets.QGridLayout(self)
                         
+                        
+            xHelperLabel = QtWidgets.QLabel("""
+This is the config for compiling/running a program.
+Both the Compiler and the Virtual Machine need to be provided with a call
+Source and Destination for the compiler are: <input> and <ouput>. 
+So a Compiler call would look like this: python "SomePath2Compiler/Compiler vX.X.py" --input <input> --output <output>
+Same for the Virtual Machine, but here only the assembler file needs to be provided, using <file>
             
-            self.xCompilerPath = QtWidgets.QLabel()
-            self.xVirtMachPath = QtWidgets.QLabel()           
-            self.xCompilerPath.setFont(QtGui.QFont("Consolas", xPointSize))
-            self.xVirtMachPath.setFont(QtGui.QFont("Consolas", xPointSize))
-            self.xCompilerPath.setStyleSheet("border: 1px solid white; ")
-            self.xVirtMachPath.setStyleSheet("border: 1px solid white;")
-            self.xCompilerPath.setFixedHeight(self.xCompilerPath.font().pointSize() * 2)
-            self.xVirtMachPath.setFixedHeight(self.xVirtMachPath.font().pointSize() * 2)
+            """)
+            self.xLayout.addWidget(xHelperLabel, 0, 1)          
+            
+            self.xCompilerCall = QtWidgets.QLineEdit()
+            self.xVirtMachCall = QtWidgets.QLineEdit()           
+            self.xCompilerCall.setFont(QtGui.QFont("Consolas", xPointSize))
+            self.xVirtMachCall.setFont(QtGui.QFont("Consolas", xPointSize))
+            self.xCompilerCall.setStyleSheet("border: 1px solid white; ")
+            self.xVirtMachCall.setStyleSheet("border: 1px solid white;")
+            self.xCompilerCall.setFixedHeight(self.xCompilerCall.font().pointSize() * 2)
+            self.xVirtMachCall.setFixedHeight(self.xVirtMachCall.font().pointSize() * 2)
 
-            self.xLayout.addWidget(self.xCompilerPath, 1, 1)
-            self.xLayout.addWidget(self.xVirtMachPath, 2, 1)
+            self.xLayout.addWidget(self.xCompilerCall, 1, 1)
+            self.xLayout.addWidget(self.xVirtMachCall, 2, 1)
 
 
 
@@ -515,22 +547,13 @@ class cWindow(QtWidgets.QMainWindow):
             self.xLayout.addWidget(xCompilerText, 1, 0)
             self.xLayout.addWidget(xVirtMachText, 2, 0)
             
+            xApplyButton = QtWidgets.QPushButton("Apply")
+            xApplyButton.setStyleSheet(cUtils.xQPushButtonCss)
+            xApplyButton.clicked.connect(self.ApplyChangedFromDialog)
             
+            self.xLayout.addWidget(xApplyButton, 3, 0)
             
-            xCompilerBrow = QtWidgets.QPushButton("Browse..")
-            xVirtMachBrow = QtWidgets.QPushButton("Browse..")
-            xCompilerBrow.setStyleSheet("border: 1px solid white; color: white")
-            xVirtMachBrow.setStyleSheet("border: 1px solid white; color: white") 
-            xCompilerBrow.clicked.connect(self.SetCompilerPath)
-            xVirtMachBrow.clicked.connect(self.SetVirtMachPath)
-            xCompilerBrow.setFixedWidth(len(xCompilerBrow.text()) * xCompilerBrow.font().pointSize())
-            xVirtMachBrow.setFixedWidth(len(xVirtMachBrow.text()) * xVirtMachBrow.font().pointSize())
-            xCompilerBrow.setFixedHeight(self.xCompilerPath.font().pointSize() * 2)
-            xVirtMachBrow.setFixedHeight(self.xVirtMachPath.font().pointSize() * 2)
-            
-            self.xLayout.addWidget(xCompilerBrow, 1, 2)
-            self.xLayout.addWidget(xVirtMachBrow, 2, 2)
-            
+                    
             self.UpdateDisplays()
             self.show()
             #fix size after all the components have been edited
@@ -538,21 +561,12 @@ class cWindow(QtWidgets.QMainWindow):
             
         def UpdateDisplays(self):
             xCurrectLaunchConfig = self.xSender.GetLaunchConfig()
-            self.xCompilerPath.setText(xCurrectLaunchConfig[0])
-            self.xVirtMachPath.setText(xCurrectLaunchConfig[1])
-        
-        def SetCompilerPath(self):
-            xPath, _ = QtWidgets.QFileDialog.getOpenFileName(None, 'Select Compiler', '', 'Python File (*.py)')
-            if xPath != "": 
-                self.xSender.SetCompilerPath.emit(xPath)
-                self.UpdateDisplays()
-
-        def SetVirtMachPath(self):
-            xPath, _ = QtWidgets.QFileDialog.getOpenFileName(None, 'Select Virtual Machine', '', 'Python File (*.py)')
-            if xPath != "": 
-                self.xSender.SetVirtMachPath.emit(xPath)
-                self.UpdateDisplays()
-
+            self.xCompilerCall.setText(xCurrectLaunchConfig[0])
+            self.xVirtMachCall.setText(xCurrectLaunchConfig[1])
+            
+        def ApplyChangedFromDialog(self):
+            self.xSender.SetCompilerCall.emit(self.xCompilerCall.text())
+            self.xSender.SetVirtMachCall.emit(self.xVirtMachCall.text())
     
     def __init__(self):
         super().__init__()
@@ -568,17 +582,17 @@ class cWindow(QtWidgets.QMainWindow):
         self.xSender.RemoteDropEvent.connect(self.dropEvent)
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
         
-        self.xCompilerPath = ""
-        self.xVirtMachPath = ""
+        self.xCompilerCall = ""
+        self.xVirtMachCall = ""
         
         #assignment methods
-        def SetCompilerPath(x): self.xCompilerPath = x
-        def SetVirtMachPath(x): self.xVirtMachPath = x
-        def GetLaunchConfig():  return (self.xCompilerPath, self.xVirtMachPath)
+        def SetCompilerCall(x): self.xCompilerCall = x
+        def SetVirtMachCall(x): self.xVirtMachCall = x
+        def GetLaunchConfig():  return (self.xCompilerCall, self.xVirtMachCall)
         
         self.xRunConfigDialogInstance = None
-        self.xSender.SetCompilerPath.connect(SetCompilerPath)
-        self.xSender.SetVirtMachPath.connect(SetVirtMachPath)
+        self.xSender.SetCompilerCall.connect(SetCompilerCall)
+        self.xSender.SetVirtMachCall.connect(SetVirtMachCall)
         self.xSender.GetLaunchConfig = GetLaunchConfig
         
         self.setAcceptDrops(True)
@@ -685,18 +699,18 @@ class cWindow(QtWidgets.QMainWindow):
 
 
     def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
-        
+        def HandleOutput():
+            StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput().data().decode())
+                
         if self.xCompilerProcess: self.xCompilerProcess.kill()
         self.xCompilerProcess = QtCore.QProcess()
         
         if StdoutHandleFunc:
-            self.xCompilerProcess.readyReadStandardOutput.connect(
-            lambda:
-            StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput().data().decode())
-                                                                  )
+            self.xCompilerProcess.readyReadStandardOutput.connect(HandleOutput)
         
-        xArgs = [self.xCompilerPath, "--input", xSourcePath, "--output", xDestPath]
-        self.xCompilerProcess.start("python", xArgs)
+        xCallArgs = shlex.split(self.xCompilerCall.replace("<input>", cUtils.Quotes(xSourcePath)).replace("<output>", cUtils.Quotes(xDestPath)))
+        print(xCallArgs)
+        self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:])
         
         if self.xProcessTracker and self.xProcessTracker.isRunning(): self.xProcessTracker.stop()
         self.xProcessTracker = self.cAsyncProgressTracker(self.xProcessStatus, self.xCompilerProcess, "Compiling")
@@ -704,18 +718,18 @@ class cWindow(QtWidgets.QMainWindow):
         self.xProcessTracker.start()
 
     def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
+        def HandleOutput():
+            StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput().data().decode())
         
         if self.xVirtMachProcess: self.xVirtMachProcess.kill()
         self.xVirtMachProcess = QtCore.QProcess()
         
         if StdoutHandleFunc:
-            self.xVirtMachProcess.readyReadStandardOutput.connect(
-            lambda:
-            StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput().data().decode())
-                                                                  )
+            self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
         
-        xArgs = [self.xVirtMachPath, "--file", xSourcePath]
-        self.xVirtMachProcess.start("python", xArgs)
+        xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
+        print(xCallArgs)
+        self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:])
         
         if self.xProcessTracker and self.xProcessTracker.isRunning(): self.xProcessTracker.stop()
         self.xProcessTracker = self.cAsyncProgressTracker(self.xProcessStatus, self.xVirtMachProcess, "Running")
@@ -845,8 +859,8 @@ class cWindow(QtWidgets.QMainWindow):
     def LoadSetttings(self, xSettingsHandle):
         self.resize(self.xSettingsHandle.value("windowSize"))
         self.move(self.xSettingsHandle.value("windowPos"))
-        self.xCompilerPath = self.xSettingsHandle.value("compilerPath")
-        self.xVirtMachPath = self.xSettingsHandle.value("virtMachPath")
+        self.xCompilerCall = self.xSettingsHandle.value("compilerCall")
+        self.xVirtMachCall = self.xSettingsHandle.value("virtMachCall")
         
         xSettingsState = self.xSettingsHandle.value("splitterState")
         if xSettingsState: self.xSplitterContainer.restoreState(xSettingsState)
@@ -872,8 +886,8 @@ class cWindow(QtWidgets.QMainWindow):
     def SaveSettings(self, xSettingsHandle):
         xSettingsHandle.setValue("windowPos", self.pos())
         xSettingsHandle.setValue("windowSize", self.size())
-        xSettingsHandle.setValue("compilerPath", self.xCompilerPath)
-        xSettingsHandle.setValue("virtMachPath", self.xVirtMachPath)
+        xSettingsHandle.setValue("compilerCall", self.xCompilerCall)
+        xSettingsHandle.setValue("virtMachCall", self.xVirtMachCall)
 
         xSettingsHandle.setValue("splitterState", self.xSplitterContainer.saveState())
 

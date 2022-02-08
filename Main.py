@@ -161,11 +161,11 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                 ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<',    xStyles["ops"]),
                 ('->|<-|new|free',                          xStyles["memAlloc"]),
                 ('lab|jump',                                xStyles["jumpOps"]),
-                ("\d+",                                     xStyles["const"]),
+                ("\W\d+\W",                                 xStyles["const"]),
                 ('_[^ ]*',                                  xStyles["vars"]),
-                ("'[^']*'",                                 xStyles["constItal"]),
                 ('\".*$',                                   xStyles["fazzedOut"]),
-                (';$',                                      xStyles["fazzedOut"]),
+                (';',                                       xStyles["fazzedOut"]),
+                ("'[^']*'",                                 xStyles["constItal"]),
                 
             
             ]

@@ -1,0 +1,62 @@
+{
+"ScrollStyle" : 
+    "
+    QScrollBar::up-arrow, QScrollBar::down-arrow {{
+        background: none;
+    }}
+    QScrollBar::add-page, QScrollBar::sub-page {{
+        background: none;
+    }}
+            
+    QScrollBar {{
+        border: 1px solid #111111;
+        background: solid #111111;
+
+        {sizeMod}
+        margin: 0px 0px 0px 0px;
+    }}
+    QScrollBar::handle {{
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop: 0 {handelColor}, stop: 0.5 {handelColor}, stop:1 {handelColor});
+        min-height: 0px;
+    }}
+    QScrollBar::add-line {{
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
+        height: 0px;
+        subcontrol-position: bottom;
+        subcontrol-origin: margin;
+    }}
+    QScrollBar::sub-line {{
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
+        height: 0 px;
+        subcontrol-position: top;
+        subcontrol-origin: margin;
+    }}
+    ",
+
+"QPushButtonCss" :
+    "
+    QPushButton:!pressed
+    {
+      border: 1px solid #ffffff;
+    }
+    QPushButton:hover:!pressed
+    {
+      border: 1px solid #ffffff;
+      background-color: #666666;
+    }
+    QPushButton:pressed
+    {
+      border: 1px solid #6D81FF;
+    }
+    ",
+
+"CodeEditor" : "background-color: #333333; color: #ffffff; border: 0px;"
+
+
+
+
+
+}

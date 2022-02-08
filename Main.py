@@ -1,66 +1,30 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 import re
 import sys
 import ctypes
 import time
 import shlex
+import json
 
+
+
+#loaing css style from file
+
+
+class cStyleHandle:
+    def __init__(self, xPath):
+        with open(xPath, "r") as xFileHandle:
+            xFileContent = xFileHandle.read()
+            self.xStyle = json.loads(xFileContent.replace("\n", ""))
+    
+    def __getitem__(self, xKey):
+        return self.xStyle[xKey]
 
 class cUtils:
-    xScrollStyle = """
-    QScrollBar::up-arrow, QScrollBar::down-arrow {{
-        background: none;
-    }}
-    QScrollBar::add-page, QScrollBar::sub-page {{
-        background: none;
-    }}
-            
-    QScrollBar {{
-        border: 1px solid #111111;
-        background: solid #111111;
-
-        {sizeMod}
-        margin: 0px 0px 0px 0px;
-    }}
-    QScrollBar::handle {{
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor}, stop:1 {handelColor});
-        min-height: 0px;
-    }}
-    QScrollBar::add-line {{
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
-        height: 0px;
-        subcontrol-position: bottom;
-        subcontrol-origin: margin;
-    }}
-    QScrollBar::sub-line {{
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
-        height: 0 px;
-        subcontrol-position: top;
-        subcontrol-origin: margin;
-    }}
-                                            """
-    
-    xQPushButtonCss = """
-QPushButton:!pressed
-{
-  border: 1px solid #ffffff;
-}
-QPushButton:hover:!pressed
-{
-  border: 1px solid #ffffff;
-  background-color: #666666;
-}
-QPushButton:pressed
-{
-  border: 1px solid #6D81FF;
-}
-
-    
-    """
-    
+        
+    xStyleHandle = cStyleHandle("assets/styles.json")
+        
     @staticmethod
     def RemoveDups(x):
         return list(set(x))
@@ -280,12 +244,12 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     
     def InitUI(self):
         self.setFont(QtGui.QFont(self.xFontFamily))
-        self.setStyleSheet("background-color: #333333; color: #ffffff; border: 0px;")
+        self.setStyleSheet(cUtils.xStyleHandle["CodeEditor"])
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
 
         #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
-        self.verticalScrollBar().setStyleSheet(  cUtils.xScrollStyle.format(sizeMod = "width:20px;", handelColor = "#444444"))
-        self.horizontalScrollBar().setStyleSheet(cUtils.xScrollStyle.format(sizeMod = "hight:20px;", handelColor = "#444444"))
+        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handelColor = "#444444"))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handelColor = "#444444"))
 
     #drag and drop events
     def dragEnterEvent(self, xEvent):
@@ -458,14 +422,20 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
 
         #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
-        self.verticalScrollBar().setStyleSheet(  cUtils.xScrollStyle.format(sizeMod = "width:20px;", handelColor = "#444444"))
-        self.horizontalScrollBar().setStyleSheet(cUtils.xScrollStyle.format(sizeMod = "hight:20px;", handelColor = "#444444"))
+        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handelColor = "#444444"))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handelColor = "#444444"))
         
         self.textChanged.connect(self.Change)
     
     def SetAutoScroll(self, xNewState):
         self.xAutoScroll = xNewState
-    
+
+    def Write2Console(self, xNewText):
+        self.insertPlainText(xNewText)
+        
+    def Byte2Console(self, xByteArray):
+        if xByteArray == b'\x0c':    self.clear()
+        else:                       self.Write2Console(xByteArray.data().decode())
               
     def Change(self):
         if self.xAutoScroll:
@@ -548,7 +518,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             self.xLayout.addWidget(xVirtMachText, 2, 0)
             
             xApplyButton = QtWidgets.QPushButton("Apply")
-            xApplyButton.setStyleSheet(cUtils.xQPushButtonCss)
+            xApplyButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
             xApplyButton.clicked.connect(self.ApplyChangedFromDialog)
             
             self.xLayout.addWidget(xApplyButton, 3, 0)
@@ -700,7 +670,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
     def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
         def HandleOutput():
-            StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput().data().decode())
+            StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput())
                 
         if self.xCompilerProcess: self.xCompilerProcess.kill()
         self.xCompilerProcess = QtCore.QProcess()
@@ -719,7 +689,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
     def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
         def HandleOutput():
-            StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput().data().decode())
+            StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
         
         if self.xVirtMachProcess: self.xVirtMachProcess.kill()
         self.xVirtMachProcess = QtCore.QProcess()
@@ -739,20 +709,16 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
     def RunCurrentProgram(self):
         def HandleLaunch():
-            self.Launch("build.s1", self.Write2Console)
+            self.Launch("build.s1", self.xConsole.Byte2Console)
         
-        def HandleCompilerOut(xStdout):
-            print(xStdout)
         
         def HandleCompile():
+            def HandleCompilerOut(xStdout):
+                print(xStdout.data().decode())
+
             self.Compile(self.xTabHost.currentWidget().xFilePath, "build.s1", HandleCompilerOut, HandleLaunch)
         
         HandleCompile()
-
-
-
-    def Write2Console(self, xNewText):
-        self.xConsole.insertPlainText(xNewText)
             
     def KillCurrentProgram(self):
         if self.xCompilerProcess: self.xCompilerProcess.kill()

@@ -17,19 +17,19 @@
     }}
     QScrollBar::handle {{
         background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor}, stop:1 {handelColor});
+        stop: 0 {handleColor}, stop: 0.5 {handleColor}, stop:1 {handleColor});
         min-height: 0px;
     }}
     QScrollBar::add-line {{
         background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
+        stop: 0 {handleColor}, stop: 0.5 {handleColor},  stop:1 {handleColor});
         height: 0px;
         subcontrol-position: bottom;
         subcontrol-origin: margin;
     }}
     QScrollBar::sub-line {{
         background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop: 0 {handelColor}, stop: 0.5 {handelColor},  stop:1 {handelColor});
+        stop: 0 {handleColor}, stop: 0.5 {handleColor},  stop:1 {handleColor});
         height: 0 px;
         subcontrol-position: top;
         subcontrol-origin: margin;
@@ -53,10 +53,38 @@
     }
     ",
 
-"CodeEditor" : "background-color: #333333; color: #ffffff; border: 0px;"
+"CodeEditor" : "background-color: #333333; color: #ffffff; border: 0px;",
+"RunConfig"  : "background-color: #555555; color: #ffffff",
+"RunConsole" : "background-color: #333333; color: #ffffff; border: 0px;",
+"HighlighedLine" : "#4C4C4C",
 
+"TabHost" : 
+    "
+    QWidget {background-color: #333333} 
+    QTabWidget::pane {border: 0;} 
+    QTabBar::tab {background: #454545;} 
+    QTabBar::tab::selected {background-color: #202020;}
+    
+    
+    ",
 
+"Main" :
+    "
+    QMainWindow {background-color:#555555;}
 
-
+    QMenuBar {
+        background-color: #333333;
+        color: white;
+    }
+    ",
+    
+"FontFamily" : "consolas",
+"LineNumBG"  : "#2a2a2a",
+"LineNumFG"  : "#8E8E8E",
+"ScrollStyleHandelColor" : "#444444",
+"RunConfigLineEditors" : "border: 1px solid white; ",
+"ProcessDisplay" : "color: white",
+"TabSaved" : "#05A000",
+"TabChanged" : "#FF5200"
 
 }

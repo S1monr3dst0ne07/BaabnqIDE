@@ -248,8 +248,9 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
 
         #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
-        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handelColor = "#444444"))
-        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handelColor = "#444444"))
+        xHandleColor = cUtils.xStyleHandle["ScrollStyleHandelColor"]
+        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handleColor = xHandleColor))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handleColor = xHandleColor))
 
     #drag and drop events
     def dragEnterEvent(self, xEvent):
@@ -367,8 +368,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     def LineNumberAreaPaintEvent(self, xEvent):
         xPainter = QtGui.QPainter(self.xLineNumberArea)
 
-        xPainter.fillRect(xEvent.rect(), QtGui.QColor("#2a2a2a"))
-        xPainter.setPen(                QtGui.QColor('#8E8E8E'))
+        xPainter.fillRect(xEvent.rect(), QtGui.QColor(cUtils.xStyleHandle["LineNumBG"]))
+        xPainter.setPen(                 QtGui.QColor(cUtils.xStyleHandle["LineNumFG"]))
         xPainter.setFont(QtGui.QFont(self.xFontFamily, self.font().pointSize()))
 
         xBlock = self.firstVisibleBlock()
@@ -396,7 +397,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         if not self.isReadOnly():
             xSelection = QtWidgets.QTextEdit.ExtraSelection()
 
-            xLineColor = QtGui.QColor("#4C4C4C")
+            xLineColor = QtGui.QColor(cUtils.xStyleHandle["HighlighedLine"])
 
             xSelection.format.setBackground(xLineColor)
             xSelection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
@@ -418,12 +419,13 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
         super().__init__()
         self.xAutoScroll = False
         self.setFont(QtGui.QFont())
-        self.setStyleSheet("background-color: #333333; color: #ffffff; border: 0px;")
+        self.setStyleSheet(cUtils.xStyleHandle["RunConsole"])
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
 
         #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
-        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handelColor = "#444444"))
-        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handelColor = "#444444"))
+        xHandleColor = cUtils.xStyleHandle["ScrollStyleHandelColor"]
+        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handleColor = xHandleColor))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handleColor = xHandleColor))
         
         self.textChanged.connect(self.Change)
     
@@ -477,7 +479,7 @@ class cWindow(QtWidgets.QMainWindow):
 
             xPointSize = 10
 
-            self.setStyleSheet("background-color:#555555; color:#ffffff")
+            self.setStyleSheet(cUtils.xStyleHandle["RunConfig"])
             self.setWindowTitle("Run Config")
             
             self.xLayout = QtWidgets.QGridLayout(self)
@@ -495,10 +497,10 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             
             self.xCompilerCall = QtWidgets.QLineEdit()
             self.xVirtMachCall = QtWidgets.QLineEdit()           
-            self.xCompilerCall.setFont(QtGui.QFont("Consolas", xPointSize))
-            self.xVirtMachCall.setFont(QtGui.QFont("Consolas", xPointSize))
-            self.xCompilerCall.setStyleSheet("border: 1px solid white; ")
-            self.xVirtMachCall.setStyleSheet("border: 1px solid white;")
+            self.xCompilerCall.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
+            self.xVirtMachCall.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
+            self.xCompilerCall.setStyleSheet(cUtils.xStyleHandle["RunConfigLineEditors"])
+            self.xVirtMachCall.setStyleSheet(cUtils.xStyleHandle["RunConfigLineEditors"])
             self.xCompilerCall.setFixedHeight(self.xCompilerCall.font().pointSize() * 2)
             self.xVirtMachCall.setFixedHeight(self.xVirtMachCall.font().pointSize() * 2)
 
@@ -509,8 +511,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
             xCompilerText = QtWidgets.QLabel("Compiler: ")
             xVirtMachText = QtWidgets.QLabel("VirtMach: ")
-            xCompilerText.setFont(QtGui.QFont("Consolas", xPointSize))
-            xVirtMachText.setFont(QtGui.QFont("Consolas", xPointSize))
+            xCompilerText.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
+            xVirtMachText.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
             xCompilerText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
             xVirtMachText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
             
@@ -566,23 +568,14 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xSender.GetLaunchConfig = GetLaunchConfig
         
         self.setAcceptDrops(True)
-        self.xFontFamily = "consolas"        
+        self.xFontFamily = cUtils.xStyleHandle["FontFamily"]
         self.xDialogInstance = None
         
         self.InitUI()
 
     def InitUI(self):
 
-#        QTabBar               {background: gray;}
-#        QTabBar::tab:selected {background: red;} 
-        self.setStyleSheet("""
-        QMainWindow {background-color:#555555;}
-    
-        QMenuBar {
-            background-color: #333333;
-            color: white;
-        }
-        """)
+        self.setStyleSheet(cUtils.xStyleHandle["Main"])
 
 
 
@@ -597,7 +590,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xProcessStatus = QtWidgets.QLabel()
         self.xProcessStatus.setFixedHeight(15)
         self.xProcessStatus.setFont(QtGui.QFont(self.xFontFamily, 10))
-        self.xProcessStatus.setStyleSheet("color: white")
+        self.xProcessStatus.setStyleSheet(cUtils.xStyleHandle["ProcessDisplay"])
         self.xMainLayout.addWidget(self.xProcessStatus, 1, 0)
 
 
@@ -605,14 +598,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         #main tab host
         self.xTabHost = QtWidgets.QTabWidget()
         self.xSettingsHandle = QtCore.QSettings("BaabnqIde", "MainSettings")
-        self.xTabHost.setStyleSheet("""
-        QWidget {background-color: #333333} 
-        QTabWidget::pane {border: 0;} 
-        QTabBar::tab {background: #454545;} 
-        QTabBar::tab::selected {background-color: #202020;}
-        
-        
-        """)
+        self.xTabHost.setStyleSheet(cUtils.xStyleHandle["TabHost"])
         self.xTabHost.setTabsClosable(False)
         self.xSplitterContainer.addWidget(self.xTabHost)
 
@@ -814,8 +800,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     def UpdateTabSaveColor(self):
         for xTabbarIndex in range(len(self.xTabHost)):
             xCurrentWidget = self.xTabContent[xTabbarIndex][0]
-            if xCurrentWidget.xIsSaved: xColor = QtGui.QColor("#05A000")
-            else:                       xColor = QtGui.QColor("#FF5200")
+            if xCurrentWidget.xIsSaved: xColor = QtGui.QColor(cUtils.xStyleHandle["TabSaved"])
+            else:                       xColor = QtGui.QColor(cUtils.xStyleHandle["TabChanged"])
             self.xTabHost.tabBar().setTabTextColor(xTabbarIndex, xColor)
 
     def ExitGui(self):

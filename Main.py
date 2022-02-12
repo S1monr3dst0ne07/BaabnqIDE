@@ -449,47 +449,150 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
 
 
 class cWindow(QtWidgets.QMainWindow):
-    class cAsyncProgressTracker(QtCore.QThread):
-        #true finish is only emitted when the process finished on it's own, and not when kill with the stop method
-        TrueFinish = QtCore.pyqtSignal()
-        
-        def __init__(self, xSender, xDisplayObject, xSourceProcess, xDisplayName):
-            super().__init__()
-            self.xSender = xSender
-            self.xDisplayObject = xDisplayObject    #object the progress will be displayed in
-            self.xDisplayName   = xDisplayName      #name the object on display will have
-            self.xSourceProcess = xSourceProcess
-            self.xStopFlag = False
+    #hands running of program
+    class cRunner:
+        class cAsyncProcessTracker(QtCore.QThread):
+            #true finish is only emitted when the process finished on it's own, and not when kill with the stop method
+            TrueFinish = QtCore.pyqtSignal()
+            
+            def __init__(self, xDisplayWidget, xSourceProcess, xDisplayName):
+                super().__init__()
+                self.xDisplayWidget = xDisplayWidget    #object the progress will be displayed in
+                self.xDisplayName   = xDisplayName      #name the object on display will have
+                self.xSourceProcess = xSourceProcess
+                self.xStopFlag = False
+    
+            def __del__(self):
+                self.quit()
+                self.wait()
+                    
+            def stop(self):
+                self.xStopFlag = True
+                self.wait()        
+    
+            def run(self):
+                print("qprocess start")
+                
+                xPointAnimation = 1
+                while self.xSourceProcess.state() != QtCore.QProcess.NotRunning and not self.xStopFlag:
+                    time.sleep(0.1)
+                    self.xDisplayWidget.setText(self.xDisplayName + xPointAnimation * ".")
+    
+                    if xPointAnimation < 3: xPointAnimation += 1
+                    else                  : xPointAnimation = 0
+    
+                print("qprocess stop, cause: ")
+                print(f"    process killed: {self.xStopFlag}".format())
+                print(f"    process stopped: {self.xSourceProcess.state() == QtCore.QProcess.NotRunning}".format())
+    
+                if not self.xStopFlag:
+                    self.TrueFinish.emit()
+    
+                self.xStopFlag = False
+                self.xDisplayWidget.setText("")
+                        
+        def __init__(self, xParent):
+            self.xParent = xParent
+            self.xStatusDisplay = xParent.xProcessStatusDisplay
+            
+            
+            self.xProcessTracker = self.cAsyncProcessTracker(None, None, None)
+            self.xCompilerProcess = QtCore.QProcess()
+            self.xVirtMachProcess = QtCore.QProcess()
+            self.xProcessQueue = []
 
         def __del__(self):
-            self.quit()
-            self.wait()
+            self.Kill()
+
+        def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
+            def HandleOutput():
+                StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput())
                 
-        def stop(self):
-            self.xStopFlag = True
-            self.wait()        
-
-        def run(self):
-            print("qprocess start")
+            #kill tracker first then the process, otherwise the tracker will think the process is done and will call xFinishInvoke
+            self.xProcessTracker.stop()
+            self.xCompilerProcess.kill()
+    
+            #setup and start the process
+            self.xCompilerProcess = QtCore.QProcess()
+            self.xCompilerProcess.readyReadStandardOutput.connect(HandleOutput)
+            xCallArgs = shlex.split(self.xCompilerCall.replace("<input>", cUtils.Quotes(xSourcePath)).replace("<output>", cUtils.Quotes(xDestPath)))
+            self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:])
             
-            xPointAnimation = 1
-            while self.xSourceProcess.state() != QtCore.QProcess.NotRunning and not self.xStopFlag:
-                time.sleep(0.1)
-                self.xDisplayObject.setText(self.xDisplayName + xPointAnimation * ".")
-
-                if xPointAnimation < 3: xPointAnimation += 1
-                else                  : xPointAnimation = 0
-
-            print("qprocess stop, cause: ")
-            print(f"    process killed: {self.xStopFlag}".format())
-            print(f"    process stopped: {self.xSourceProcess.state() == QtCore.QProcess.NotRunning}".format())
-
-            if not self.xStopFlag:
-                self.TrueFinish.emit()
-
-            self.xStopFlag = False
-            self.xDisplayObject.setText("")
+            #and it's tracker
+            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xCompilerProcess, "Compiling")
+            self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
+            self.xProcessTracker.start()
             
+        def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
+            def HandleOutput():
+                StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
+            
+            self.xProcessTracker.stop()
+            self.xVirtMachProcess.kill()
+            
+            self.xVirtMachProcess = QtCore.QProcess()        
+            self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
+            xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
+            self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:])
+            
+            #and it's tracker
+            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xVirtMachProcess, "Running")
+            self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
+            self.xProcessTracker.start()
+    
+        def StartNextProcess(self):
+            if len(self.xProcessQueue) > 0:
+                xNextProcess = self.xProcessQueue.pop(0)
+                xNextProcess()
+    
+        def SetRunConfig(self, xCompilerCall, xVirtMachCall):
+            self.xCompilerCall = xCompilerCall
+            self.xVirtMachCall = xVirtMachCall
+    
+        def Run(self, xPath):
+            self.Kill()
+            
+            def HandleLaunch():
+                self.Launch("build.s1", self.xParent.xConsole.Byte2Console, self.StartNextProcess)
+            
+            def Test(xText):
+                #print(xText)
+                pass
+            
+            def HandleCompile():
+                self.Compile(xPath, "build.s1", Test, self.StartNextProcess)
+            
+            self.xProcessQueue = [HandleCompile, HandleLaunch]
+            self.StartNextProcess()
+            
+                
+        def Kill(self):
+            
+            #clear queue to prevent bullshit
+            self.xProcessQueue = []
+    
+            #terminate processes
+            self.xProcessTracker.stop()
+            self.xCompilerProcess.kill()
+            self.xVirtMachProcess.kill()        
+    
+            self.xProcessTracker = self.cAsyncProcessTracker(None, None, None)
+            self.xCompilerProcess = QtCore.QProcess()
+            self.xVirtMachProcess = QtCore.QProcess()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     class cRunConfigDialog(QtWidgets.QWidget):
@@ -563,10 +666,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     def __init__(self):
         super().__init__()
         
-        self.xProcessTracker = self.cAsyncProgressTracker(None, None, None, None)
-        self.xCompilerProcess = QtCore.QProcess()
-        self.xVirtMachProcess = QtCore.QProcess()
-        self.xProcessQueue = []
+        self.xProcessStatusDisplay = QtWidgets.QLabel()
+        self.xRunner = self.cRunner(self)
         
         self.xTabContent = []
         self.xSender = cSender()
@@ -608,11 +709,10 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xMainLayout.addWidget(self.xSplitterContainer, 0, 0)
         
         #process status
-        self.xProcessStatus = QtWidgets.QLabel()
-        self.xProcessStatus.setFixedHeight(15)
-        self.xProcessStatus.setFont(QtGui.QFont(self.xFontFamily, 10))
-        self.xProcessStatus.setStyleSheet(cUtils.xStyleHandle["ProcessDisplay"])
-        self.xMainLayout.addWidget(self.xProcessStatus, 1, 0)
+        self.xProcessStatusDisplay.setFixedHeight(15)
+        self.xProcessStatusDisplay.setFont(QtGui.QFont(self.xFontFamily, 10))
+        self.xProcessStatusDisplay.setStyleSheet(cUtils.xStyleHandle["ProcessDisplay"])
+        self.xMainLayout.addWidget(self.xProcessStatusDisplay, 1, 0)
 
 
 
@@ -665,96 +765,20 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xMenuOptions.addAction(self.NewMenuSubOption("Run Config", self.RunConfigGui, ""))
 
         self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F1"))
-        self.xMenuRun.addAction(self.NewMenuSubOption("Terminate", self.KillCurrentProgram, "Shift+F1"))
+        self.xMenuRun.addAction(self.NewMenuSubOption("Terminate", self.xRunner.Kill, "Shift+F1"))
 
 
 
         self.setWindowTitle("Baabnq IDE")
         self.LoadSetttings(self.xSettingsHandle)
-        self.show()
-
-
-    def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
-        print("CORE compiler")
-        def HandleOutput():
-            StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput())
-            
-        #kill tracker first then the process, otherwise the tracker will think the process is done and will call xFinishInvoke
-        self.xProcessTracker.stop()
-        self.xCompilerProcess.kill()
-
-        #setup and start the process
-        self.xCompilerProcess = QtCore.QProcess()
-        self.xCompilerProcess.readyReadStandardOutput.connect(HandleOutput)
-        xCallArgs = shlex.split(self.xCompilerCall.replace("<input>", cUtils.Quotes(xSourcePath)).replace("<output>", cUtils.Quotes(xDestPath)))
-        self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:])
-        
-        #and it's tracker
-        self.xProcessTracker = self.cAsyncProgressTracker(self.xSender, self.xProcessStatus, self.xCompilerProcess, "Compiling")
-        self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
-        self.xProcessTracker.start()
-        
-    def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
-        print("CORE launch")
-        def HandleOutput():
-            StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
-        
-        self.xProcessTracker.stop()
-        self.xVirtMachProcess.kill()
-        
-        self.xVirtMachProcess = QtCore.QProcess()        
-        self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
-        xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
-        self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:])
-        
-        #and it's tracker
-        self.xProcessTracker = self.cAsyncProgressTracker(self.xSender, self.xProcessStatus, self.xVirtMachProcess, "Running")
-        self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
-        self.xProcessTracker.start()
-
-    def StartNextProcess(self):
-        print("next invoke")
-        if len(self.xProcessQueue) > 0:
-            xNextProcess = self.xProcessQueue.pop(0)
-            xNextProcess()
-
+        self.show()        
+    
+    
     def RunCurrentProgram(self):
-        print("start run")
-        print(self.xProcessQueue)
-        self.KillCurrentProgram()
-        
-        def HandleLaunch():
-            self.Launch("build.s1", self.xConsole.Byte2Console, self.StartNextProcess)
-        
-        def Test(xText):
-            #print(xText)
-            pass
-        
-        def HandleCompile():
-            self.Compile(self.xTabHost.currentWidget().xFilePath, "build.s1", Test, self.StartNextProcess)
-        
-        self.xProcessQueue = [HandleCompile, HandleLaunch]
-        self.StartNextProcess()
-        
-            
-    def KillCurrentProgram(self):
-        print("--starting program kill--")
-        
-        #clear queue to provent bullshit
-        self.xProcessQueue = []
-
-        #terminate processes
-        self.xProcessTracker.stop()
-        self.xCompilerProcess.kill()
-        self.xVirtMachProcess.kill()        
-
-        self.xProcessTracker = self.cAsyncProgressTracker(None, None, None, None)
-        self.xCompilerProcess = QtCore.QProcess()
-        self.xVirtMachProcess = QtCore.QProcess()
-
-        print("--finished program kill--")
-        
-        
+        xPath = self.xTabHost.currentWidget().xFilePath
+        self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
+        self.xRunner.Run(xPath)
+      
                 
     def ToggleCorrector(self):
         xMenuQAction = cUtils.FindQActionInList(self.xMenuOptions.actions(), "Corrector Enabled")
@@ -944,7 +968,6 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         if self.xRunConfigDialogInstance:
             self.xRunConfigDialogInstance.close()
         
-        if self.xCompilerProcess: self.xCompilerProcess.kill()
 
         
 

@@ -282,6 +282,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xSettingsHandle = QtCore.QSettings("BaabnqIde", "MainSettings")
         self.xTabHost.setStyleSheet(cUtils.xStyleHandle["TabHost"])
         self.xTabHost.setTabsClosable(False)
+        self.xTabHost.currentChanged.connect(self.UpdateEditorFocus)
         self.xSplitterContainer.addWidget(self.xTabHost)
 
 
@@ -349,7 +350,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xMenuQAction = cUtils.FindQActionInList(self.xMenuOptions.actions(), "Corrector Enabled")
         if xMenuQAction:
             xCheckedState = xMenuQAction.isChecked()
-            self.xSender.UpdateCorrectorState.emit(xCheckedState)
+            self.xSender.UpdateCompleterGlobal.emit(xCheckedState)
             self.xSender.UpdateCompleter.emit()
 
     #helper method used for constructing the menu bar
@@ -438,6 +439,13 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             if xCurrentWidget.xIsSaved: xColor = QtGui.QColor(cUtils.xStyleHandle["TabSaved"])
             else:                       xColor = QtGui.QColor(cUtils.xStyleHandle["TabChanged"])
             self.xTabHost.tabBar().setTabTextColor(xTabbarIndex, xColor)
+
+    def UpdateEditorFocus(self):
+        #disable all editor, except the one in focus
+        for xTabIndex, xTabIter in enumerate(self.xTabContent):
+            xDisabled = xTabIndex != self.xTabHost.currentIndex()
+            xTabIter[0].SetCompleterStatus(not xDisabled)
+            xTabIter[0].setDisabled(xDisabled)
 
     def ExitGui(self):
         

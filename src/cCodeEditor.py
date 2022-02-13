@@ -114,6 +114,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.setWidget(self)
         self.UpdateCompleterModel("")
         self.xCompleterStatus = False
+        self.xCompleterStatusGlobal = False
 
         self.xCompleter.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
         self.xCompleter.activated.connect(self.InsertCompletion)
@@ -121,10 +122,11 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xFontFamily = xFontFamily
         
         self.xSender = xSender
-        xSender.UpdateEditors.connect(self.UpdateFromPath)
+        self.xSender.UpdateEditors.connect(self.UpdateFromPath)
         self.textChanged.connect(self.Change)  
-        self.xSender.UpdateCorrectorState.connect(self.SetCompleterStatus)
         self.xSender.UpdateCompleter.connect(self.UpdateCompleter)
+        self.xSender.UpdateCompleterState.connect(self.SetCompleterStatus)
+        self.xSender.UpdateCompleterGlobal.connect(self.UpdateCompleterGlobal)
 
 
 
@@ -140,8 +142,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
         
         self.InitUI()
-    
-    
+        
     def InsertCompletion(self, xFinalCompletion):
         if self.xCompleter.widget() is not self or xFinalCompletion is None:
             return
@@ -156,6 +157,10 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             
     def SetCompleterStatus(self, xNewStatus):
         self.xCompleterStatus = xNewStatus    
+    
+    def UpdateCompleterGlobal(self, xNewStatus):
+        self.xCompleterStatusGlobal = xNewStatus  
+    
     
     #load file from path and update content of editor
     def UpdateFromPath(self):
@@ -241,7 +246,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.complete(xCursorRect)
 
         xMatchCount = self.xCompleter.completionCount()
-        xVisible = xCompletionPrefix != "" and xMatchCount > 0 and self.xCompleterStatus
+        xVisible = xCompletionPrefix != "" and xMatchCount > 0 and self.xCompleterStatus and self.xCompleterStatusGlobal
         
         #set visibility of pop-up
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()
@@ -256,13 +261,12 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
     def focusInEvent(self, xEvent):
-        self.xCompleter.setWidget(self)
+        #self.xCompleter.setWidget(self)
         super().focusInEvent(xEvent)
 
     def focusOutEvent(self, xEvent):
         super().focusOutEvent(xEvent)
-        self.xCompleter.setWidget(QtWidgets.QWidget())
-
+        #self.xCompleter.setWidget(QtWidgets.QWidget())
 
 
 

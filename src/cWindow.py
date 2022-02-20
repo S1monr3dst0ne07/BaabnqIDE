@@ -86,6 +86,7 @@ class cWindow(QtWidgets.QMainWindow):
         def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
             def HandleOutput():
                 StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
+                StdoutHandleFunc(self.xVirtMachProcess.readAllStandardError())
             
             self.xProcessTracker.stop()
             self.xVirtMachProcess.kill()

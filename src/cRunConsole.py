@@ -14,6 +14,8 @@ from cUtils import *
 class cRunConsole(QtWidgets.QPlainTextEdit):
     def __init__(self, xParent):
         super().__init__()
+        self.xParent = xParent
+
         self.xAutoScroll = False
         self.setFont(QtGui.QFont())
         self.setStyleSheet(cUtils.xStyleHandle["RunConsole"])
@@ -40,3 +42,23 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
     def Change(self):
         if self.xAutoScroll:
             self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+
+    def keyPressEvent(self, xEvent):
+        xParentProcess = self.xParent.xRunner.xProcessTracker.xSourceProcess
+
+        super().keyPressEvent(xEvent)
+        xChar = xEvent.text()
+        xBytes = xChar.encode("utf-8")
+        print(xChar)
+                
+        try:
+            if xBytes == b"\r":
+                xParentProcess.write(b"\n")
+                
+            else:    
+                xParentProcess.write(xBytes)
+                sys.stdout.flush()
+            
+        except Exception as E:
+            print(E)
+        

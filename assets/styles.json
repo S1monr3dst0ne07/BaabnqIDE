@@ -85,6 +85,8 @@
 "RunConfigLineEditors" : "border: 1px solid white; ",
 "ProcessDisplay" : "color: white",
 "TabSaved" : "#05A000",
-"TabChanged" : "#FF5200"
+"TabChanged" : "#FF5200",
+
+"FindDialog" :  "background-color: #555555; color: #ffffff"
 
 }

@@ -151,12 +151,87 @@ class cWindow(QtWidgets.QMainWindow):
 
 
 
+    class cFindDialog(QtWidgets.QWidget):
+        class cResultList(QtWidgets.QListWidget):
+            def __init__(self, xParent):
+                super().__init__()
+                self.itemClicked.connect(self.clicked)
+                self.xParent = xParent
+            
+            def clicked(self, xItem):
+                xText = xItem.text()
+                xLineIndex = int(xText.split(":")[1]) - 1
+                self.xParent.xParent.xSender.MoveCurrentEditor.emit(xLineIndex)
+        
+        def __init__(self, xParent):
+            super().__init__()
+            self.xParent = xParent
+
+            self.setStyleSheet(cUtils.xStyleHandle["FindDialog"])
+            self.setWindowTitle("Find")
 
 
+            self.xLayout = QtWidgets.QGridLayout()
+            self.setLayout(self.xLayout)
+
+            self.xResultList = self.cResultList(self)
+            self.xLayout.addWidget(self.xResultList, 1, 0)
+            
+            self.xSearchPrompt = QtWidgets.QLineEdit()
+            self.xLayout.addWidget(self.xSearchPrompt, 0, 0)
+            
+            #update button
+            xUpdateButton = QtWidgets.QPushButton("Update")
+            xUpdateButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
+            xUpdateButton.clicked.connect(self.RunSearch)
+            self.xLayout.addWidget(xUpdateButton, 0, 1)
+            
+            #close button
+            xCloseButton = QtWidgets.QPushButton("Close")
+            xCloseButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
+            xCloseButton.clicked.connect(self.close)
+            self.xLayout.addWidget(xCloseButton, 0, 2)
+
+            
+            self.show()
+            
+            self.xSearchPrompt.setFocus()
+
+        def keyPressEvent(self, xEvent):            
+            xKey = xEvent.key()
+            
+            if xKey == QtCore.Qt.Key_Escape:
+                self.close()
+
+            elif xKey == QtCore.Qt.Key_Return:
+                self.RunSearch()
+
+            else:
+                super().keyPressEvent(xEvent)
+
+        def focusInEvent(self, xEvent):
+            self.xSearchPrompt.grabKeyboard()
+
+        def focusOutEvent(self, xEvent):
+            self.xSearchPrompt.releaseKeyboard()
 
 
+        def RunSearch(self):
+            xSearchText = self.xSearchPrompt.text()
+            xSourceText = self.xParent.xTabHost.currentWidget().toPlainText()
 
+            self.xResultList.clear()
 
+            xFindList = list(re.finditer(xSearchText, xSourceText))
+            for xFindIter in xFindList:
+                xStartIndex = xFindIter.span()[0]
+                xLineIndex = xSourceText[:xStartIndex].count("\n")
+
+                self.xResultList.addItem(f"Line: {xLineIndex + 1}".format())
+                
+                
+                
+                
     class cRunConfigDialog(QtWidgets.QWidget):
         def __init__(self, xSender):
             super().__init__()
@@ -249,6 +324,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xRunConfigDialogInstance = None
         self.xSender.SetCompilerCall.connect(SetCompilerCall)
         self.xSender.SetVirtMachCall.connect(SetVirtMachCall)
+        self.xSender.MoveCurrentEditor.connect(self.MoveCurrentEditor)
         self.xSender.GetLaunchConfig = GetLaunchConfig
         
         self.setAcceptDrops(True)
@@ -338,8 +414,13 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.show()        
     
     def FindGui(self):
-        pass
+        self.xFindDialogInstance = self.cFindDialog(self)
     
+    
+    def MoveCurrentEditor(self, xLine):
+        xEditor = self.xTabHost.currentWidget()
+        xCursor = QtGui.QTextCursor(xEditor.document().findBlockByLineNumber(xLine))
+        xEditor.setTextCursor(xCursor)
     
     def RunCurrentProgram(self):
         xPath = self.xTabHost.currentWidget().xFilePath

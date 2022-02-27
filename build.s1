@@ -3,6 +3,11 @@ inp 1
 lDA 1
 sAD 2
 out 2
+clr 
+set 1000
+add 
+pha 
+plugin Time::SleepMs
 got loop
 brk 
 lab _WriteChar

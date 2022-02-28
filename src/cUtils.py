@@ -50,8 +50,9 @@ class cUtils:
         return xSaveDialog.exec_()
 
     @staticmethod
-    def Noop():
+    def Noop(*xArgs):
         pass
+    
     @staticmethod
     def FindQActionInList(xQActionList, xName):
         for xQActionIter in xQActionList:

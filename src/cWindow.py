@@ -54,6 +54,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xParent = xParent
             self.xStatusDisplay = xParent.xProcessStatusDisplay
             
+            self.xCompilerOutputPuffer = []
             
             self.xProcessTracker = self.cAsyncProcessTracker(None, None, None)
             self.xCompilerProcess = QtCore.QProcess()
@@ -113,19 +114,30 @@ class cWindow(QtWidgets.QMainWindow):
         def Run(self, xPath):
             self.Kill()
             xBuildPath = xThisPath + "/../build.s1"
+            self.xCompilerOutputPuffer = []
             
             def HandleLaunch():
                 self.Launch(xBuildPath, self.xParent.xConsole.Byte2Console, self.StartNextProcess)
 
+            def HandleParseCompilerOutput():
+                self.ParseCompilerOutput(self.xCompilerOutputPuffer)                
+                self.StartNextProcess()
+
+
             def HandleCompile():
-                self.Compile(xPath, xBuildPath, self.HandleParseCompilerOutput, self.StartNextProcess)
+                self.Compile(xPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess)
             
-            self.xProcessQueue = [HandleCompile, HandleLaunch]
+            self.xProcessQueue = [HandleCompile, HandleParseCompilerOutput, HandleLaunch]
             self.StartNextProcess()
         
         
         
-        def HandleParseCompilerOutput(self, xBytes):
+        def ParseCompilerOutput(self, xBytesArrayList):
+            xBytes = QtCore.QByteArray()
+            for xBytesArrayIter in xBytesArrayList:
+                xBytes += xBytesArrayIter
+            
+            
             xText = str(xBytes, "utf-8")
             #remove all empty line and then take the last to get the status
             xCompilerExitStatus = [x for x in xText.split("\r\n") if x != ""][-1] 

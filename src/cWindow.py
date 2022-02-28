@@ -14,7 +14,7 @@ from cRunConsole import *
 
 
 class cWindow(QtWidgets.QMainWindow):
-    #hands running of program
+    #handles running of program
     class cRunner:
         class cAsyncProcessTracker(QtCore.QThread):
             #true finish is only emitted when the process finished on it's own, and not when kill with the stop method
@@ -116,24 +116,46 @@ class cWindow(QtWidgets.QMainWindow):
             
             def HandleLaunch():
                 self.Launch(xBuildPath, self.xParent.xConsole.Byte2Console, self.StartNextProcess)
-            
-            def Test(xText):
-                print(xText)
-                pass
-            
+
             def HandleCompile():
-                self.Compile(xPath, xBuildPath, Test, self.StartNextProcess)
+                self.Compile(xPath, xBuildPath, self.HandleParseCompilerOutput, self.StartNextProcess)
             
             self.xProcessQueue = [HandleCompile, HandleLaunch]
             self.StartNextProcess()
+        
+        
+        
+        def HandleParseCompilerOutput(self, xBytes):
+            xText = str(xBytes, "utf-8")
+            #remove all empty line and then take the last to get the status
+            xCompilerExitStatus = [x for x in xText.split("\r\n") if x != ""][-1] 
             
-                
+            #compiler fail            
+            if xCompilerExitStatus != "Compilation was successful":
+                self.xParent.xConsole.Write2Console(xCompilerExitStatus + "\r\n")
+            
+                #only further do something if error checking is enabled
+                if self.xParent.xCompilerErrorCheck:
+                    self.Kill() #stop the execution of the old build.s1 by kill the processes when the compiler crashes
+                    
+                    if self.xParent.xJump2ErrorLine:
+                        #try to get the line number at which the error is thrown at to jump there
+                        xMatch = re.search("\s(\d+):", xCompilerExitStatus)
+                        if xMatch:
+                            xErrorLineNumber = int(xMatch.group(1))
+                            self.xParent.MoveCurrentEditor(xErrorLineNumber - 1)
+                        
+                    
+            
+            print(xCompilerExitStatus)
+         
+        #kills the current process and stops any further ones form running
         def Kill(self):
             
             #clear queue to prevent bullshit
             self.xProcessQueue = []
     
-            #terminate processes
+            #kill processes
             self.xProcessTracker.stop()
             self.xCompilerProcess.kill()
             self.xVirtMachProcess.kill()        
@@ -331,6 +353,10 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xFontFamily = cUtils.xStyleHandle["FontFamily"]
         self.xDialogInstance = None
         
+        #compiler check settings
+        self.xCompilerErrorCheck = False
+        self.xJump2ErrorLine = False
+        
         self.InitUI()
 
     def InitUI(self):
@@ -401,8 +427,11 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xConsoleSubmenu.addAction(self.NewMenuSubOption("Clear", self.xConsole.clear, "Ctrl+1"))
         self.xConsoleSubmenu.addAction(self.NewMenuSubOption("Autoscroll  Enabled", HandleClickAutoScroll, "", True))
                 
-        self.xMenuOptions.addAction(self.NewMenuSubOption("Corrector Enabled", self.ToggleCorrector, "Ctrl+Space", True))
+        self.xMenuOptions.addAction(self.NewMenuSubOption("Corrector Enabled", self.UpdateCorrector, "Ctrl+Space", True))
         self.xMenuOptions.addAction(self.NewMenuSubOption("Run Config", self.RunConfigGui, ""))
+        self.xMenuOptions.addAction(self.NewMenuSubOption("Compiler Error Check", self.UpdateCompilerErrorCheck, "", True))
+        self.xMenuOptions.addAction(self.NewMenuSubOption("Jump To Error Line"  , self.UpdateJump2ErrorLine    , "", True))
+        
 
         self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F1"))
         self.xMenuRun.addAction(self.NewMenuSubOption("Terminate", self.xRunner.Kill, "Shift+F1"))
@@ -428,12 +457,21 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xRunner.Run(xPath)
       
                 
-    def ToggleCorrector(self):
+    def UpdateCorrector(self):
         xMenuQAction = cUtils.FindQActionInList(self.xMenuOptions.actions(), "Corrector Enabled")
         if xMenuQAction:
             xCheckedState = xMenuQAction.isChecked()
             self.xSender.UpdateCompleterGlobal.emit(xCheckedState)
             self.xSender.UpdateCompleter.emit()
+
+    def UpdateCompilerErrorCheck(self):
+        xMenuQAction = cUtils.FindQActionInList(self.xMenuOptions.actions(), "Compiler Error Check")
+        if xMenuQAction: self.xCompilerErrorCheck = xMenuQAction.isChecked()
+            
+    def UpdateJump2ErrorLine(self):
+        xMenuQAction = cUtils.FindQActionInList(self.xMenuOptions.actions(), "Jump To Error Line")
+        if xMenuQAction: self.xJump2ErrorLine = xMenuQAction.isChecked()
+    
 
     #helper method used for constructing the menu bar
     def NewMenuSubOption(self, xName = "", xActionFunc = None, xShort = "", xCheckable = False):
@@ -546,7 +584,14 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         if xConsoleZoom: self.xConsole.setFont(QtGui.QFont(self.xFontFamily, xConsoleZoom))
         
         xConsoleAutoScroll = self.xSettingsHandle.value("consoleAutoScroll")
-        if xConsoleAutoScroll: self.xConsoleSubmenu.actions()[1].setChecked(xConsoleAutoScroll)
+        if xConsoleAutoScroll: cUtils.FindQActionInList(self.xConsoleSubmenu.actions(), "Autoscroll  Enabled").setChecked(xConsoleAutoScroll)
+        
+        xCompilerErrorCheck = self.xSettingsHandle.value("compilerErrorCheck")
+        if xCompilerErrorCheck: cUtils.FindQActionInList(self.xMenuOptions.actions(), "Compiler Error Check").setChecked(xCompilerErrorCheck)
+
+        xJump2ErrorLine = self.xSettingsHandle.value("jump2ErrorLine")
+        if xJump2ErrorLine: cUtils.FindQActionInList(self.xMenuOptions.actions(), "Jump To Error Line").setChecked(xJump2ErrorLine)
+
         
         xTabDataList = eval(self.xSettingsHandle.value("tabInstanceList"))
         for xTabDataIter in xTabDataList:
@@ -558,7 +603,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         
         self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
         self.HandleClickAutoScroll()
-        
+        self.UpdateCompilerErrorCheck()
+        self.UpdateJump2ErrorLine()
         
     def SaveSettings(self, xSettingsHandle):
         xSettingsHandle.setValue("windowPos", self.pos())
@@ -569,8 +615,12 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xSettingsHandle.setValue("splitterState", self.xSplitterContainer.saveState())
 
         xSettingsHandle.setValue("consoleZoom", self.xConsole.font().pointSize())
-        xBoolAutoScrollState = self.xConsoleSubmenu.actions()[1].isChecked()
+        xBoolAutoScrollState = cUtils.FindQActionInList(self.xConsoleSubmenu.actions(), "Autoscroll  Enabled").isChecked()
         xSettingsHandle.setValue("consoleAutoScroll", 1 if xBoolAutoScrollState else 0)
+
+        xSettingsHandle.setValue("compilerErrorCheck", 1 if self.xCompilerErrorCheck else 0)
+        xSettingsHandle.setValue("jump2ErrorLine",     1 if self.xJump2ErrorLine     else 0)
+        
 
         xTabDataList = []
         

@@ -49,7 +49,12 @@ class cWindow(QtWidgets.QMainWindow):
     
                 self.xStopFlag = False
                 self.xDisplayWidget.setText("")
-                        
+
+        class cDebug(QtWidgets.QWidget):
+            def __init__(self):
+                pass
+
+         
         def __init__(self, xParent):
             self.xParent = xParent
             self.xStatusDisplay = xParent.xProcessStatusDisplay
@@ -130,7 +135,8 @@ class cWindow(QtWidgets.QMainWindow):
             self.xProcessQueue = [HandleCompile, HandleParseCompilerOutput, HandleLaunch]
             self.StartNextProcess()
         
-        
+        def Debug(self, xPath):
+            print("debug")
         
         def ParseCompilerOutput(self, xBytesArrayList):
             xBytes = QtCore.QByteArray()
@@ -175,9 +181,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xProcessTracker = self.cAsyncProcessTracker(None, None, None)
             self.xCompilerProcess = QtCore.QProcess()
             self.xVirtMachProcess = QtCore.QProcess()
-
-
-
+            
 
 
 
@@ -261,9 +265,8 @@ class cWindow(QtWidgets.QMainWindow):
                 xStartIndex = xFindIter.span()[0]
                 xLineIndex = xSourceText[:xStartIndex].count("\n")
 
-                self.xResultList.addItem(f"Line: {xLineIndex + 1}".format())
-                
-                
+                self.xResultList.addItem(f"Line: {xLineIndex + 1}".format())    
+     
                 
                 
     class cRunConfigDialog(QtWidgets.QWidget):
@@ -333,7 +336,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         def ApplyChangedFromDialog(self):
             self.xSender.SetCompilerCall.emit(self.xCompilerCall.text())
             self.xSender.SetVirtMachCall.emit(self.xVirtMachCall.text())
-    
+
     def __init__(self):
         super().__init__()
         
@@ -447,6 +450,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
         self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F1"))
         self.xMenuRun.addAction(self.NewMenuSubOption("Terminate", self.xRunner.Kill, "Shift+F1"))
+        self.xMenuRun.addAction(self.NewMenuSubOption("Debug", self.DebugCurrentProgram, "F2"))        
 
 
 
@@ -455,8 +459,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.show()        
     
     def FindGui(self):
-        self.xFindDialogInstance = self.cFindDialog(self)
-    
+        self.xFindDialogInstance = self.cFindDialog(self)    
     
     def MoveCurrentEditor(self, xLine):
         xEditor = self.xTabHost.currentWidget()
@@ -467,6 +470,13 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xPath = self.xTabHost.currentWidget().xFilePath
         self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
         self.xRunner.Run(xPath)
+      
+    def DebugCurrentProgram(self):
+        xPath = self.xTabHost.currentWidget().xFilePath
+        self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
+        self.xRunner.Debug(xPath)
+        
+        
       
                 
     def UpdateCorrector(self):

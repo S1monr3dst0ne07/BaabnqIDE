@@ -63,7 +63,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                 
                 ('put|print|input|putstr|asm|use',          xStyles["normalCommands"]),
                 ('pull|push|sub|return',                    xStyles["stackCommands"]),
-                ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<',    xStyles["ops"]),
+                ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<|~',  xStyles["ops"]),
                 ('->|<-|new|free',                          xStyles["memAlloc"]),
                 ('lab|jump',                                xStyles["jumpOps"]),
                 ("\W\d+\W",                                 xStyles["const"]),

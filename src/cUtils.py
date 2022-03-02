@@ -34,6 +34,10 @@ class cUtils:
         return xList
 
     
+    @staticmethod
+    def Bytes2Str(xBytes):
+        return str(xBytes, "utf-8")
+    
     
     @staticmethod
     def RemoveDups(x):

@@ -52,12 +52,14 @@ class cWindow(QtWidgets.QMainWindow):
 
         class cDebug(QtWidgets.QWidget):
             def __init__(self):
-                pass
-
+                super().__init__()
+                
+                self.show()
          
         def __init__(self, xParent):
             self.xParent = xParent
             self.xStatusDisplay = xParent.xProcessStatusDisplay
+            self.xDebugWindow = None
             
             self.xCompilerOutputPuffer = []
             
@@ -89,7 +91,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
             self.xProcessTracker.start()
             
-        def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
+        def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = []):
             def HandleOutput():
                 StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
                 StdoutHandleFunc(self.xVirtMachProcess.readAllStandardError())
@@ -100,7 +102,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xVirtMachProcess = QtCore.QProcess()        
             self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
             xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
-            self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:])
+            self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
             #and it's tracker
             self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xVirtMachProcess, "Running")
@@ -136,7 +138,50 @@ class cWindow(QtWidgets.QMainWindow):
             self.StartNextProcess()
         
         def Debug(self, xPath):
-            print("debug")
+            self.Kill()
+            xBuildPath = xThisPath + "/../build.s1"
+            self.xCompilerOutputPuffer = []
+            
+            #open new debug window
+            self.xDebugWindow = self.cDebug()
+            self.xParent.xSender.GlobalClose.connect(self.xDebugWindow.close)
+            
+            def HandleDebugProtocol(xBytes):
+                #split line by line
+                xLines = cUtils.Bytes2Str(xBytes).split("\r\n")
+                for xLineIter in xLines:
+                    print(xLineIter)
+                    #pull category and data from line
+                    xLineMatch = re.match("(.+){(.+)}", xLineIter)
+                    if xLineMatch is None:
+                        continue
+                    
+                    xCategory, xData = xLineMatch.group(1, 2)
+                    
+                    if xCategory == "Print":
+                        self.xParent.xConsole.Write2Console(xData + "\n")
+                        
+                    elif xCategory == "Chr":
+                        xRawInt = int(xData)
+                        self.xParent.xConsole.Write2Console(chr(xRawInt))
+                        
+                                
+                
+            
+            def HandleLaunch():
+                self.Launch(xBuildPath, HandleDebugProtocol, self.StartNextProcess, xAddArgs = ["--debug"])
+
+            def HandleParseCompilerOutput():
+                self.ParseCompilerOutput(self.xCompilerOutputPuffer)                
+                self.StartNextProcess()
+
+
+            def HandleCompile():
+                self.Compile(xPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess)
+            
+            self.xProcessQueue = [HandleCompile, HandleParseCompilerOutput, HandleLaunch]
+            self.StartNextProcess()
+
         
         def ParseCompilerOutput(self, xBytesArrayList):
             xBytes = QtCore.QByteArray()
@@ -144,7 +189,8 @@ class cWindow(QtWidgets.QMainWindow):
                 xBytes += xBytesArrayIter
             
             
-            xText = str(xBytes, "utf-8")
+            #xText = str(xBytes, "utf-8")
+            xText = cUtils.Bytes2Str(xBytes)
             #remove all empty line and then take the last to get the status
             xCompilerExitStatus = [x for x in xText.split("\r\n") if x != ""][-1] 
             
@@ -459,7 +505,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.show()        
     
     def FindGui(self):
-        self.xFindDialogInstance = self.cFindDialog(self)    
+        self.xFindDialogInstance = self.cFindDialog(self)
+        self.xSender.GlobalClose.connect(self.xFindDialogInstance.close)
     
     def MoveCurrentEditor(self, xLine):
         xEditor = self.xTabHost.currentWidget()
@@ -553,6 +600,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     
     def RunConfigGui(self):
         self.xRunConfigDialogInstance = self.cRunConfigDialog(self.xSender)
+        self.xSender.GlobalClose.connect(self.xRunConfigDialogInstance.close)
         
         
     def SaveAll(self):
@@ -691,6 +739,5 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
                 xEvent.ignore()
                 return
             
-        self.SaveSettings(self.xSettingsHandle)
-        if self.xRunConfigDialogInstance:
-            self.xRunConfigDialogInstance.close()
+        self.SaveSettings(self.xSettingsHandle)            
+        self.xSender.GlobalClose.emit()

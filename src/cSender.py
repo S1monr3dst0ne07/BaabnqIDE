@@ -12,3 +12,4 @@ class cSender(QtCore.QObject):
     SetCompilerCall             = QtCore.pyqtSignal(str)
     SetVirtMachCall             = QtCore.pyqtSignal(str)
     MoveCurrentEditor           = QtCore.pyqtSignal(int)
+    GlobalClose                 = QtCore.pyqtSignal()

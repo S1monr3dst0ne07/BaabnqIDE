@@ -86,7 +86,10 @@
 "ProcessDisplay" : "color: white",
 "TabSaved" : "#05A000",
 "TabChanged" : "#FF5200",
+"DebugTableBackground" : "#555555",
 
-"FindDialog" :  "background-color: #555555; color: #ffffff"
+"FindDialog"  : "background-color: #555555; color: #ffffff",
+"DebugDialog" : "background-color: #555555; color: #ffffff"
+
 
 }

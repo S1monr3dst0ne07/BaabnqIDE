@@ -2,14 +2,14 @@ the debug protocol is a way for the virtual machine and the ide to talk
 
 data output protocol:
     the virtual machine will send all sorts of data to the ide, always formated like this:
-    category{data}
+    category(data)
     
     category are a way for the virtual machine to categorize the data that it sends, if that wasn't clear yet.
     the categories include:
     Print - stdio, aka inp and out (for inp the ide send back normal data)
     Chr   - sending a single character via putstr (renamed putchr, in ascii)
-    Command - currently executing command
-    SysInfo - info about the state of the system (registers, stack, programm index, heap usage; using json)
+    HeapUsage - how much of the heap is used
+    Var - Variables (dict)
     Plugin  - call to pluging
     
 breakpoint: 

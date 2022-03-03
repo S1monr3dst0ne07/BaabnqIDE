@@ -109,6 +109,7 @@ class cLine:
  
 class cMain:
     def __init__(self):
+        self.Printf = lambda x: print(x, flush = True)
         self.xFile = ""
         self.xMode = 0
         self.xDebug = False
@@ -143,7 +144,7 @@ class cMain:
         self.xPluginEnv['stack'] = self.xStack
                 
                                                 
-
+        self.xDelayPerExecCycleInMs = 0
 
     
     def Structuring(self, xRawSource):
@@ -175,36 +176,62 @@ class cMain:
     #applies protocol when debugging is enabled
     def AplyProt(self, xRaw, xPrefix):
         if self.xDebug:
-            return xPrefix + "{" + xRaw + "}"
+            return xPrefix + "(" + xRaw + ")"
         
         else:
             return xRaw
         
     
+    def UpdateHeapUsage(self):
+        xUsage = f"{len(self.xHeapAlloc)} {self.xHeapSize}".format()
+        self.Printf(self.AplyProt(xUsage, "HeapUsage"))
+        
     def Interpret(self):
+        Printf = self.Printf
+        
         self.xLineStructures = self.Structuring(self.xFile)
+        
+        if self.xDebug:
+            #check for varmapper
+            try:
+                xFirstLine = self.xFile.split("\n")[0]
+                xVarMapper = eval(xFirstLine[1:])
+                
+            except Exception as E:
+                pass
 
         try:
-            while self.xProgramIndex < len(self.xLineStructures):                
+            while self.xProgramIndex < len(self.xLineStructures):
+                xTimeAtCycleStart = time.time()        
                 xLine = self.xLineStructures[self.xProgramIndex]                
                 xInst = xLine.xInst
                 xAttr = xLine.xAttr
 
-                if self.xDebug:                
+                if self.xDebug:
+                    #if debugging is enabled, always wait a little bit of time to not overload the ide
+                    time.sleep(1 / int("1" + "0" * 30))
+                                        
                     #mode 1 is 'breakpoint'
                     if self.xMode == 1:
-                        xDebugOption = input("?")
-                        
-                        if xDebugOption == "next":
-                            pass
-                        
-                        elif xDebugOption == "continue":
-                            self.xMode = 0
+                        try:
+                            while True:
+                                xRaw = input("?")
+                                xRawSplit = xRaw.split(" ")
+                                xDebugOption = xRawSplit[0]
+                                xDebugArgs   = xRawSplit[1:]
+                                
+                                if xDebugOption == "next":          break
+                                elif xDebugOption == "continue":    
+                                    self.xMode = 0
+                                    break
+                                elif xDebugOption == "time":        self.xDelayPerExecCycleInMs = int(xDebugArgs[0])
+
+                        except Exception: pass
                 
-                    print(self.AplyProt(f"{xInst: <10}{xAttr}".format(), "Command"))
-                    print(self.AplyProt(f"".format(), "SysInfo"))
-                
-                                                
+                    xVars = {xVarName : int(self.xMem[xVarAddress]) for xVarName, xVarAddress in xVarMapper.items()}
+                    Printf(self.AplyProt(str(xVars), "Var"))
+                    
+                    
                 #execute inst
                 if xInst == "set":
                     self.xReg.Set(int(xAttr))
@@ -274,7 +301,7 @@ class cMain:
                 
                 elif xInst == "out":
                     xIntRaw = int(self.xMem[int(xAttr)])
-                    print(self.AplyProt(str(xIntRaw), "Print"))
+                    Printf(self.AplyProt(str(xIntRaw), "Print"))
                 
                 elif xInst == "inp":
                     xInput = input(self.AplyProt(">>>", "Print"))
@@ -341,12 +368,12 @@ class cMain:
                     xAscii = int(self.xAcc)
                     xChr = chr(xAscii)
                     
-                    if self.xDebug:     print(self.AplyProt(str(xAscii), "Chr"))
+                    if self.xDebug:     Printf(self.AplyProt(str(xAscii), "Chr"))
                     else:               print(xChr, end = "", flush = True)
                     
                     
                     
-                elif xInst == "ahm":
+                elif xInst == "ahm":                    
                     xAllocSize = int(self.xReg)
                     
                     #find the correct number of word in a row that are free
@@ -363,8 +390,8 @@ class cMain:
                             break
                     
                     if xBasePointer is None:
-                        print("Program out of heap memory", file = StdOut)
-                        exit()
+                        print("Program out of heap memory")
+                        sys.exit(0)
                         
                     else:
                         for xAddrIndex in range(xBasePointer, xBasePointer + xAllocSize):
@@ -377,8 +404,11 @@ class cMain:
                         #override the Acc to return the memory address to the user
                         self.xAcc.Set(xBasePointer)
 
+                    if self.xDebug: 
+                        self.UpdateHeapUsage()
+
                         
-                elif xInst == "fhm":
+                elif xInst == "fhm":                    
                     xFreeSize = int(self.xReg)
                     xFreeBase = int(self.xAcc)
                     
@@ -387,14 +417,17 @@ class cMain:
                             self.xHeapAlloc.remove(xFreeAddrIndex)
                         
                         self.xMem[xFreeAddrIndex].Set(0)
-                        
+
+                    if self.xDebug: 
+                        self.UpdateHeapUsage()
+
                 
                 elif xInst == "plugin":
                     try:
                         xPluginName = xAttr.split("::")[0]
                         xMethodName = xAttr.split("::")[1]
                         
-                        print(self.AplyProt(xAttr, "Plugin"))
+                        if self.xDebug: Printf(self.AplyProt(xAttr, "Plugin"))
                         
                         exec(str(xPluginName) + "." + str(xMethodName) + '(self.xPluginEnv)')
 
@@ -412,6 +445,10 @@ class cMain:
                 
                 self.xProgramIndex += 1
                 self.xTotalIndex += 1
+                
+                #delay till quota is reached
+                while (time.time() - xTimeAtCycleStart) * 1000 < self.xDelayPerExecCycleInMs:
+                    time.sleep(1 / 1000)
 
         except KeyboardInterrupt:
             pass

@@ -53,8 +53,69 @@ class cWindow(QtWidgets.QMainWindow):
         class cDebug(QtWidgets.QWidget):
             def __init__(self):
                 super().__init__()
+
+                self.xPluginDisplayList = []
+                self.xMaxCommandListSize = 5
+
+
+                self.setStyleSheet(cUtils.xStyleHandle["DebugDialog"])
+                self.setWindowTitle("Debug")
                 
+                self.xLayout = QtWidgets.QGridLayout()
+                self.setLayout(self.xLayout)
+                
+                self.xLayout.addWidget(QtWidgets.QLabel("Plugin Calls: "), 0, 0)
+                self.xLayout.addWidget(QtWidgets.QLabel("Variables: "), 2, 0)
+                
+                
+                self.xPluginDisplay = QtWidgets.QListWidget()
+                self.xLayout.addWidget(self.xPluginDisplay, 1, 0)
+
+                self.xVarDisplay = QtWidgets.QTableWidget(0, 0, self)
+                self.xVarDisplay.setColumnCount(2)
+                self.xVarDisplay.setRowCount(1)
+                self.xVarDisplay.verticalHeader().hide()
+                self.xVarDisplay.horizontalHeader().hide()
+                self.xVarDisplay.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+                self.xVarDisplay.setFocusPolicy(QtCore.Qt.NoFocus)
+                self.xVarDisplay.setSelectionMode(QtWidgets.QTableWidget.NoSelection)
+                self.xVarDisplay.setItem(0, 0, QtWidgets.QTableWidgetItem("Name"))
+                self.xVarDisplay.setItem(0, 1, QtWidgets.QTableWidgetItem("Value"))
+                                
+                self.xLayout.addWidget(self.xVarDisplay, 3, 0)
+                
+
+                xPluginDisplayFont = self.xPluginDisplay.font()
+                xPluginDisplayMetric = QtGui.QFontMetrics(xPluginDisplayFont)
+                
+                xPluginDisplayHeight = xPluginDisplayMetric.height() * (self.xMaxCommandListSize + 1)
+                self.xPluginDisplay.setFixedHeight(xPluginDisplayHeight)
                 self.show()
+            
+            
+            def UpdateVarDisplay(self, xVarDict):
+                self.xVarDisplay.setRowCount(1 + len(xVarDict))
+                
+                for xIndex, xName in enumerate(xVarDict.keys()):
+                    self.xVarDisplay.setItem(xIndex + 1, 0, QtWidgets.QTableWidgetItem(xName))
+                    self.xVarDisplay.setItem(xIndex + 1, 1, QtWidgets.QTableWidgetItem(str(xVarDict[xName])))
+
+                
+                
+                
+            def UpdatePluginDisplay(self, xNewCommand):
+                print(xNewCommand)
+                self.xPluginDisplayList.append(xNewCommand.replace(" ", "\t"))
+                
+                while len(self.xPluginDisplayList) > self.xMaxCommandListSize:
+                    self.xPluginDisplayList.pop(0)
+                    
+                #update the commanddisplay widget
+                self.xPluginDisplay.clear()
+                self.xPluginDisplay.addItems(self.xPluginDisplayList)
+                
+                
+                
          
         def __init__(self, xParent):
             self.xParent = xParent
@@ -71,7 +132,7 @@ class cWindow(QtWidgets.QMainWindow):
         def __del__(self):
             self.Kill()
 
-        def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop):
+        def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = []):
             def HandleOutput():
                 StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput())
                 
@@ -84,7 +145,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xCompilerProcess.setWorkingDirectory(cUtils.Path2BasePath(xThisPath))
             self.xCompilerProcess.readyReadStandardOutput.connect(HandleOutput)
             xCallArgs = shlex.split(self.xCompilerCall.replace("<input>", cUtils.Quotes(xSourcePath)).replace("<output>", cUtils.Quotes(xDestPath)))
-            self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:])
+            self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
             #and it's tracker
             self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xCompilerProcess, "Compiling")
@@ -94,7 +155,6 @@ class cWindow(QtWidgets.QMainWindow):
         def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = []):
             def HandleOutput():
                 StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
-                StdoutHandleFunc(self.xVirtMachProcess.readAllStandardError())
             
             self.xProcessTracker.stop()
             self.xVirtMachProcess.kill()
@@ -102,6 +162,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xVirtMachProcess = QtCore.QProcess()        
             self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
             xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
+            print(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
             #and it's tracker
@@ -142,17 +203,17 @@ class cWindow(QtWidgets.QMainWindow):
             xBuildPath = xThisPath + "/../build.s1"
             self.xCompilerOutputPuffer = []
             
-            #open new debug window
-            self.xDebugWindow = self.cDebug()
-            self.xParent.xSender.GlobalClose.connect(self.xDebugWindow.close)
+            #check if debugger is not opened
+            if self.xDebugWindow is None or not self.xDebugWindow.isVisible():
+                self.xDebugWindow = self.cDebug()
+                self.xParent.xSender.GlobalClose.connect(self.xDebugWindow.close)
             
             def HandleDebugProtocol(xBytes):
                 #split line by line
                 xLines = cUtils.Bytes2Str(xBytes).split("\r\n")
                 for xLineIter in xLines:
-                    print(xLineIter)
                     #pull category and data from line
-                    xLineMatch = re.match("(.+){(.+)}", xLineIter)
+                    xLineMatch = re.match("(.+)\((.+)\)", xLineIter)
                     if xLineMatch is None:
                         continue
                     
@@ -164,6 +225,13 @@ class cWindow(QtWidgets.QMainWindow):
                     elif xCategory == "Chr":
                         xRawInt = int(xData)
                         self.xParent.xConsole.Write2Console(chr(xRawInt))
+                        
+                    elif xCategory == "Plugin":
+                        self.xDebugWindow.UpdatePluginDisplay(xData)
+                        
+                    elif xCategory == "Var":
+                        xVarValues = eval(xData)
+                        self.xDebugWindow.UpdateVarDisplay(xVarValues)
                         
                                 
                 
@@ -177,7 +245,7 @@ class cWindow(QtWidgets.QMainWindow):
 
 
             def HandleCompile():
-                self.Compile(xPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess)
+                self.Compile(xPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess, xAddArgs = ["--MoreInfo"])
             
             self.xProcessQueue = [HandleCompile, HandleParseCompilerOutput, HandleLaunch]
             self.StartNextProcess()
@@ -210,9 +278,7 @@ class cWindow(QtWidgets.QMainWindow):
                             self.xParent.MoveCurrentEditor(xErrorLineNumber - 1)
                         
                     
-            
-            print(xCompilerExitStatus)
-         
+                     
         #kills the current process and stops any further ones form running
         def Kill(self):
             
@@ -259,22 +325,28 @@ class cWindow(QtWidgets.QMainWindow):
             self.setLayout(self.xLayout)
 
             self.xResultList = self.cResultList(self)
-            self.xLayout.addWidget(self.xResultList, 1, 0)
+            self.xLayout.addWidget(self.xResultList, 2, 0)
             
             self.xSearchPrompt = QtWidgets.QLineEdit()
-            self.xLayout.addWidget(self.xSearchPrompt, 0, 0)
+            self.xLayout.addWidget(self.xSearchPrompt, 1, 0)
+            
+            xTempFont = QtGui.QFont("Consolas", 10)
+            xHelpLabel = QtWidgets.QLabel("Find:")
+            xHelpLabel.setFont(xTempFont)
+            self.xLayout.addWidget(xHelpLabel, 0, 0)
+            
             
             #update button
-            xUpdateButton = QtWidgets.QPushButton("Update")
+            xUpdateButton = QtWidgets.QPushButton(" Update ")
             xUpdateButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
             xUpdateButton.clicked.connect(self.RunSearch)
-            self.xLayout.addWidget(xUpdateButton, 0, 1)
+            self.xLayout.addWidget(xUpdateButton, 1, 2)
             
             #close button
-            xCloseButton = QtWidgets.QPushButton("Close")
+            xCloseButton = QtWidgets.QPushButton(" Close ")
             xCloseButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
             xCloseButton.clicked.connect(self.close)
-            self.xLayout.addWidget(xCloseButton, 0, 2)
+            self.xLayout.addWidget(xCloseButton, 1, 3)
 
             
             self.show()

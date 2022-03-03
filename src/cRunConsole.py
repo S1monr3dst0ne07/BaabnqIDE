@@ -36,8 +36,8 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
         
     def Byte2Console(self, xByteArray):
         #catch if screen is cleared by looking for escape code 0c
-        if xByteArray == b'\x0c':   self.clear()
-        else:                       self.Write2Console(xByteArray.data().decode())
+        if b'\x0c' in xByteArray:   self.clear()
+        else:                       self.Write2Console(cUtils.Bytes2Str(xByteArray))
               
     def Change(self):
         if self.xAutoScroll:
@@ -49,7 +49,6 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
         super().keyPressEvent(xEvent)
         xChar = xEvent.text()
         xBytes = xChar.encode("utf-8")
-        print(xChar)
                 
         try:
             if xBytes == b"\r":

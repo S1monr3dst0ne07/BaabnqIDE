@@ -17,6 +17,7 @@ from cWindow import *
 
 if __name__ == '__main__':
     xApp = QtWidgets.QApplication(sys.argv)
+    xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
     xWindow = cWindow()
     
     sys.exit(xApp.exec())

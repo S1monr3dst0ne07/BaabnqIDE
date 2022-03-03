@@ -72,9 +72,7 @@ class cUtils:
 
     @staticmethod
     def Path2BasePath(xPath):
-        print(xPath)
         xMatch = re.search("(.*[\\\/]).*", xPath)
-        print(xMatch)
         return xMatch[0]
     
     

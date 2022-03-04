@@ -1,4 +1,4 @@
-"{'_Math::returnAddr': 1, '_Math::arg1': 2, '_Math::arg2': 3, '_Math::output': 4, '_Math::baseBit': 6, '_Math::divisor': 11, '_Math::dividend': 12, '_ReturnAddr': 13, '_StringPtr': 14, '_Data': 15, '_Config': 16, '_Buffer': 17, '_IndexInit': 18, '_Index': 19, '_SizeBuffer': 20, '_Size': 21, '_DestPtr': 22, '_SrcPtr': 23, '_Char': 24, '_StrPtr': 25, '_SecStr': 26, '_MinStr': 27, '_HourStr': 28, '_DayStr': 29, '_MonthStr': 30, '_TitleStr': 31, '_ScanlineStr': 32, '_TitleSize': 33, '_IndentLevel': 34, '_ScanlineSize': 35, '_UpperScanlineIndex': 36, '_LowerScanlineIndex': 37, '_Sec': 38, '_Min': 39, '_Hour': 40, '_Day': 41, '_Month': 42, '_Temp': 43}
+"{'_Math::returnAddr': 1, '_Math::arg1': 2, '_Math::arg2': 3, '_Math::output': 4, '_Math::baseBit': 6, '_Math::divisor': 11, '_Math::dividend': 12, '_ReturnAddr': 13, '_StringPtr': 14, '_Data': 15, '_Config': 16, '_Buffer': 17, '_IndexInit': 18, '_Index': 19, '_SizeBuffer': 20, '_Size': 21, '_DestPtr': 22, '_SrcPtr': 23, '_Char': 24, '_StrPtr': 25, '_OpAdd': 26, '_OpSub': 27, '_OpMul': 28, '_InputStr': 29, '_ThisNodePtr': 30, '_InputSize': 31, '_ScanPtr': 32, '_ParsedInt': 33, '_Op': 34, '_MainSize': 35, '_SubSize1': 36, '_SubSize2': 37, '_SubStrPtr1': 38, '_SubStrPtr2': 39, '_SubNodePtr1': 40, '_SubNodePtr2': 41, '_Ptr': 42, '_Type': 43, '_Value': 44, '__': 45, '_SubPtr2': 46, '_SubPtr1': 47, '_ReturnValue1': 48, '_ReturnValue2': 49, '_FinalValue': 50, '_MainStr': 51, '_ReturnPtr': 52}
 
 
 clr 
@@ -581,260 +581,110 @@ lDA 13
 pha 
 ret 
 lab String::Skip
-set 11
-ahm 
-sAD 0
-set 1
+clr 
+set 43
 add 
 sAD 26
-set 11
-jmS _WriteChar
-set 83
-jmS _WriteChar
-set 101
-jmS _WriteChar
-set 99
-jmS _WriteChar
-set 111
-jmS _WriteChar
-set 110
-jmS _WriteChar
-set 100
-jmS _WriteChar
-set 115
-jmS _WriteChar
-set 58
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 0
-jmS _WriteChar
-set 11
-ahm 
-sAD 0
-set 1
+clr 
+set 45
 add 
 sAD 27
-set 11
-jmS _WriteChar
-set 77
-jmS _WriteChar
-set 105
-jmS _WriteChar
-set 110
-jmS _WriteChar
-set 117
-jmS _WriteChar
-set 116
-jmS _WriteChar
-set 101
-jmS _WriteChar
-set 115
-jmS _WriteChar
-set 58
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 0
-jmS _WriteChar
-set 11
-ahm 
-sAD 0
-set 1
+clr 
+set 42
 add 
 sAD 28
-set 11
-jmS _WriteChar
-set 72
-jmS _WriteChar
-set 111
-jmS _WriteChar
-set 117
-jmS _WriteChar
-set 114
-jmS _WriteChar
-set 115
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 58
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 0
-jmS _WriteChar
-set 11
-ahm 
-sAD 0
+got Skip
+lab Parse
+pla 
+sAD 13
+pla 
+sAD 29
+lDA 13
+pha 
+clr 
+set 4
+add 
 set 1
 add 
-sAD 29
-set 11
-jmS _WriteChar
-set 68
-jmS _WriteChar
-set 97
-jmS _WriteChar
-set 121
-jmS _WriteChar
-set 115
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 58
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 0
-jmS _WriteChar
-set 11
+sAD 5
+lDR 5
 ahm 
-sAD 0
+sAD 5
+sRP 5
 set 1
 add 
 sAD 30
-set 11
-jmS _WriteChar
-set 77
-jmS _WriteChar
-set 111
-jmS _WriteChar
-set 110
-jmS _WriteChar
-set 116
-jmS _WriteChar
-set 104
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 58
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 0
-jmS _WriteChar
-set 17
-ahm 
-sAD 0
-set 1
-add 
-sAD 31
-set 17
-jmS _WriteChar
-set 84
-jmS _WriteChar
-set 105
-jmS _WriteChar
-set 109
-jmS _WriteChar
-set 101
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 114
-jmS _WriteChar
-set 101
-jmS _WriteChar
-set 109
-jmS _WriteChar
-set 97
-jmS _WriteChar
-set 105
-jmS _WriteChar
-set 110
-jmS _WriteChar
-set 105
-jmS _WriteChar
-set 110
-jmS _WriteChar
-set 103
-jmS _WriteChar
-set 10
-jmS _WriteChar
-set 0
-jmS _WriteChar
-set 4
-ahm 
-sAD 0
-set 1
-add 
-sAD 32
-set 4
-jmS _WriteChar
-set 42
-jmS _WriteChar
-set 10
-jmS _WriteChar
-set 0
-jmS _WriteChar
-lDA 31
+pla 
+sAD 13
+lDA 30
+pha 
+lDA 13
+pha 
+lDA 29
 pha 
 jmS String::GetSize
 pla 
-sAD 33
-clr 
-set 2
-add 
-sAD 34
+sAD 31
+lDA 29
 pha 
-lDA 34
+lDA 31
 sAD 5
 pla 
 lDR 5
 add 
+sAD 32
+lab Parse::FindLvL1
+lPA 32
+sAD 15
 pha 
-lDA 33
+lDA 26
 sAD 5
 pla 
 lDR 5
-add 
-sAD 35
+jmA Parse::OpFound
+lDA 15
+pha 
+lDA 27
+sAD 5
+pla 
+lDR 5
+jmA Parse::OpFound
+lDA 32
+pha 
 clr 
-set 0
+set 1
 add 
-sAD 36
-lDA 35
-sAD 37
-lab Loop
-plugin Terminal::Cls
-plugin Time::Sec
+sAD 5
 pla 
-sAD 38
-plugin Time::Min
-pla 
-sAD 39
-plugin Time::Hour
-pla 
-sAD 40
-plugin Time::Day
-pla 
-sAD 41
-plugin Time::Month
-pla 
-sAD 42
-lDA 36
+lDR 5
+sub 
+sAD 32
 pha 
-jmS PrintIndent
-lDA 36
-pha 
-lDA 35
+lDA 29
 sAD 5
 pla 
 lDR 5
 jmA Temp16
-got UpperResetSkip
+got Parse::FindLvL1
 lab Temp16
-clr 
-set 0
+lDA 29
+pha 
+lDA 31
+sAD 5
+pla 
+lDR 5
 add 
+sAD 32
+lab Parse::FindLvL2
+lPA 32
+sAD 15
+pha 
+lDA 28
+sAD 5
+pla 
+lDR 5
+jmA Parse::OpFound
+lDA 32
 pha 
 clr 
 set 1
@@ -843,8 +693,144 @@ sAD 5
 pla 
 lDR 5
 sub 
+sAD 32
+pha 
+lDA 29
+sAD 5
+pla 
+lDR 5
+jmA Temp17
+got Parse::FindLvL2
+lab Temp17
+clr 
+set 1
+add 
+pha 
+lDA 30
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+pla 
+sAP 5
+clr 
+set 0
+add 
+pha 
+lDA 29
+sAD 32
+lab PushLoop
+lPA 32
+sAD 15
+lDA 32
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 32
+lDA 15
+pha 
+clr 
+set 32
+add 
+sAD 5
+pla 
+lDR 5
+jmA PushLoop
+lDA 15
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+jmA PushExit
+lDA 15
+pha 
+got PushLoop
+lab PushExit
+clr 
+set 0
+add 
+pha 
+jmS String::StackChar2Int
+pla 
+sAD 33
+pha 
+lDA 30
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+pla 
+sAP 5
+ret 
+lab Parse::OpFound
+lDA 15
+sAD 34
+pha 
+lDA 30
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+pla 
+sAP 5
+lDA 29
+pha 
+jmS String::GetSize
+pla 
+sAD 35
+lDA 32
+pha 
+lDA 29
+sAD 5
+pla 
+lDR 5
+sub 
 sAD 36
-lab UpperResetSkip
+lDA 35
+pha 
+lDA 29
+sAD 5
+pla 
+lDR 5
+add 
+pha 
+lDA 32
+sAD 5
+pla 
+lDR 5
+sub 
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+sub 
+sAD 37
 lDA 36
 pha 
 clr 
@@ -854,157 +840,158 @@ sAD 5
 pla 
 lDR 5
 add 
-sAD 36
-lDA 32
-pha 
-jmS String::PrintString
-lDA 34
-pha 
-lDA 34
-pha 
-lDA 34
-pha 
-lDA 34
-pha 
-lDA 34
-pha 
-lDA 34
-pha 
-jmS PrintIndent
-lDA 31
-pha 
-jmS String::PrintString
-jmS PrintIndent
-lDA 26
-pha 
-jmS String::PrintString
-clr 
-set 59
+set 1
 add 
+sAD 5
+lDR 5
+ahm 
+sAD 5
+sRP 5
+set 1
+add 
+sAD 38
+lDA 37
 pha 
-lDA 38
+clr 
+set 1
+add 
 sAD 5
 pla 
 lDR 5
-sub 
+add 
+set 1
+add 
 sAD 5
-out 5
-jmS PrintIndent
-lDA 27
+lDR 5
+ahm 
+sAD 5
+sRP 5
+set 1
+add 
+sAD 39
+lDA 29
 pha 
-jmS String::PrintString
+lDA 38
+pha 
+lDA 36
+pha 
+jmS String::CopyN
+lDA 32
+pha 
 clr 
-set 59
+set 1
+add 
+sAD 5
+pla 
+lDR 5
 add 
 pha 
 lDA 39
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 5
-out 5
-jmS PrintIndent
-lDA 28
 pha 
-jmS String::PrintString
-clr 
-set 23
-add 
+lDA 37
 pha 
-lDA 40
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 5
-out 5
-jmS PrintIndent
-lDA 29
-pha 
-jmS String::PrintString
-clr 
-set 31
-add 
-pha 
-lDA 41
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 5
-out 5
-jmS PrintIndent
+jmS String::CopyN
 lDA 30
 pha 
-jmS String::PrintString
-clr 
-set 12
-add 
+lDA 38
 pha 
-lDA 42
-sAD 5
+lDA 39
+pha 
+lDA 39
+pha 
+lDA 38
+pha 
+jmS Parse
 pla 
-lDR 5
+sAD 40
+pla 
+sAD 39
+lDA 40
+pha 
+lDA 39
+pha 
+jmS Parse
+pla 
+sAD 41
+pla 
+sAD 40
+pla 
+sAD 39
+pla 
+sAD 38
+set 1
 sub 
 sAD 5
-out 5
-lDA 37
-pha 
-jmS PrintIndent
-lDA 37
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Temp17
-got LowerResetSkip
-lab Temp17
-lDA 35
-pha 
-clr 
+lPR 5
+fhm 
+lDA 39
 set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 37
-lab LowerResetSkip
-lDA 37
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
 sub 
-sAD 37
-lDA 32
+sAD 5
+lPR 5
+fhm 
+pla 
+sAD 30
+lDA 40
 pha 
-jmS String::PrintString
+lDA 30
+pha 
 clr 
-set 50
+set 2
 add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+pla 
+sAP 5
+lDA 41
 pha 
-plugin Time::SleepMs
-got Loop
-lab PrintIndent
+lDA 30
+pha 
+clr 
+set 3
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+pla 
+sAP 5
+ret 
+lab Eval
 pla 
 sAD 13
 pla 
-sAD 43
+sAD 42
 lDA 13
 pha 
-lab PrintIndent::Loop
+lDA 42
+pha 
 clr 
-set 32
+set 0
 add 
-putstr 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 43
+lDA 42
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 44
 lDA 43
 pha 
 clr 
@@ -1013,7 +1000,196 @@ add
 sAD 5
 pla 
 lDR 5
-jmA PrintIndent::Exit
+jmA Eval::FoundOp
+pla 
+sAD 45
+lDA 44
+pha 
+lDA 13
+pha 
+ret 
+lab Eval::FoundOp
+lDA 44
+pha 
+lDA 42
+pha 
+clr 
+set 3
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 46
+lDA 42
+pha 
+clr 
+set 2
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 47
+lDA 46
+pha 
+lDA 47
+pha 
+jmS Eval
+pla 
+sAD 48
+pla 
+sAD 46
+lDA 48
+pha 
+lDA 46
+pha 
+jmS Eval
+pla 
+sAD 49
+pla 
+sAD 48
+pla 
+sAD 44
+lDA 48
+pha 
+lDA 49
+pha 
+lDA 44
+pha 
+lDA 26
+sAD 5
+pla 
+lDR 5
+jmA Temp19
+got Temp18
+lab Temp19
+jmS Math::Add
+lab Temp18
+lDA 44
+pha 
+lDA 27
+sAD 5
+pla 
+lDR 5
+jmA Temp21
+got Temp20
+lab Temp21
+jmS Math::Sub
+lab Temp20
+lDA 44
+pha 
+lDA 28
+sAD 5
+pla 
+lDR 5
+jmA Temp23
+got Temp22
+lab Temp23
+jmS Math::Mul
+lab Temp22
+pla 
+sAD 50
+pla 
+sAD 13
+lDA 50
+pha 
+lDA 13
+pha 
+ret 
+lab FreeExprTree
+pla 
+sAD 13
+pla 
+sAD 42
+lDA 13
+pha 
+lDA 42
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 43
+lDA 42
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 44
+lDA 43
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+jmA FreeExprTree::FoundOp
+lDA 42
+set 1
+sub 
+sAD 5
+lPR 5
+fhm 
+lDA 13
+pha 
+ret 
+lab PrintExprTree
+pla 
+sAD 13
+pla 
+sAD 42
+lDA 13
+pha 
+lDA 42
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 43
+lDA 42
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 44
+lDA 43
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+jmA PrintExprTree::FoundOp
 lDA 43
 pha 
 clr 
@@ -1022,11 +1198,139 @@ add
 sAD 5
 pla 
 lDR 5
-sub 
-sAD 43
-got PrintIndent::Loop
-lab PrintIndent::Exit
+jmA PrintExprTree::FoundValue
 ret 
+lab PrintExprTree::FoundOp
+lDA 42
+pha 
+clr 
+set 2
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 40
+lDA 42
+pha 
+clr 
+set 3
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 41
+pha 
+lDA 44
+pha 
+lDA 40
+pha 
+clr 
+set 40
+add 
+putstr 
+jmS PrintExprTree
+pla 
+sAD 44
+putstr 
+jmS PrintExprTree
+clr 
+set 41
+add 
+putstr 
+ret 
+lab PrintExprTree::FoundValue
+lDA 44
+sAD 5
+out 5
+ret 
+lab Skip
+set 29
+ahm 
+sAD 0
+set 1
+add 
+sAD 51
+set 29
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 56
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 43
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 53
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 45
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 50
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 45
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 56
+jmS _WriteChar
+set 51
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 43
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 55
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 42
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 48
+jmS _WriteChar
+set 48
+jmS _WriteChar
+set 0
+jmS _WriteChar
+lDA 51
+pha 
+jmS Parse
+pla 
+sAD 52
+pha 
+jmS Eval
+pla 
+sAD 50
+sAD 5
+out 5
+lDA 51
+set 1
+sub 
+sAD 5
+lPR 5
+fhm 
 brk 
 lab _WriteChar
 sRP 0
@@ -1039,4 +1343,4 @@ ret
 
 
 
- "Compiled from source: D:/ConsoleEnv/baabnq/ProgrammsV5.x/CountDown.baabnq
+ "Compiled from source: D:/ConsoleEnv/baabnq/ProgrammsV5.x/TreeParseEvalMathExpr.baabnq

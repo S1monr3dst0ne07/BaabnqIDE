@@ -198,6 +198,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handleColor = xHandleColor))
         self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handleColor = xHandleColor))
 
+
     #drag and drop events
     def dragEnterEvent(self, xEvent):
         self.xSender.RemoteDragEnterEvent.emit(xEvent)
@@ -252,8 +253,13 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()
 
     def keyPressEvent(self, xEvent):
-        if xEvent.key() == QtCore.Qt.Key_Tab and self.xCompleterStatus:
-            self.InsertCompletion(self.xCompleter.popup().currentIndex().data())
+        if xEvent.key() == QtCore.Qt.Key_Tab:
+            if self.xCompleterStatusGlobal:
+                self.InsertCompletion(self.xCompleter.popup().currentIndex().data())
+            
+            else:
+                self.xSender.UpdateCompleter.emit()
+                self.insertPlainText(" " * 4)
             
         else:
             self.xSender.UpdateCompleter.emit()

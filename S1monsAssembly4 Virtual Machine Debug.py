@@ -145,6 +145,7 @@ class cMain:
                 
                                                 
         self.xDelayPerExecCycleInMs = 0
+        
 
     
     def Structuring(self, xRawSource):
@@ -188,10 +189,13 @@ class cMain:
         
     def Interpret(self):
         Printf = self.Printf
+        xLastVars = {}
         
         self.xLineStructures = self.Structuring(self.xFile)
         
         if self.xDebug:
+            self.UpdateHeapUsage()
+            
             #check for varmapper
             try:
                 xFirstLine = self.xFile.split("\n")[0]
@@ -208,8 +212,6 @@ class cMain:
                 xAttr = xLine.xAttr
 
                 if self.xDebug:
-                    #if debugging is enabled, always wait a little bit of time to not overload the ide
-                    time.sleep(1 / int("1" + "0" * 30))
                                         
                     #mode 1 is 'breakpoint'
                     if self.xMode == 1:
@@ -229,7 +231,11 @@ class cMain:
                         except Exception: pass
                 
                     xVars = {xVarName : int(self.xMem[xVarAddress]) for xVarName, xVarAddress in xVarMapper.items()}
-                    Printf(self.AplyProt(str(xVars), "Var"))
+                    if xLastVars == {}: xLastVars = {xKey : xVars[xKey] - 1 for xKey in xVars.keys()}
+                    xVarsDiff = {xKey : xVars[xKey] for xKey in xVars.keys() if xVars[xKey] != xLastVars[xKey]} #get the variables that changed to make sending more efficent
+                    xLastVars = xVars
+                    
+                    if xVarsDiff != {}: Printf(self.AplyProt(str(xVarsDiff), "Var"))
                     
                     
                 #execute inst

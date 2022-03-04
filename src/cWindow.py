@@ -84,6 +84,10 @@ class cWindow(QtWidgets.QMainWindow):
                                 
                 self.xLayout.addWidget(self.xVarDisplay, 3, 0)
                 
+                
+                self.xHeapUsageDisplay = QtWidgets.QProgressBar(self)
+                self.xHeapUsageDisplay.setFormat("%v / %m")
+                self.xLayout.addWidget(self.xHeapUsageDisplay, 0, 1)
 
                 xPluginDisplayFont = self.xPluginDisplay.font()
                 xPluginDisplayMetric = QtGui.QFontMetrics(xPluginDisplayFont)
@@ -100,7 +104,9 @@ class cWindow(QtWidgets.QMainWindow):
                     self.xVarDisplay.setItem(xIndex + 1, 0, QtWidgets.QTableWidgetItem(xName))
                     self.xVarDisplay.setItem(xIndex + 1, 1, QtWidgets.QTableWidgetItem(str(xVarDict[xName])))
 
-                
+            def UpdateHeapUsage(self, xNewVal, xNewMax):
+                self.xHeapUsageDisplay.setMaximum(int(xNewMax))
+                self.xHeapUsageDisplay.setValue(int(xNewVal))
                 
                 
             def UpdatePluginDisplay(self, xNewCommand):
@@ -123,6 +129,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xDebugWindow = None
             
             self.xCompilerOutputPuffer = []
+            self.xVarValues = {}
             
             self.xProcessTracker = self.cAsyncProcessTracker(None, None, None)
             self.xCompilerProcess = QtCore.QProcess()
@@ -200,6 +207,7 @@ class cWindow(QtWidgets.QMainWindow):
         
         def Debug(self, xPath):
             self.Kill()
+            self.xVarValues = {} #for new run reset variable buffer
             xBuildPath = xThisPath + "/../build.s1"
             self.xCompilerOutputPuffer = []
             
@@ -209,6 +217,7 @@ class cWindow(QtWidgets.QMainWindow):
                 self.xParent.xSender.GlobalClose.connect(self.xDebugWindow.close)
             
             def HandleDebugProtocol(xBytes):
+                print(xBytes)
                 #split line by line
                 xLines = cUtils.Bytes2Str(xBytes).split("\r\n")
                 for xLineIter in xLines:
@@ -230,8 +239,12 @@ class cWindow(QtWidgets.QMainWindow):
                         self.xDebugWindow.UpdatePluginDisplay(xData)
                         
                     elif xCategory == "Var":
-                        xVarValues = eval(xData)
-                        self.xDebugWindow.UpdateVarDisplay(xVarValues)
+                        self.xVarValues.update(eval(xData))
+                        self.xDebugWindow.UpdateVarDisplay(self.xVarValues)
+                        
+                    elif xCategory == "HeapUsage":
+                        print(xData)
+                        self.xDebugWindow.UpdateHeapUsage(*xData.split(" "))
                         
                                 
                 

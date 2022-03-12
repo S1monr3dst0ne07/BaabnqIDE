@@ -77,7 +77,7 @@ import time
 import glob
 import argparse
 import sys, os
-
+import traceback
 
 class cInt:
     def __init__(self, xInt = 0, xIntLimit = 65535):
@@ -107,12 +107,14 @@ class cLine:
     def __str__(self):
         return "{: <10}{}".format(str(self.xInst), str(self.xAttr))
  
+class cPluginEnv:
+    pass
+ 
 class cMain:
-    def __init__(self):
-        self.Printf = lambda x: print(x, flush = True)
-        self.xFile = ""
+    def __init__(self, xFile, xDebug):
+        self.xFile = xFile
         self.xMode = 0
-        self.xDebug = False
+        self.xDebug = xDebug
         
         self.xBitSize = 16
         self.xIntLimit = 2 ** self.xBitSize 
@@ -139,9 +141,10 @@ class cMain:
 
         #assign a pointer to the memory and stack to the plugin env
         #this works because when you copy a list in python, it will just copy a pointer to that list, which can also be modified
-        self.xPluginEnv = {}
-        self.xPluginEnv['mem']   = self.xMem
-        self.xPluginEnv['stack'] = self.xStack
+        self.xPluginEnv = cPluginEnv()
+        self.xPluginEnv.xDebug = self.xDebug
+        self.xPluginEnv.xMem   = self.xMem
+        self.xPluginEnv.xStack = self.xStack
                 
                                                 
         self.xDelayPerExecCycleInMs = 0
@@ -181,15 +184,21 @@ class cMain:
         
         else:
             return xRaw
-        
+
+    def ProcessBackspace(self, xRaw):
+        while "\b" in xRaw:
+            xIndex = xRaw.index("\b")
+            xRaw = xRaw[:xIndex - 1] + xRaw[xIndex + 1:]
+    
+        return xRaw
     
     def UpdateHeapUsage(self):
-        xUsage = f"{len(self.xHeapAlloc)} {self.xHeapSize}".format()
-        self.Printf(self.AplyProt(xUsage, "HeapUsage"))
+        xUsage = f"{len(self.xHeapAlloc)}:{self.xHeapSize}".format()
+        print(self.AplyProt(xUsage, "HeapUsage"))
         
     def Interpret(self):
-        Printf = self.Printf
         xLastVars = {}
+        xLastMode = 0
         
         self.xLineStructures = self.Structuring(self.xFile)
         
@@ -202,7 +211,7 @@ class cMain:
                 xVarMapper = eval(xFirstLine[1:])
                 
             except Exception as E:
-                pass
+                xVarMapper = {}
 
         try:
             while self.xProgramIndex < len(self.xLineStructures):
@@ -212,21 +221,29 @@ class cMain:
                 xAttr = xLine.xAttr
 
                 if self.xDebug:
+                    
+                    #send mode update
+                    if self.xMode != xLastMode:
+                        print(self.AplyProt(str(self.xMode), "Mode"))
+                    
+                    
+                    xLastMode = self.xMode
+
                                         
                     #mode 1 is 'breakpoint'
                     if self.xMode == 1:
                         try:
                             while True:
-                                xRaw = input("?")
+                                xRaw = input()
                                 xRawSplit = xRaw.split(" ")
                                 xDebugOption = xRawSplit[0]
                                 xDebugArgs   = xRawSplit[1:]
                                 
-                                if xDebugOption == "next":          break
-                                elif xDebugOption == "continue":    
+                                if xDebugOption == "Next":          break
+                                elif xDebugOption == "Continue":    
                                     self.xMode = 0
                                     break
-                                elif xDebugOption == "time":        self.xDelayPerExecCycleInMs = int(xDebugArgs[0])
+                                elif xDebugOption == "Time":        self.xDelayPerExecCycleInMs = int(xDebugArgs[0])
 
                         except Exception: pass
                 
@@ -235,7 +252,7 @@ class cMain:
                     xVarsDiff = {xKey : xVars[xKey] for xKey in xVars.keys() if xVars[xKey] != xLastVars[xKey]} #get the variables that changed to make sending more efficent
                     xLastVars = xVars
                     
-                    if xVarsDiff != {}: Printf(self.AplyProt(str(xVarsDiff), "Var"))
+                    if xVarsDiff != {}: print(self.AplyProt(str(xVarsDiff), "Var"))
                     
                     
                 #execute inst
@@ -307,10 +324,13 @@ class cMain:
                 
                 elif xInst == "out":
                     xIntRaw = int(self.xMem[int(xAttr)])
-                    Printf(self.AplyProt(str(xIntRaw), "Print"))
+                    print(self.AplyProt(str(xIntRaw), "Print") + "\n", end = "")
                 
                 elif xInst == "inp":
-                    xInput = input(self.AplyProt(">>>", "Print"))
+                    print(self.AplyProt(">>>", "Print"))
+                    xInputRaw = input()
+                    xInput = self.ProcessBackspace(xInputRaw)
+                                        
                     self.xMem[int(xAttr)].Set(0 if xInput == "" else int(xInput))
                 
                 elif xInst == "got":
@@ -347,34 +367,43 @@ class cMain:
                     self.xAcc.Set(0)
                 
                 elif xInst == "jmS":
-                    self.xStack.append((self.xProgramIndex + 1) * 2)
+                    xReturnAddr = (self.xProgramIndex + 1) * 2
+                    self.xStack.append(xReturnAddr)
                     self.xProgramIndex = int(self.xLables[str(xAttr)])
+
+                    if self.xDebug: print(self.AplyProt(f"push:{str(xReturnAddr)} <{str(xInst)} {str(xAttr)}>".format(), "Stack"))
                     continue
                     
                     
                 elif xInst == "ret":
                     if len(self.xStack) != 0:
                         self.xProgramIndex = int(self.xStack.pop() / 2)
+                        if self.xDebug: print(self.AplyProt("pull:0", "Stack"))
                         continue
 
                     else:
-                        print("Error: Stack underflow")
+                        print(self.AplyProt("Error: Stack underflow\n", "Print"))
                         
                 elif xInst == "pha":
-                    self.xStack.append(int(self.xAcc))
+                    xPushValue = int(self.xAcc)
+                    self.xStack.append(xPushValue)
+
+                    if self.xDebug: print(self.AplyProt(f'push:{str(xPushValue)}'.format(), "Stack"))
                     
                 elif xInst == "pla":
                     if len(self.xStack) != 0:
-                        self.xAcc.Set(int(self.xStack.pop()))
+                        xPullValue = int(self.xStack.pop())
+                        self.xAcc.Set(xPullValue)
+                        if self.xDebug: print(self.AplyProt("pull:0", "Stack"))
                         
                     else:
-                        print("Error: Stack underflow")
+                        print(self.AplyProt("Error: Stack underflow\n", "Print"))
                 
                 elif xInst == "putstr":
                     xAscii = int(self.xAcc)
                     xChr = chr(xAscii)
                     
-                    if self.xDebug:     Printf(self.AplyProt(str(xAscii), "Chr"))
+                    if self.xDebug:     print(self.AplyProt(str(xAscii), "Chr") + "\n", end = "")
                     else:               print(xChr, end = "", flush = True)
                     
                     
@@ -433,12 +462,12 @@ class cMain:
                         xPluginName = xAttr.split("::")[0]
                         xMethodName = xAttr.split("::")[1]
                         
-                        if self.xDebug: Printf(self.AplyProt(xAttr, "Plugin"))
+                        if self.xDebug: print(self.AplyProt(xAttr, "Plugin"))
                         
                         exec(str(xPluginName) + "." + str(xMethodName) + '(self.xPluginEnv)')
 
-                    except NameError as E:
-                        print(E)
+                    except Exception as E:
+                        print(self.AplyProt(f"Plugin Error: {str(traceback.format_exc())}\n".format(), "Print"))
                 
                 elif xInst == "breakpoint":
                     if self.xDebug:
@@ -446,8 +475,8 @@ class cMain:
                 
                     
                 else:
-                    print("Invaild command: " + str(xInst))
-                    exit()
+                    print(self.AplyProt(f"Invaild command: {str(xInst)}\n".format(), "Print"))
+                    sys.exit(0)
                 
                 self.xProgramIndex += 1
                 self.xTotalIndex += 1
@@ -455,17 +484,22 @@ class cMain:
                 #delay till quota is reached
                 while (time.time() - xTimeAtCycleStart) * 1000 < self.xDelayPerExecCycleInMs:
                     time.sleep(1 / 1000)
+                
+                
+                sys.stdout.flush()
+
 
         except KeyboardInterrupt:
             pass
 
         except KeyError:
-            print("Error: label not found\n    {}".format(str(cM.xLineStructures[cM.xProgramIndex])))
+            print(self.AplyProt(f"Error: label not found '{str(cM.xLineStructures[cM.xProgramIndex])}'\n".format(), "Print"), flush = True)
         #print("Program took " + str(self.xTotalIndex) + " Cycles to complete")
+
                         
         
 if __name__ == '__main__':
-    xArgParser = argparse.ArgumentParser(description = "S1monsAssembly4 Virtual Machine v3 (with external debugging)")    
+    xArgParser = argparse.ArgumentParser(description = "S1monsAssembly4 Virtual Machine v2 (with external debugging)")    
 
     xArgParser.add_argument("--file", type=str, dest="path", action="store", nargs=1, required=True, help = "Assembler file to run")
     xArgParser.add_argument("--PluginPath", type=str, dest="PluginPath", action="store", nargs=1,    help = "Path to plugin files")
@@ -482,12 +516,6 @@ if __name__ == '__main__':
         sys.exit(0)
 
 
-
-
-    xPLocals  = {}
-    xPGlobals = {}
-
-
     if xArgs.PluginPath:
         try:            
             xPluginPath = xArgs.PluginPath[0]
@@ -500,17 +528,15 @@ if __name__ == '__main__':
                 
                 xPluginName = xPathIter.split("\\")[-1].split(".")[0]
                 
+                
                 exec(xFileHandle, globals(), locals())
-
     
                 
         except Exception as E:
-            print("Error while loading Plugins:")
+            print("Error while loading Plugins:", "Print")
             print(E)
     
     
-        
-    cM = cMain()
-    cM.xFile = xFile
-    cM.xDebug = xArgs.debug
+    
+    cM = cMain(xFile = xFile, xDebug = xArgs.debug)
     cM.Interpret()

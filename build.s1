@@ -1,4 +1,4 @@
-"{'_Math::returnAddr': 1, '_Math::arg1': 2, '_Math::arg2': 3, '_Math::output': 4, '_Math::baseBit': 6, '_Math::divisor': 11, '_Math::dividend': 12, '_ReturnAddr': 13, '_StringPtr': 14, '_Data': 15, '_Config': 16, '_Buffer': 17, '_IndexInit': 18, '_Index': 19, '_SizeBuffer': 20, '_Size': 21, '_DestPtr': 22, '_SrcPtr': 23, '_Char': 24, '_StrPtr': 25, '_OpAdd': 26, '_OpSub': 27, '_OpMul': 28, '_InputStr': 29, '_ThisNodePtr': 30, '_InputSize': 31, '_ScanPtr': 32, '_ParsedInt': 33, '_Op': 34, '_MainSize': 35, '_SubSize1': 36, '_SubSize2': 37, '_SubStrPtr1': 38, '_SubStrPtr2': 39, '_SubNodePtr1': 40, '_SubNodePtr2': 41, '_Ptr': 42, '_Type': 43, '_Value': 44, '__': 45, '_SubPtr2': 46, '_SubPtr1': 47, '_ReturnValue1': 48, '_ReturnValue2': 49, '_FinalValue': 50, '_MainStr': 51, '_ReturnPtr': 52}
+"{'_Math::returnAddr': 1, '_Math::arg1': 2, '_Math::arg2': 3, '_Math::output': 4, '_Math::baseBit': 6, '_Math::divisor': 11, '_Math::dividend': 12, '_ReturnAddr': 13, '_StringPtr': 14, '_Data': 15, '_Config': 16, '_Buffer': 17, '_IndexInit': 18, '_Index': 19, '_SizeBuffer': 20, '_Size': 21, '_DestPtr': 22, '_SrcPtr': 23, '_Char': 24, '_StrPtr': 25, '_StrPtr2': 26, '_StrPtr1': 27, '_StrLen1': 28, '_StrLen2': 29, '_StrPtrFinal': 30, '_StrPtrFinalShifted': 31, '_OpAdd': 32, '_OpSub': 33, '_OpMul': 34, '_InputStr': 35, '_ThisNodePtr': 36, '_InputSize': 37, '_ScanPtr': 38, '_ParsedInt': 39, '_Op': 40, '_MainSize': 41, '_SubSize1': 42, '_SubSize2': 43, '_SubStrPtr1': 44, '_SubStrPtr2': 45, '_SubNodePtr1': 46, '_SubNodePtr2': 47, '_Ptr': 48, '_Type': 49, '_Value': 50, '__': 51, '_SubPtr2': 52, '_SubPtr1': 53, '_ReturnValue1': 54, '_ReturnValue2': 55, '_FinalValue': 56, '_MainStr': 57, '_TreePtr': 58, '_TempStr': 59}
 
 
 clr 
@@ -580,25 +580,179 @@ pha
 lDA 13
 pha 
 ret 
+lab String::Concat
+pla 
+sAD 13
+pla 
+sAD 26
+pla 
+sAD 27
+lDA 13
+pha 
+lDA 27
+pha 
+jmS String::GetSize
+pla 
+sAD 28
+lDA 26
+pha 
+jmS String::GetSize
+pla 
+sAD 29
+pla 
+sAD 13
+lDA 28
+pha 
+lDA 29
+sAD 5
+pla 
+lDR 5
+add 
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+set 1
+add 
+sAD 5
+lDR 5
+ahm 
+sAD 5
+sRP 5
+set 1
+add 
+sAD 30
+clr 
+set 0
+add 
+sAD 19
+lab String::Concat::StrCopyLoop1
+lDA 27
+pha 
+lDA 19
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 15
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+jmA String::Concat::StrCopyExit1
+lDA 15
+pha 
+lDA 30
+pha 
+lDA 19
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+pla 
+sAP 5
+lDA 19
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 19
+got String::Concat::StrCopyLoop1
+lab String::Concat::StrCopyExit1
+clr 
+set 0
+add 
+sAD 19
+lDA 30
+pha 
+lDA 28
+sAD 5
+pla 
+lDR 5
+add 
+sAD 31
+lab String::Concat::StrCopyLoop2
+lDA 26
+pha 
+lDA 19
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 15
+pha 
+clr 
+set 0
+add 
+sAD 5
+pla 
+lDR 5
+jmA String::Concat::StrCopyExit2
+lDA 15
+pha 
+lDA 31
+pha 
+lDA 19
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+pla 
+sAP 5
+lDA 19
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 19
+got String::Concat::StrCopyLoop2
+lab String::Concat::StrCopyExit2
+lDA 30
+pha 
+lDA 13
+pha 
+ret 
 lab String::Skip
 clr 
 set 43
 add 
-sAD 26
+sAD 32
 clr 
 set 45
 add 
-sAD 27
+sAD 33
 clr 
 set 42
 add 
-sAD 28
+sAD 34
 got Skip
 lab Parse
+breakpoint 0
 pla 
 sAD 13
 pla 
-sAD 29
+sAD 35
 lDA 13
 pha 
 clr 
@@ -613,43 +767,43 @@ sAD 5
 sRP 5
 set 1
 add 
-sAD 30
+sAD 36
 pla 
 sAD 13
-lDA 30
+lDA 36
 pha 
 lDA 13
 pha 
-lDA 29
+lDA 35
 pha 
 jmS String::GetSize
 pla 
-sAD 31
-lDA 29
+sAD 37
+lDA 35
 pha 
-lDA 31
+lDA 37
 sAD 5
 pla 
 lDR 5
 add 
-sAD 32
+sAD 38
 lab Parse::FindLvL1
-lPA 32
+lPA 38
 sAD 15
 pha 
-lDA 26
+lDA 32
 sAD 5
 pla 
 lDR 5
 jmA Parse::OpFound
 lDA 15
 pha 
-lDA 27
+lDA 33
 sAD 5
 pla 
 lDR 5
 jmA Parse::OpFound
-lDA 32
+lDA 38
 pha 
 clr 
 set 1
@@ -658,33 +812,33 @@ sAD 5
 pla 
 lDR 5
 sub 
-sAD 32
+sAD 38
 pha 
-lDA 29
+lDA 35
 sAD 5
 pla 
 lDR 5
 jmA Temp16
 got Parse::FindLvL1
 lab Temp16
-lDA 29
+lDA 35
 pha 
-lDA 31
+lDA 37
 sAD 5
 pla 
 lDR 5
 add 
-sAD 32
+sAD 38
 lab Parse::FindLvL2
-lPA 32
+lPA 38
 sAD 15
 pha 
-lDA 28
+lDA 34
 sAD 5
 pla 
 lDR 5
 jmA Parse::OpFound
-lDA 32
+lDA 38
 pha 
 clr 
 set 1
@@ -693,9 +847,9 @@ sAD 5
 pla 
 lDR 5
 sub 
-sAD 32
+sAD 38
 pha 
-lDA 29
+lDA 35
 sAD 5
 pla 
 lDR 5
@@ -706,7 +860,7 @@ clr
 set 1
 add 
 pha 
-lDA 30
+lDA 36
 pha 
 clr 
 set 0
@@ -722,12 +876,12 @@ clr
 set 0
 add 
 pha 
-lDA 29
-sAD 32
+lDA 35
+sAD 38
 lab PushLoop
-lPA 32
+lPA 38
 sAD 15
-lDA 32
+lDA 38
 pha 
 clr 
 set 1
@@ -736,7 +890,7 @@ sAD 5
 pla 
 lDR 5
 add 
-sAD 32
+sAD 38
 lDA 15
 pha 
 clr 
@@ -765,9 +919,9 @@ add
 pha 
 jmS String::StackChar2Int
 pla 
-sAD 33
+sAD 39
 pha 
-lDA 30
+lDA 36
 pha 
 clr 
 set 1
@@ -782,9 +936,9 @@ sAP 5
 ret 
 lab Parse::OpFound
 lDA 15
-sAD 34
+sAD 40
 pha 
-lDA 30
+lDA 36
 pha 
 clr 
 set 1
@@ -796,87 +950,87 @@ add
 sAD 5
 pla 
 sAP 5
-lDA 29
+lDA 35
 pha 
 jmS String::GetSize
 pla 
-sAD 35
-lDA 32
+sAD 41
+lDA 38
 pha 
-lDA 29
+lDA 35
 sAD 5
 pla 
 lDR 5
 sub 
-sAD 36
+sAD 42
+lDA 41
+pha 
+lDA 35
+sAD 5
+pla 
+lDR 5
+add 
+pha 
+lDA 38
+sAD 5
+pla 
+lDR 5
+sub 
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+sub 
+sAD 43
+lDA 42
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+set 1
+add 
+sAD 5
+lDR 5
+ahm 
+sAD 5
+sRP 5
+set 1
+add 
+sAD 44
+lDA 43
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+set 1
+add 
+sAD 5
+lDR 5
+ahm 
+sAD 5
+sRP 5
+set 1
+add 
+sAD 45
 lDA 35
 pha 
-lDA 29
-sAD 5
-pla 
-lDR 5
-add 
+lDA 44
 pha 
-lDA 32
-sAD 5
-pla 
-lDR 5
-sub 
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 37
-lDA 36
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-set 1
-add 
-sAD 5
-lDR 5
-ahm 
-sAD 5
-sRP 5
-set 1
-add 
-sAD 38
-lDA 37
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-set 1
-add 
-sAD 5
-lDR 5
-ahm 
-sAD 5
-sRP 5
-set 1
-add 
-sAD 39
-lDA 29
-pha 
-lDA 38
-pha 
-lDA 36
+lDA 42
 pha 
 jmS String::CopyN
-lDA 32
+lDA 38
 pha 
 clr 
 set 1
@@ -886,55 +1040,55 @@ pla
 lDR 5
 add 
 pha 
-lDA 39
+lDA 45
 pha 
-lDA 37
+lDA 43
 pha 
 jmS String::CopyN
-lDA 30
+lDA 36
 pha 
-lDA 38
+lDA 44
 pha 
-lDA 39
+lDA 45
 pha 
-lDA 39
+lDA 45
 pha 
-lDA 38
+lDA 44
 pha 
 jmS Parse
 pla 
-sAD 40
+sAD 46
 pla 
-sAD 39
-lDA 40
+sAD 45
+lDA 46
 pha 
-lDA 39
+lDA 45
 pha 
 jmS Parse
 pla 
-sAD 41
+sAD 47
 pla 
-sAD 40
+sAD 46
 pla 
-sAD 39
+sAD 45
 pla 
-sAD 38
+sAD 44
 set 1
 sub 
 sAD 5
 lPR 5
 fhm 
-lDA 39
+lDA 45
 set 1
 sub 
 sAD 5
 lPR 5
 fhm 
 pla 
-sAD 30
-lDA 40
+sAD 36
+lDA 46
 pha 
-lDA 30
+lDA 36
 pha 
 clr 
 set 2
@@ -946,9 +1100,9 @@ add
 sAD 5
 pla 
 sAP 5
-lDA 41
+lDA 47
 pha 
-lDA 30
+lDA 36
 pha 
 clr 
 set 3
@@ -965,10 +1119,10 @@ lab Eval
 pla 
 sAD 13
 pla 
-sAD 42
+sAD 48
 lDA 13
 pha 
-lDA 42
+lDA 48
 pha 
 clr 
 set 0
@@ -979,8 +1133,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 43
-lDA 42
+sAD 49
+lDA 48
 pha 
 clr 
 set 1
@@ -991,8 +1145,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 44
-lDA 43
+sAD 50
+lDA 49
 pha 
 clr 
 set 0
@@ -1002,16 +1156,16 @@ pla
 lDR 5
 jmA Eval::FoundOp
 pla 
-sAD 45
-lDA 44
+sAD 51
+lDA 50
 pha 
 lDA 13
 pha 
 ret 
 lab Eval::FoundOp
-lDA 44
+lDA 50
 pha 
-lDA 42
+lDA 48
 pha 
 clr 
 set 3
@@ -1022,8 +1176,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 46
-lDA 42
+sAD 52
+lDA 48
 pha 
 clr 
 set 2
@@ -1034,34 +1188,34 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 47
-lDA 46
+sAD 53
+lDA 52
 pha 
-lDA 47
-pha 
-jmS Eval
-pla 
-sAD 48
-pla 
-sAD 46
-lDA 48
-pha 
-lDA 46
+lDA 53
 pha 
 jmS Eval
 pla 
-sAD 49
+sAD 54
 pla 
-sAD 48
+sAD 52
+lDA 54
+pha 
+lDA 52
+pha 
+jmS Eval
 pla 
-sAD 44
-lDA 48
+sAD 55
+pla 
+sAD 54
+pla 
+sAD 50
+lDA 54
 pha 
-lDA 49
+lDA 55
 pha 
-lDA 44
+lDA 50
 pha 
-lDA 26
+lDA 32
 sAD 5
 pla 
 lDR 5
@@ -1070,9 +1224,9 @@ got Temp18
 lab Temp19
 jmS Math::Add
 lab Temp18
-lDA 44
+lDA 50
 pha 
-lDA 27
+lDA 33
 sAD 5
 pla 
 lDR 5
@@ -1081,9 +1235,9 @@ got Temp20
 lab Temp21
 jmS Math::Sub
 lab Temp20
-lDA 44
+lDA 50
 pha 
-lDA 28
+lDA 34
 sAD 5
 pla 
 lDR 5
@@ -1093,10 +1247,10 @@ lab Temp23
 jmS Math::Mul
 lab Temp22
 pla 
-sAD 50
+sAD 56
 pla 
 sAD 13
-lDA 50
+lDA 56
 pha 
 lDA 13
 pha 
@@ -1105,10 +1259,10 @@ lab FreeExprTree
 pla 
 sAD 13
 pla 
-sAD 42
+sAD 48
 lDA 13
 pha 
-lDA 42
+lDA 48
 pha 
 clr 
 set 0
@@ -1119,8 +1273,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 43
-lDA 42
+sAD 49
+lDA 48
 pha 
 clr 
 set 1
@@ -1131,8 +1285,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 44
-lDA 43
+sAD 50
+lDA 49
 pha 
 clr 
 set 0
@@ -1141,23 +1295,59 @@ sAD 5
 pla 
 lDR 5
 jmA FreeExprTree::FoundOp
-lDA 42
+lDA 48
 set 1
 sub 
 sAD 5
 lPR 5
 fhm 
-lDA 13
+ret 
+lab FreeExprTree::FoundOp
+lDA 48
 pha 
+clr 
+set 3
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 52
+lDA 48
+pha 
+clr 
+set 2
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 5
+lPA 5
+sAD 53
+lDA 48
+set 1
+sub 
+sAD 5
+lPR 5
+fhm 
+lDA 53
+pha 
+lDA 52
+pha 
+jmS FreeExprTree
+jmS FreeExprTree
 ret 
 lab PrintExprTree
 pla 
 sAD 13
 pla 
-sAD 42
+sAD 48
 lDA 13
 pha 
-lDA 42
+lDA 48
 pha 
 clr 
 set 0
@@ -1168,8 +1358,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 43
-lDA 42
+sAD 49
+lDA 48
 pha 
 clr 
 set 1
@@ -1180,8 +1370,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 44
-lDA 43
+sAD 50
+lDA 49
 pha 
 clr 
 set 0
@@ -1190,7 +1380,7 @@ sAD 5
 pla 
 lDR 5
 jmA PrintExprTree::FoundOp
-lDA 43
+lDA 49
 pha 
 clr 
 set 1
@@ -1201,7 +1391,7 @@ lDR 5
 jmA PrintExprTree::FoundValue
 ret 
 lab PrintExprTree::FoundOp
-lDA 42
+lDA 48
 pha 
 clr 
 set 2
@@ -1212,8 +1402,8 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 40
-lDA 42
+sAD 46
+lDA 48
 pha 
 clr 
 set 3
@@ -1224,19 +1414,25 @@ lDR 5
 add 
 sAD 5
 lPA 5
-sAD 41
+sAD 47
+clr 
+set 32
+add 
+putstr 
+lDA 50
+putstr 
+lDA 47
 pha 
-lDA 44
-pha 
-lDA 40
+lDA 46
 pha 
 clr 
 set 40
 add 
 putstr 
 jmS PrintExprTree
-pla 
-sAD 44
+clr 
+set 32
+add 
 putstr 
 jmS PrintExprTree
 clr 
@@ -1245,7 +1441,7 @@ add
 putstr 
 ret 
 lab PrintExprTree::FoundValue
-lDA 44
+lDA 50
 sAD 5
 out 5
 ret 
@@ -1255,7 +1451,7 @@ ahm
 sAD 0
 set 1
 add 
-sAD 51
+sAD 57
 set 29
 jmS _WriteChar
 set 49
@@ -1314,23 +1510,61 @@ set 48
 jmS _WriteChar
 set 0
 jmS _WriteChar
-lDA 51
+lDA 57
 pha 
 jmS Parse
 pla 
-sAD 52
+sAD 58
 pha 
 jmS Eval
 pla 
-sAD 50
+sAD 56
+lDA 58
+pha 
+jmS PrintExprTree
+set 8
+ahm 
+sAD 0
+set 1
+add 
+sAD 59
+set 8
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 45
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 10
+jmS _WriteChar
+set 0
+jmS _WriteChar
+lDA 59
+pha 
+jmS String::PrintString
+lDA 56
 sAD 5
 out 5
-lDA 51
+lDA 57
 set 1
 sub 
 sAD 5
 lPR 5
 fhm 
+lDA 59
+set 1
+sub 
+sAD 5
+lPR 5
+fhm 
+lDA 58
+pha 
+jmS FreeExprTree
 brk 
 lab _WriteChar
 sRP 0
@@ -1343,4 +1577,4 @@ ret
 
 
 
- "Compiled from source: D:/ConsoleEnv/baabnq/ProgrammsV5.x/TreeParseEvalMathExpr.baabnq
+ "Compiled from source: D:\ProjektePython\Scripts\BaabnqIde\src/../temp.baabnq

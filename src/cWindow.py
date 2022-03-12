@@ -55,6 +55,7 @@ class cWindow(QtWidgets.QMainWindow):
                 super().__init__()
 
                 self.xPluginDisplayList = []
+                self.xStackDisplayList  = []
                 self.xMaxCommandListSize = 5
 
 
@@ -66,10 +67,16 @@ class cWindow(QtWidgets.QMainWindow):
                 
                 self.xLayout.addWidget(QtWidgets.QLabel("Plugin Calls: "), 0, 0)
                 self.xLayout.addWidget(QtWidgets.QLabel("Variables: "), 2, 0)
+                self.xLayout.addWidget(QtWidgets.QLabel("Heap Usage: "), 0, 1)
+                self.xLayout.addWidget(QtWidgets.QLabel("Stack: "), 2, 1)
                 
                 
                 self.xPluginDisplay = QtWidgets.QListWidget()
                 self.xLayout.addWidget(self.xPluginDisplay, 1, 0)
+
+                self.xStackDisplay = QtWidgets.QListWidget()
+                self.xLayout.addWidget(self.xStackDisplay, 3, 1)
+
 
                 self.xVarDisplay = QtWidgets.QTableWidget(0, 0, self)
                 self.xVarDisplay.setColumnCount(2)
@@ -87,7 +94,8 @@ class cWindow(QtWidgets.QMainWindow):
                 
                 self.xHeapUsageDisplay = QtWidgets.QProgressBar(self)
                 self.xHeapUsageDisplay.setFormat("%v / %m")
-                self.xLayout.addWidget(self.xHeapUsageDisplay, 0, 1)
+                self.xLayout.addWidget(self.xHeapUsageDisplay, 1, 1)
+                self.xLayout.setAlignment(self.xHeapUsageDisplay, QtCore.Qt.AlignTop)
 
                 xPluginDisplayFont = self.xPluginDisplay.font()
                 xPluginDisplayMetric = QtGui.QFontMetrics(xPluginDisplayFont)
@@ -120,8 +128,17 @@ class cWindow(QtWidgets.QMainWindow):
                 self.xPluginDisplay.clear()
                 self.xPluginDisplay.addItems(self.xPluginDisplayList)
                 
+            def UpdateStackDisplay(self, xStackInteractionType, xValue):
+                if xStackInteractionType == "push":
+                    self.xStackDisplayList.append(xValue)
+                    
+                elif xStackInteractionType == "pull" and len(self.xStackDisplayList) > 0:
+                    self.xStackDisplayList.pop(-1)
+
                 
-                
+                self.xStackDisplay.clear()
+                self.xStackDisplay.addItems(self.xStackDisplayList)
+                    
          
         def __init__(self, xParent):
             self.xParent = xParent
@@ -131,6 +148,8 @@ class cWindow(QtWidgets.QMainWindow):
             self.xCompilerOutputPuffer = []
             self.xVarValues = {}
             
+            self.xVirtMachMode = 0
+            
             self.xProcessTracker = self.cAsyncProcessTracker(None, None, None)
             self.xCompilerProcess = QtCore.QProcess()
             self.xVirtMachProcess = QtCore.QProcess()
@@ -139,7 +158,7 @@ class cWindow(QtWidgets.QMainWindow):
         def __del__(self):
             self.Kill()
 
-        def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = []):
+        def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = [], xDisplayName = "Compiling"):
             def HandleOutput():
                 StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput())
                 
@@ -155,29 +174,30 @@ class cWindow(QtWidgets.QMainWindow):
             self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
             #and it's tracker
-            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xCompilerProcess, "Compiling")
+            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xCompilerProcess, xDisplayName)
             self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
             self.xProcessTracker.start()
             
-        def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = []):
+        def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = [], xDisplayName = "Running"):
             def HandleOutput():
                 StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
             
             self.xProcessTracker.stop()
             self.xVirtMachProcess.kill()
             
-            self.xVirtMachProcess = QtCore.QProcess()        
+            self.xVirtMachProcess = QtCore.QProcess()
             self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
             xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
             print(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
             #and it's tracker
-            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xVirtMachProcess, "Running")
+            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xVirtMachProcess, xDisplayName)
             self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
             self.xProcessTracker.start()
     
         def StartNextProcess(self):
+            print([x.__name__ for x in self.xProcessQueue])
             if len(self.xProcessQueue) > 0:
                 xNextProcess = self.xProcessQueue.pop(0)
                 xNextProcess()
@@ -205,19 +225,21 @@ class cWindow(QtWidgets.QMainWindow):
             self.xProcessQueue = [HandleCompile, HandleParseCompilerOutput, HandleLaunch]
             self.StartNextProcess()
         
-        def Debug(self, xPath):
+        def Debug(self, xPath, xBreakpoints):
             self.Kill()
             self.xVarValues = {} #for new run reset variable buffer
             xBuildPath = xThisPath + "/../build.s1"
+            xTempPath  = xThisPath + "/../temp.baabnq"
             self.xCompilerOutputPuffer = []
             
             #check if debugger is not opened
             if self.xDebugWindow is None or not self.xDebugWindow.isVisible():
                 self.xDebugWindow = self.cDebug()
                 self.xParent.xSender.GlobalClose.connect(self.xDebugWindow.close)
+
+            self.xDebugWindow.xStackDisplayList = []
             
             def HandleDebugProtocol(xBytes):
-                print(xBytes)
                 #split line by line
                 xLines = cUtils.Bytes2Str(xBytes).split("\r\n")
                 for xLineIter in xLines:
@@ -229,7 +251,7 @@ class cWindow(QtWidgets.QMainWindow):
                     xCategory, xData = xLineMatch.group(1, 2)
                     
                     if xCategory == "Print":
-                        self.xParent.xConsole.Write2Console(xData + "\n")
+                        self.xParent.xConsole.Write2Console(xData)
                         
                     elif xCategory == "Chr":
                         xRawInt = int(xData)
@@ -243,14 +265,38 @@ class cWindow(QtWidgets.QMainWindow):
                         self.xDebugWindow.UpdateVarDisplay(self.xVarValues)
                         
                     elif xCategory == "HeapUsage":
-                        print(xData)
-                        self.xDebugWindow.UpdateHeapUsage(*xData.split(" "))
+                        self.xDebugWindow.UpdateHeapUsage(*xData.split(":"))
+                    
+                    elif xCategory == "Stack":
+                        self.xDebugWindow.UpdateStackDisplay(*xData.split(":", 1))
+
+                    elif xCategory == "Mode":
+                        self.xVirtMachMode = int(xData)
+                    
+                    else:
+                        self.xParent.xConsole.Write2Console(f"UNRECOGNIZED RAW: {xData}\n".format())
                         
                                 
                 
-            
+            def HandleTempCopy():
+                xInputFileHandle =  open(xPath, "r")
+                xOutputFileHandle = open(xTempPath, "w")
+
+                xFileContent = xInputFileHandle.read()
+                xFileInterlaced = [
+                    f"asm 'breakpoint 0'; {xData}".format() if xIndex in xBreakpoints else xData \
+                    for xIndex, xData in enumerate(xFileContent.split("\n"))
+                ]
+                
+                xOutputFileHandle.write("\n".join(xFileInterlaced))
+                                
+                xInputFileHandle.close()
+                xOutputFileHandle.close()
+                
+                self.StartNextProcess()
+                            
             def HandleLaunch():
-                self.Launch(xBuildPath, HandleDebugProtocol, self.StartNextProcess, xAddArgs = ["--debug"])
+                self.Launch(xBuildPath, HandleDebugProtocol, self.StartNextProcess, xAddArgs = ["--debug"], xDisplayName = "Debugging")
 
             def HandleParseCompilerOutput():
                 self.ParseCompilerOutput(self.xCompilerOutputPuffer)                
@@ -258,9 +304,9 @@ class cWindow(QtWidgets.QMainWindow):
 
 
             def HandleCompile():
-                self.Compile(xPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess, xAddArgs = ["--MoreInfo"])
+                self.Compile(xTempPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess, xAddArgs = ["--MoreInfo"])
             
-            self.xProcessQueue = [HandleCompile, HandleParseCompilerOutput, HandleLaunch]
+            self.xProcessQueue = [HandleTempCopy, HandleCompile, HandleParseCompilerOutput, HandleLaunch]
             self.StartNextProcess()
 
         
@@ -275,7 +321,7 @@ class cWindow(QtWidgets.QMainWindow):
             #remove all empty line and then take the last to get the status
             xCompilerExitStatus = [x for x in xText.split("\r\n") if x != ""][-1] 
             
-            #compiler fail            
+            #compiler fail
             if xCompilerExitStatus != "Compilation was successful":
                 self.xParent.xConsole.Write2Console(xCompilerExitStatus + "\r\n")
             
@@ -307,9 +353,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.xCompilerProcess = QtCore.QProcess()
             self.xVirtMachProcess = QtCore.QProcess()
             
-
-
-
+            
 
 
 
@@ -503,6 +547,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xCompilerErrorCheck = False
         self.xJump2ErrorLine = False
         
+        self.xBreakpoints = []
+        
         self.InitUI()
 
     def InitUI(self):
@@ -579,14 +625,28 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xMenuOptions.addAction(self.NewMenuSubOption("Jump To Error Line"  , self.UpdateJump2ErrorLine    , "", True))
         
 
-        self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "F1"))
+        self.xMenuRun.addAction(self.NewMenuSubOption("Run", self.RunCurrentProgram, "Ctrl+F1"))
         self.xMenuRun.addAction(self.NewMenuSubOption("Terminate", self.xRunner.Kill, "Shift+F1"))
-        self.xMenuRun.addAction(self.NewMenuSubOption("Debug", self.DebugCurrentProgram, "F2"))        
+        self.xMenuRun.addAction(self.NewMenuSubOption("Debug", self.DebugCurrentProgram, "F1"))        
 
+        def AddBreakpoint():
+            xIndex = cUtils.GetCursorLineIndex(self.xTabHost.currentWidget())
 
+            #toggle
+            if xIndex in self.xBreakpoints: self.xBreakpoints.remove(xIndex)
+            else:                           self.xBreakpoints.append(xIndex)
+            self.xSender.UpdateLinenumberDisplay.emit()
+
+        def ClearBreakpoint():
+            self.xBreakpoints = []
+            self.xSender.UpdateLinenumberDisplay.emit()
+
+        self.xMenuRun.addAction(self.NewMenuSubOption("Add Breakpoint here",   AddBreakpoint  , "F2"))
+        self.xMenuRun.addAction(self.NewMenuSubOption("Clear all Breakpoints", ClearBreakpoint, "Shift+F2"))
 
         self.setWindowTitle("Baabnq IDE")
         self.LoadSetttings(self.xSettingsHandle)
+        self.UpdateEditorFocus()
         self.show()        
     
     def FindGui(self):
@@ -606,7 +666,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     def DebugCurrentProgram(self):
         xPath = self.xTabHost.currentWidget().xFilePath
         self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
-        self.xRunner.Debug(xPath)
+        self.xRunner.Debug(xPath, self.xBreakpoints)
         
         
       
@@ -694,7 +754,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     
     
     def OpenCodeEditorTab(self, xPath):
-        xCodeEditor = cCodeEditor(self.xSender, self.xFontFamily)
+        xCodeEditor = cCodeEditor(self)
         
         self.xTabHost.addTab(xCodeEditor, cUtils.Path2Name(xPath))
         self.xTabContent.append((xCodeEditor, ))
@@ -721,6 +781,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             xDisabled = xTabIndex != self.xTabHost.currentIndex()
             xTabIter[0].SetCompleterStatus(not xDisabled)
             xTabIter[0].setDisabled(xDisabled)
+            
 
     def ExitGui(self):
         
@@ -753,7 +814,6 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             xSuccess = self.OpenCodeEditorTab(xTabDataIter["filePath"])
             if xSuccess:
                 self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
-            
             
         
         self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))

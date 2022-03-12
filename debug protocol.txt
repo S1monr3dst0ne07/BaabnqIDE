@@ -8,9 +8,11 @@ data output protocol:
     the categories include:
     Print - stdio, aka inp and out (for inp the ide send back normal data)
     Chr   - sending a single character via putstr (renamed putchr, in ascii)
-    HeapUsage - how much of the heap is used
+    HeapUsage - how much of the heap is used: current:max
     Var - Variables (dict)
     Plugin  - call to pluging
+    Stack - change to stack: push:<num> or pull:0
+    Mode - update mode: Running, Breakpoint
     
 breakpoint: 
     a breakpoint is trigger when the virtual machine hits the 'breakpoint 0' instruction
@@ -18,4 +20,4 @@ breakpoint:
     the commands that can be given to the virtual machine include:
     Continue - stop the breakpoint handling and continue normal running
     Next - just execute the next instruction and wait for more instructions
-    
+    Time - change idle time per command

@@ -103,7 +103,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     xBaseCommands = ["put", "print", "input", "putstr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump"]
     
 
-    def __init__(self, xSender, xFontFamily):
+    def __init__(self, xParent):
         super().__init__()
         self.xFilePath = ""
         self.xIsSaved = True #keep track of if the file in this editor instance is saved to it's source
@@ -119,9 +119,10 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
         self.xCompleter.activated.connect(self.InsertCompletion)
 
-        self.xFontFamily = xFontFamily
+        self.xFontFamily = xParent.xFontFamily
+        self.xParent = xParent
         
-        self.xSender = xSender
+        self.xSender = xParent.xSender
         self.xSender.UpdateEditors.connect(self.UpdateFromPath)
         self.textChanged.connect(self.Change)  
         self.xSender.UpdateCompleter.connect(self.UpdateCompleter)
@@ -135,6 +136,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.blockCountChanged.connect(self.UpdateLineNumberAreaWidth)
         self.updateRequest.connect(self.UpdateLineNumberArea)
         self.cursorPositionChanged.connect(self.HighlightCurrentLine)
+        self.xParent.xSender.UpdateLinenumberDisplay.connect(self.xLineNumberArea.update)
         
         self.UpdateLineNumberAreaWidth(0)
 
@@ -314,7 +316,6 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         xPainter = QtGui.QPainter(self.xLineNumberArea)
 
         xPainter.fillRect(xEvent.rect(), QtGui.QColor(cUtils.xStyleHandle["LineNumBG"]))
-        xPainter.setPen(                 QtGui.QColor(cUtils.xStyleHandle["LineNumFG"]))
         xPainter.setFont(QtGui.QFont(self.xFontFamily, self.font().pointSize()))
 
         xBlock = self.firstVisibleBlock()
@@ -327,6 +328,12 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         while xBlock.isValid() and (xTop <= xEvent.rect().bottom()):
             if xBlock.isVisible() and (xBottom >= xEvent.rect().top()):
                 xNumber = str(xBlockNumber + 1)
+                
+                if xBlockNumber in self.xParent.xBreakpoints:
+                    xPainter.setPen(QtGui.QColor(cUtils.xStyleHandle["Breakpoint"]))
+                    xPainter.drawLine(0, int(xTop), self.xLineNumberArea.width(), int(xTop))
+                
+                xPainter.setPen(QtGui.QColor(cUtils.xStyleHandle["LineNumFG"]))
                 xPainter.drawText(0, int(xTop), self.xLineNumberArea.width(), xHeight,
                  QtCore.Qt.AlignRight, xNumber)
 

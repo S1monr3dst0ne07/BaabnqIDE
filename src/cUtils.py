@@ -79,3 +79,11 @@ class cUtils:
     @staticmethod
     def Quotes(xRaw):
         return '"' + xRaw + '"'
+    
+    @staticmethod
+    def GetCursorLineIndex(xEditorWidget):
+        xAbsIndex = xEditorWidget.textCursor().position()
+        xPlain = xEditorWidget.toPlainText()
+        
+        xNewlineCount = xPlain[:xAbsIndex].count("\n")
+        return xNewlineCount

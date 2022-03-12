@@ -1,0 +1,334 @@
+
+
+use 'libs/string.baabnq';
+
+
+put _OpAdd = 43;
+put _OpSub = 45;
+put _OpMul = 42;
+
+jump Skip;
+
+
+lab Parse;
+asm 'breakpoint 0'; 
+    pull _ReturnAddr;
+    pull _InputStr;
+    push _ReturnAddr;
+
+    "push _InputStr;    
+    "putstr 32;
+    "sub String::PrintString;
+    "putstr 10;
+
+
+    "construct the node and alloc on the heap
+    "mapping of the data inside the node
+    "NPtr + 0  <type (0 operator; 1 value)>
+    "NPtr + 1  <value or ascii of operator>
+    "NPtr + 2  <subnode1>
+    "NPtr + 3  <subnode2>
+    new 4 _ThisNodePtr;
+
+    "place the ptr to node on the stack as a return value
+    pull _ReturnAddr;
+    push _ThisNodePtr;
+    push _ReturnAddr;
+
+
+    "scaning does not call anything so we don't need that namespacing thing
+
+    push _InputStr;
+    sub String::GetSize;
+    pull _InputSize;
+
+
+    put _ScanPtr = _InputStr + _InputSize;
+    lab Parse::FindLvL1;
+    put _Data <- _ScanPtr;
+    jump Parse::OpFound ~ _Data == _OpAdd;
+    jump Parse::OpFound ~ _Data == _OpSub;
+
+    put _ScanPtr = _ScanPtr - 1;
+    jump Parse::FindLvL1 ~ _ScanPtr != _InputStr;
+
+
+    put _ScanPtr = _InputStr + _InputSize;
+    lab Parse::FindLvL2;
+    put _Data <- _ScanPtr;
+    jump Parse::OpFound ~ _Data == _OpMul;
+    "wow space for formatting, very cool (also this comment is useless)
+    put _ScanPtr = _ScanPtr - 1;
+    jump Parse::FindLvL2 ~ _ScanPtr != _InputStr;
+
+
+    "set type of node to 1, for value
+    put 1 -> _ThisNodePtr + 0;
+
+
+
+    "push data to stack for parsing to int
+    push 0; "terminator
+
+    put _ScanPtr = _InputStr;
+    lab PushLoop;
+    put _Data <- _ScanPtr;
+    put _ScanPtr = _ScanPtr + 1;
+
+    jump PushLoop ~ _Data == 32;
+    jump PushExit ~ _Data == 0;
+    push _Data;
+    jump PushLoop;
+    lab PushExit;
+
+
+    push 0; "config
+    sub String::StackChar2Int;
+
+    pull _ParsedInt;
+    put _ParsedInt -> _ThisNodePtr + 1;
+
+    return;
+
+
+
+    "after finding the operator alloc space for the substrings
+    lab Parse::OpFound;
+        put _Op = _Data;
+        put _Op -> _ThisNodePtr + 1;
+
+
+        "find size of substrings
+        push _InputStr;
+        sub String::GetSize;
+        pull _MainSize;
+        put _SubSize1 = _ScanPtr - _InputStr;
+        put _SubSize2 = ((_MainSize + _InputStr) - _ScanPtr) - 1;
+
+        new _SubSize1 + 1 _SubStrPtr1;
+        new _SubSize2 + 1 _SubStrPtr2;
+
+        "populate alloced memory
+        push _InputStr;
+        push _SubStrPtr1;
+        push _SubSize1;
+        sub String::CopyN;
+
+        push _ScanPtr + 1;
+        push _SubStrPtr2;
+        push _SubSize2;
+        sub String::CopyN;
+
+        "save the ThisNodePtr
+        push _ThisNodePtr;
+
+        "save even the StrPtrs, for freeing memory later (can't have the shit leakin')
+        push _SubStrPtr1;
+        push _SubStrPtr2;
+
+
+        "we keep all the stuff on the stack between calls, because the Parse subroutine is very dangerous
+        push _SubStrPtr2;
+        push _SubStrPtr1;
+
+        sub Parse;
+
+        "flip the values on the stack, because currently it looks like this:
+        "|ThisNodePtr		| (for last Parse call)
+        "|SubStrPtr1		| (for push to the stack)
+        "====================
+        "but for the next call we need the SubStrPtr1 to be ontop
+
+        pull _SubNodePtr1;
+        pull _SubStrPtr2;
+        push _SubNodePtr1;
+        push _SubStrPtr2;
+
+        "now some may say: 'why save the SubStrPtr2 in the first place', this is because the Parse may override it and we need to save it
+
+        sub Parse;
+
+        "now after alot of work, get the final data
+        pull _SubNodePtr2;
+        pull _SubNodePtr1;
+
+        "free the strings
+        pull _SubStrPtr2;
+        pull _SubStrPtr1;
+        free _SubStrPtr1;
+        free _SubStrPtr2;
+
+
+
+        "restore the ThisNodePtr
+        pull _ThisNodePtr;
+
+        "override the ptr in the ThisNodePtr
+        put _SubNodePtr1 -> _ThisNodePtr + 2;
+        put _SubNodePtr2 -> _ThisNodePtr + 3;
+
+        return;
+
+
+
+
+
+lab Eval;
+    pull _ReturnAddr;
+    pull _Ptr;
+    push _ReturnAddr;
+
+    put _Type  <- _Ptr + 0;
+    put _Value <- _Ptr + 1;
+
+    jump Eval::FoundOp ~ _Type == 0;
+    "delete returnAddr, place Value and rewrite returnAddr
+    pull __;
+    push _Value;
+    push _ReturnAddr;
+    return;
+
+
+
+
+    lab Eval::FoundOp;
+        "save Value for later operation eval
+        push _Value;
+        "print _Value;
+
+        "prepare values;
+        put _SubPtr2 <- _Ptr + 3;
+        put _SubPtr1 <- _Ptr + 2;
+        push _SubPtr2;
+        push _SubPtr1;
+
+        sub Eval;
+
+        "switch stack
+        pull _ReturnValue1;
+        pull _SubPtr2;
+        push _ReturnValue1;
+        push _SubPtr2;
+
+        sub Eval;
+
+        "restore value
+        pull _ReturnValue2;
+        pull _ReturnValue1;
+        pull _Value;
+        push _ReturnValue1;
+        push _ReturnValue2;
+
+        "call helper routine for math lib
+        sub Math::Add ~ _Value == _OpAdd;
+        sub Math::Sub ~ _Value == _OpSub;
+        sub Math::Mul ~ _Value == _OpMul;
+
+
+        "flip with return value
+        pull _FinalValue;
+        pull _ReturnAddr;
+        push _FinalValue;
+        push _ReturnAddr;
+
+
+        return;
+
+lab FreeExprTree;
+    pull _ReturnAddr;
+    pull _Ptr;
+    push _ReturnAddr;
+
+    put _Type  <- _Ptr + 0;
+    put _Value <- _Ptr + 1;
+
+    jump FreeExprTree::FoundOp ~ _Type == 0;
+
+    free _Ptr;
+    return;
+
+    lab FreeExprTree::FoundOp;
+        put _SubPtr2 <- _Ptr + 3;
+        put _SubPtr1 <- _Ptr + 2;
+        free _Ptr;
+        push _SubPtr1;        
+        push _SubPtr2;
+    
+        sub FreeExprTree;
+        sub FreeExprTree;
+
+        return;
+
+
+
+lab PrintExprTree;
+    pull _ReturnAddr;
+    pull _Ptr;
+    push _ReturnAddr;
+
+
+    put _Type  <- _Ptr + 0;
+    put _Value <- _Ptr + 1;
+
+    jump PrintExprTree::FoundOp ~ _Type == 0;
+    jump PrintExprTree::FoundValue ~ _Type == 1;
+    return;
+
+    lab PrintExprTree::FoundOp;
+        put _SubNodePtr1 <- _Ptr + 2;
+        put _SubNodePtr2 <- _Ptr + 3;
+
+        putstr 32;
+        putstr _Value;
+        
+        push _SubNodePtr2;
+        push _SubNodePtr1;
+        
+        putstr 40;
+        
+        sub PrintExprTree;
+        putstr 32;
+        sub PrintExprTree;
+        
+        putstr 41;
+        
+        
+        
+        return;
+
+    lab PrintExprTree::FoundValue;
+        print _Value;
+        return;
+
+
+lab Skip;
+
+
+
+"new '2 * 2 - 2 + 1' _MainStr;
+"new '3 * 2 + 10 + 7 * 7' _MainStr;
+new '18 + 51 - 2 - 83 + 17 * 100' _MainStr;
+
+"parse
+push _MainStr;
+sub Parse;
+pull _TreePtr;
+
+"evaluate
+push _TreePtr;
+sub Eval;
+pull _FinalValue;
+
+"print results
+push _TreePtr;
+sub PrintExprTree;
+new '   ->\n' _TempStr;
+push _TempStr;
+sub String::PrintString;
+print _FinalValue;
+
+"free memory, cuz' why not
+free _MainStr;
+free _TempStr;
+push _TreePtr;
+sub FreeExprTree;

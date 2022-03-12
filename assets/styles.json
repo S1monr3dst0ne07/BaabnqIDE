@@ -89,7 +89,7 @@
 "DebugTableBackground" : "#555555",
 
 "FindDialog"  : "background-color: #555555; color: #ffffff",
-"DebugDialog" : "background-color: #555555; color: #ffffff"
-
+"DebugDialog" : "background-color: #555555; color: #ffffff",
+"Breakpoint"  : "#ff0000"
 
 }

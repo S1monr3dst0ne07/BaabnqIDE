@@ -46,17 +46,24 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
     def keyPressEvent(self, xEvent):
         xParentProcess = self.xParent.xRunner.xProcessTracker.xSourceProcess
 
-        super().keyPressEvent(xEvent)
+        if xEvent.key() not in [QtCore.Qt.Key_Up, QtCore.Qt.Key_Down, QtCore.Qt.Key_Left, QtCore.Qt.Key_Right]:
+            super().keyPressEvent(xEvent)
+
         xChar = xEvent.text()
         xBytes = xChar.encode("utf-8")
-                
+
+        
         try:
             if xBytes == b"\r":
                 xParentProcess.write(b"\n")
-                
+            
+            
+            
+            
             else:    
                 xParentProcess.write(xBytes)
-                sys.stdout.flush()
+
+            sys.stdout.flush()
             
         except Exception as E:
             print(E)

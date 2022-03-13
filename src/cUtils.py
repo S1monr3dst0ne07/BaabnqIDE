@@ -87,3 +87,10 @@ class cUtils:
         
         xNewlineCount = xPlain[:xAbsIndex].count("\n")
         return xNewlineCount
+
+    @staticmethod
+    def FixWidgetWidth(xWidget):
+        xWidget.adjustSize()
+        xWidget.setFixedWidth(xWidget.width())
+
+    

@@ -69,7 +69,29 @@ class cWindow(QtWidgets.QMainWindow):
                 self.xLayout.addWidget(QtWidgets.QLabel("Variables: "), 2, 0)
                 self.xLayout.addWidget(QtWidgets.QLabel("Heap Usage: "), 0, 1)
                 self.xLayout.addWidget(QtWidgets.QLabel("Stack: "), 2, 1)
+                self.xLayout.addWidget(QtWidgets.QLabel("Mode: "), 4, 0)
                 
+                
+                #buttons
+                self.xButtonLayout = QtWidgets.QVBoxLayout(self)
+                
+                self.xNextButton = QtWidgets.QPushButton("Next")
+                self.xContinueButton = QtWidgets.QPushButton("Continue")
+                cUtils.FixWidgetWidth(self.xNextButton)
+                cUtils.FixWidgetWidth(self.xContinueButton)
+                self.xNextButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
+                self.xContinueButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
+                
+                self.xButtonLayout.addWidget(self.xNextButton, 0)
+                self.xButtonLayout.addWidget(self.xContinueButton, 1)
+
+                self.xLayout.addLayout(self.xButtonLayout, 5, 1)
+
+
+                
+                self.xModeDisplay = QtWidgets.QLabel("<No Updates yet>")
+                self.xModeDisplay.setStyleSheet(cUtils.xStyleHandle["Label"])
+                self.xLayout.addWidget(self.xModeDisplay, 5, 0)
                 
                 self.xPluginDisplay = QtWidgets.QListWidget()
                 self.xLayout.addWidget(self.xPluginDisplay, 1, 0)
@@ -95,13 +117,18 @@ class cWindow(QtWidgets.QMainWindow):
                 self.xHeapUsageDisplay = QtWidgets.QProgressBar(self)
                 self.xHeapUsageDisplay.setFormat("%v / %m")
                 self.xLayout.addWidget(self.xHeapUsageDisplay, 1, 1)
-                self.xLayout.setAlignment(self.xHeapUsageDisplay, QtCore.Qt.AlignTop)
 
                 xPluginDisplayFont = self.xPluginDisplay.font()
                 xPluginDisplayMetric = QtGui.QFontMetrics(xPluginDisplayFont)
                 
                 xPluginDisplayHeight = xPluginDisplayMetric.height() * (self.xMaxCommandListSize + 1)
                 self.xPluginDisplay.setFixedHeight(xPluginDisplayHeight)
+
+                #fix alignments
+                self.xLayout.setAlignment(self.xHeapUsageDisplay, QtCore.Qt.AlignTop)
+                self.xLayout.setAlignment(self.xModeDisplay, QtCore.Qt.AlignTop)
+
+                
                 self.show()
             
             
@@ -118,7 +145,6 @@ class cWindow(QtWidgets.QMainWindow):
                 
                 
             def UpdatePluginDisplay(self, xNewCommand):
-                print(xNewCommand)
                 self.xPluginDisplayList.append(xNewCommand.replace(" ", "\t"))
                 
                 while len(self.xPluginDisplayList) > self.xMaxCommandListSize:
@@ -188,7 +214,6 @@ class cWindow(QtWidgets.QMainWindow):
             self.xVirtMachProcess = QtCore.QProcess()
             self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
             xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
-            print(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
             #and it's tracker
@@ -197,7 +222,6 @@ class cWindow(QtWidgets.QMainWindow):
             self.xProcessTracker.start()
     
         def StartNextProcess(self):
-            print([x.__name__ for x in self.xProcessQueue])
             if len(self.xProcessQueue) > 0:
                 xNextProcess = self.xProcessQueue.pop(0)
                 xNextProcess()
@@ -272,6 +296,12 @@ class cWindow(QtWidgets.QMainWindow):
 
                     elif xCategory == "Mode":
                         self.xVirtMachMode = int(xData)
+                        
+                        xModeText = {
+                            0 : "Running",
+                            1 : "Breakpoint",
+                            }[self.xVirtMachMode]
+                        self.xDebugWindow.xModeDisplay.setText(xModeText)
                     
                     else:
                         self.xParent.xConsole.Write2Console(f"UNRECOGNIZED RAW: {xData}\n".format())
@@ -282,10 +312,12 @@ class cWindow(QtWidgets.QMainWindow):
                 xInputFileHandle =  open(xPath, "r")
                 xOutputFileHandle = open(xTempPath, "w")
 
+                xCurrentWidget = self.xParent.xTabHost.currentWidget()
+                xBreakpoints = xCurrentWidget.xBreakpoints
+
                 xFileContent = xInputFileHandle.read()
                 xFileInterlaced = [
-                    f"asm 'breakpoint 0'; {xData}".format() if xIndex in xBreakpoints else xData \
-                    for xIndex, xData in enumerate(xFileContent.split("\n"))
+                    ("asm 'breakpoint 0'; {}".format(xData) if xIndex in xBreakpoints else xData) for xIndex, xData in enumerate(xFileContent.split("\n"))
                 ]
                 
                 xOutputFileHandle.write("\n".join(xFileInterlaced))
@@ -552,9 +584,10 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.InitUI()
 
     def InitUI(self):
+        xIconPath = xThisPath.replace("\\", "/") + "/../assets/Icon.png"
+        self.setWindowIcon(QtGui.QIcon(xIconPath))
 
         self.setStyleSheet(cUtils.xStyleHandle["Main"])
-
 
 
 
@@ -630,16 +663,18 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xMenuRun.addAction(self.NewMenuSubOption("Debug", self.DebugCurrentProgram, "F1"))        
 
         def AddBreakpoint():
-            xIndex = cUtils.GetCursorLineIndex(self.xTabHost.currentWidget())
+            xCurrentWidget = self.xTabHost.currentWidget()
+            xIndex = cUtils.GetCursorLineIndex(xCurrentWidget)
 
             #toggle
-            if xIndex in self.xBreakpoints: self.xBreakpoints.remove(xIndex)
-            else:                           self.xBreakpoints.append(xIndex)
-            self.xSender.UpdateLinenumberDisplay.emit()
+            if xIndex in xCurrentWidget.xBreakpoints: xCurrentWidget.xBreakpoints.remove(xIndex)
+            else:                           xCurrentWidget.xBreakpoints.append(xIndex)
+            xCurrentWidget.xLineNumberArea.update()
 
         def ClearBreakpoint():
-            self.xBreakpoints = []
-            self.xSender.UpdateLinenumberDisplay.emit()
+            xCurrentWidget = self.xTabHost.currentWidget()
+            xCurrentWidget.xBreakpoints = []
+            xCurrentWidget.xLineNumberArea.update()
 
         self.xMenuRun.addAction(self.NewMenuSubOption("Add Breakpoint here",   AddBreakpoint  , "F2"))
         self.xMenuRun.addAction(self.NewMenuSubOption("Clear all Breakpoints", ClearBreakpoint, "Shift+F2"))
@@ -813,7 +848,12 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         for xTabDataIter in xTabDataList:
             xSuccess = self.OpenCodeEditorTab(xTabDataIter["filePath"])
             if xSuccess:
-                self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
+                try:
+                    self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
+                    self.xTabContent[-1][0].xBreakpoints = xTabDataIter["breakpoints"] 
+            
+                except KeyError:
+                    pass
             
         
         self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
@@ -844,6 +884,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             xTabDataList.append({
                 "filePath" : xTabIter[0].xFilePath,
                 "zoom"     : xTabIter[0].font().pointSize(),
+                "breakpoints" : xTabIter[0].xBreakpoints,
                 
                 })
         

@@ -20,4 +20,3 @@ breakpoint:
     the commands that can be given to the virtual machine include:
     Continue - stop the breakpoint handling and continue normal running
     Next - just execute the next instruction and wait for more instructions
-    Time - change idle time per command

@@ -198,7 +198,6 @@ class cMain:
         
     def Interpret(self):
         xLastVars = {}
-        xLastMode = 0
         
         self.xLineStructures = self.Structuring(self.xFile)
         
@@ -221,13 +220,6 @@ class cMain:
                 xAttr = xLine.xAttr
 
                 if self.xDebug:
-                    
-                    #send mode update
-                    if self.xMode != xLastMode:
-                        print(self.AplyProt(str(self.xMode), "Mode"))
-                    
-                    
-                    xLastMode = self.xMode
 
                                         
                     #mode 1 is 'breakpoint'
@@ -242,8 +234,8 @@ class cMain:
                                 if xDebugOption == "Next":          break
                                 elif xDebugOption == "Continue":    
                                     self.xMode = 0
+                                    print(self.AplyProt(str(self.xMode), "Mode"))
                                     break
-                                elif xDebugOption == "Time":        self.xDelayPerExecCycleInMs = int(xDebugArgs[0])
 
                         except Exception: pass
                 
@@ -472,6 +464,7 @@ class cMain:
                 elif xInst == "breakpoint":
                     if self.xDebug:
                         self.xMode = 1
+                        print(self.AplyProt(str(self.xMode), "Mode"))
                 
                     
                 else:

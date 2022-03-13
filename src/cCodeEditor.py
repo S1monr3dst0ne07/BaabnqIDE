@@ -140,7 +140,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         
         self.UpdateLineNumberAreaWidth(0)
 
-
+        self.xBreakpoints = []
 
         
         self.InitUI()
@@ -329,7 +329,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             if xBlock.isVisible() and (xBottom >= xEvent.rect().top()):
                 xNumber = str(xBlockNumber + 1)
                 
-                if xBlockNumber in self.xParent.xBreakpoints:
+                if xBlockNumber in self.xBreakpoints:
                     xPainter.setPen(QtGui.QColor(cUtils.xStyleHandle["Breakpoint"]))
                     xPainter.drawLine(0, int(xTop), self.xLineNumberArea.width(), int(xTop))
                 

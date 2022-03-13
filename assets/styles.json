@@ -90,6 +90,12 @@
 
 "FindDialog"  : "background-color: #555555; color: #ffffff",
 "DebugDialog" : "background-color: #555555; color: #ffffff",
-"Breakpoint"  : "#ff0000"
+"Breakpoint"  : "#ff0000",
+"Label"       : 
+    "
+    border-color: #444444; 
+    border-width: 1px; 
+    border-style: solid;
+    "
 
 }

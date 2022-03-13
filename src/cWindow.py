@@ -51,8 +51,9 @@ class cWindow(QtWidgets.QMainWindow):
                 self.xDisplayWidget.setText("")
 
         class cDebug(QtWidgets.QWidget):
-            def __init__(self):
+            def __init__(self, xParent):
                 super().__init__()
+                self.xParent = xParent
 
                 self.xPluginDisplayList = []
                 self.xStackDisplayList  = []
@@ -60,6 +61,7 @@ class cWindow(QtWidgets.QMainWindow):
 
 
                 self.setStyleSheet(cUtils.xStyleHandle["DebugDialog"])
+                self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
                 self.setWindowTitle("Debug")
                 
                 self.xLayout = QtWidgets.QGridLayout()
@@ -73,17 +75,19 @@ class cWindow(QtWidgets.QMainWindow):
                 
                 
                 #buttons
-                self.xButtonLayout = QtWidgets.QVBoxLayout(self)
+                self.xButtonLayout = QtWidgets.QHBoxLayout(self)
                 
-                self.xNextButton = QtWidgets.QPushButton("Next")
                 self.xContinueButton = QtWidgets.QPushButton("Continue")
-                cUtils.FixWidgetWidth(self.xNextButton)
+                self.xCloseButton = QtWidgets.QPushButton("Close")
                 cUtils.FixWidgetWidth(self.xContinueButton)
-                self.xNextButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
-                self.xContinueButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
+                cUtils.FixWidgetWidth(self.xCloseButton)
+                self.SetDebuggerButtonsEnabled(False)
+                self.xContinueButton.pressed.connect(lambda: self.SendBreakpointOption("Continue\n"))
+                self.xCloseButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
+                self.xCloseButton.pressed.connect(self.close)
                 
-                self.xButtonLayout.addWidget(self.xNextButton, 0)
-                self.xButtonLayout.addWidget(self.xContinueButton, 1)
+                self.xButtonLayout.addWidget(self.xContinueButton, 0)
+                self.xButtonLayout.addWidget(self.xCloseButton, 1)
 
                 self.xLayout.addLayout(self.xButtonLayout, 5, 1)
 
@@ -131,6 +135,21 @@ class cWindow(QtWidgets.QMainWindow):
                 
                 self.show()
             
+            
+            def SendBreakpointOption(self, xOptionType):
+                if self.xParent.xVirtMachMode == 1:
+                    print("Send Debugger Option")
+                    self.xParent.xProcessTracker.xSourceProcess.write(xOptionType.encode("utf-8"))
+            
+            def SetDebuggerButtonsEnabled(self, xEnabled):
+                self.xContinueButton.setEnabled(xEnabled)
+                
+                if xEnabled:
+                    self.xContinueButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCss"])
+
+                else:
+                    self.xContinueButton.setStyleSheet(cUtils.xStyleHandle["QPushButtonCssDisabled"])
+
             
             def UpdateVarDisplay(self, xVarDict):
                 self.xVarDisplay.setRowCount(1 + len(xVarDict))
@@ -258,7 +277,7 @@ class cWindow(QtWidgets.QMainWindow):
             
             #check if debugger is not opened
             if self.xDebugWindow is None or not self.xDebugWindow.isVisible():
-                self.xDebugWindow = self.cDebug()
+                self.xDebugWindow = self.cDebug(self)
                 self.xParent.xSender.GlobalClose.connect(self.xDebugWindow.close)
 
             self.xDebugWindow.xStackDisplayList = []
@@ -302,6 +321,7 @@ class cWindow(QtWidgets.QMainWindow):
                             1 : "Breakpoint",
                             }[self.xVirtMachMode]
                         self.xDebugWindow.xModeDisplay.setText(xModeText)
+                        self.xDebugWindow.SetDebuggerButtonsEnabled(self.xVirtMachMode == 1)
                     
                     else:
                         self.xParent.xConsole.Write2Console(f"UNRECOGNIZED RAW: {xData}\n".format())

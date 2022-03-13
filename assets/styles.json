@@ -40,18 +40,35 @@
     "
     QPushButton:!pressed
     {
-      border: 1px solid #ffffff;
+      background-color: #666666;
+      border: 1px solid #666666
     }
     QPushButton:hover:!pressed
     {
-      border: 1px solid #ffffff;
-      background-color: #666666;
+      background-color: #777777;
+      border: 1px solid #777777
     }
     QPushButton:pressed
     {
-      border: 1px solid #6D81FF;
+      background-color: #888888;
+      border: 1px solid #888888
     }
     ",
+
+
+"QPushButtonCssDisabled" :
+    "
+    QPushButton
+    {
+      background-color: #666666;
+      border: 1px solid #666666;
+      color: #494949;
+    }
+    ",
+
+
+
+
 
 "CodeEditor" : "background-color: #333333; color: #ffffff; border: 0px;",
 "RunConfig"  : "background-color: #555555; color: #ffffff",

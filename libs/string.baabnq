@@ -1,0 +1,188 @@
+use 'libs/math.baabnq';
+jump String::Skip;
+
+
+lab String::PrintString;
+    pull _ReturnAddr;
+    pull _StringPtr;
+    push _ReturnAddr;
+
+    lab String::PrintString::PrintLoop;
+    put _Data <- _StringPtr;
+    jump String::PrintString::Exit ~ _Data == 0;
+
+    putstr _Data;
+
+    put _StringPtr = _StringPtr + 1;
+    jump String::PrintString::PrintLoop;
+    lab String::PrintString::Exit;
+    return;
+
+
+"takes a list of char from the stack and converts it into an int
+"order of char can be changed be setting config to a 1
+lab String::StackChar2Int;
+    pull _ReturnAddr;
+    pull _Config;
+    put _Buffer = 0;
+    put _IndexInit = 0;
+
+    "init _Index to a value base on config
+    sub String::StackChar2Int::SetIndexInit1     ~ _Config == 0;
+    sub String::StackChar2Int::SetIndexInit10000 ~ _Config == 1;
+    put _Index = _IndexInit;
+
+    lab String::StackChar2Int::AccLoop;
+    pull _Data; 
+    "check for terminator
+    jump String::StackChar2Int::Exit ~ _Data == 0;
+
+    push _Data - 48; 
+    push _Index; 
+    sub Math::Mul; 
+    pull _Data; 
+    put _Buffer = _Buffer + _Data;
+
+    push _Index;
+    push 10;
+    sub Math::Mul ~ _Config == 0;
+    sub Math::Div ~ _Config == 1;
+    pull _Index;
+
+    jump String::StackChar2Int::AccLoop ~ _Index != _IndexInit;
+    lab String::StackChar2Int::Exit;
+
+    push _Buffer;
+    push _ReturnAddr;
+    return;
+
+
+
+    lab String::StackChar2Int::SetIndexInit1;
+        put _IndexInit = 1;
+        return;
+    lab String::StackChar2Int::SetIndexInit10000;
+        put _IndexInit = 10000;
+        return;
+
+
+"takes a string pointer from the stack and returns it's length ('' -> 0, 'a' -> 1)
+lab String::GetSize;
+    pull _ReturnAddr;
+    pull _StringPtr;
+
+
+    put _SizeBuffer = 0;
+    lab String::GetSize::CountLoop;
+    put _Data <- _SizeBuffer + _StringPtr;
+
+    jump String::GetSize::Exit ~ _Data == 0;
+
+    put _SizeBuffer = _SizeBuffer + 1;
+    jump String::GetSize::CountLoop;
+    lab String::GetSize::Exit;
+
+
+    push _SizeBuffer;
+    push _ReturnAddr;
+    return;
+
+
+"string copy
+"SrcPtr
+"DestPtr
+"Size
+"name totally not stolen from c
+lab String::CopyN;
+    pull _ReturnAddr;
+    pull _Size;
+    pull _DestPtr;
+    pull _SrcPtr;
+
+    put _Index = 0;
+
+    lab String::CopyN::Loop;
+    put _Data <- _SrcPtr  + _Index;
+    put _Data -> _DestPtr + _Index;
+
+    put _Index = _Index + 1;
+    jump String::CopyN::Loop ~ _Size != _Index;
+
+
+    push _ReturnAddr;
+    return;
+
+
+"scan string for character
+"StrPtr
+"Char
+lab String::ScanChar;
+    pull _ReturnAddr;
+    pull _Char;
+    pull _StrPtr;
+
+    lab String::ScanChar::IterLoop;
+        put _Data <- _StrPtr;
+        put _StrPtr = _StrPtr + 1;
+        
+        
+        jump String::ScanChar::Found    ~ _Data == _Char;
+        jump String::ScanChar::IterLoop ~ _Data != 0;
+        
+
+    push 0;
+    push _ReturnAddr;
+    return;
+
+    lab String::ScanChar::Found;
+        push 1;
+        push _ReturnAddr;
+        return;
+
+"takes 2 string pointer and concatenates them
+lab String::Concat;
+    pull _ReturnAddr;
+    pull _StrPtr2;
+    pull _StrPtr1;
+    push _ReturnAddr;    
+
+    push _StrPtr1;
+    sub String::GetSize;
+    pull _StrLen1;
+    push _StrPtr2;
+    sub String::GetSize;
+    pull _StrLen2;
+
+    "restore retrun address
+    pull _ReturnAddr;
+    
+    "+ 1 for terminator
+    new _StrLen1 + _StrLen2 + 1 _StrPtrFinal;
+
+    put _Index = 0;
+    lab String::Concat::StrCopyLoop1;
+        put _Data <- _StrPtr1 + _Index;
+        jump String::Concat::StrCopyExit1 ~ _Data == 0;
+
+        put _Data -> _StrPtrFinal + _Index;
+        put _Index = _Index + 1;
+        jump String::Concat::StrCopyLoop1;        
+    lab String::Concat::StrCopyExit1;
+
+    put _Index = 0;
+
+    "start to write the 2nd string after the first for obvious reasons
+    put _StrPtrFinalShifted = _StrPtrFinal + _StrLen1;
+    lab String::Concat::StrCopyLoop2;
+        put _Data <- _StrPtr2 + _Index;
+        jump String::Concat::StrCopyExit2 ~ _Data == 0;
+
+        put _Data -> _StrPtrFinalShifted + _Index;
+        put _Index = _Index + 1;
+        jump String::Concat::StrCopyLoop2;        
+    lab String::Concat::StrCopyExit2;
+
+    push _StrPtrFinal;
+    push _ReturnAddr;
+
+lab String::Skip;

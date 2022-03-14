@@ -5,7 +5,7 @@ import sys
 import ctypes
 import time
 import shlex
-
+import logging
 
 from cUtils import *
 
@@ -56,9 +56,6 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
         try:
             if xBytes == b"\r":
                 xParentProcess.write(b"\n")
-            
-            
-            
             
             else:    
                 xParentProcess.write(xBytes)

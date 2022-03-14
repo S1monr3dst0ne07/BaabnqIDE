@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+import logging
 
 class cSender(QtCore.QObject):
     UpdateEditors               = QtCore.pyqtSignal()
@@ -14,3 +15,8 @@ class cSender(QtCore.QObject):
     MoveCurrentEditor           = QtCore.pyqtSignal(int)
     GlobalClose                 = QtCore.pyqtSignal()
     UpdateLinenumberDisplay     = QtCore.pyqtSignal()
+
+
+
+
+

@@ -1,0 +1,174 @@
+"floating point lib
+"using the bfloat16 format https://en.wikipedia.org/wiki/Bfloat16_floating-point_format
+"a float is represented by a sigle 16-bit number
+
+"but we have a sign for both the fraction and the exponent
+"MSB is the fraction sign, like in the bfloat16 standart
+"the the bit 15, the last bit of the exponent, is it's sign
+"so there is no bias exponent, making this library pretty messy
+
+use 'libs/math.baabnq';
+use 'libs/stack.baabnq';
+
+jump Floats::Skip;
+
+
+
+lab Floats::Neg;
+    sub Stack::Swap;
+    pull _Floats::Neg::Temp;
+    push _Floats::Neg::Temp ^ (1 << 15);
+    sub Stack::Swap;
+    return;
+    
+lab Floats::Recip;
+    sub Stack::Swap;
+    pull _Floats::Recip::Temp;
+    push _Floats::Recip::Temp ^ (1 << 14);
+    sub Stack::Swap;
+    return;
+    
+
+lab Floats::GetExp;
+    sub Stack::Swap;
+    pull _Floats::GetExp::Temp;
+    push (_Floats::GetExp::Temp >> 7) & 255;
+    sub Stack::Swap;
+    return;
+
+lab Floats::GetFra;
+    sub Stack::Swap;
+    pull _Floats::GetFra::Temp;
+    push _Floats::GetFra::Temp & 127;
+    sub Stack::Swap;
+    return;
+    
+
+
+lab Floats::Normalize;
+    "takes one 16-bit int value and normalizes it
+    "moving the counter in the process
+    sub Stack::Swap;
+    pull _Floats::Normalize::Value;
+    
+    sub Stack::Swap;
+    pull _Floats::Normalize::ShiftCounter;
+
+    "skip 0
+    jump Floats::Normalize::ShiftExit ~ _Floats::Normalize::Value == 0;
+    
+    "while the LSB of the value is 0, back shift (/2) the value and inc the ShiftCounter
+    lab Floats::Normalize::ShiftLoop;
+        put _Floats::Normalize::LSB = _Floats::Normalize::Value & 1;
+        jump Floats::Normalize::SkipExitCheckAvoidIntOverflow ~ _Floats::Normalize::Value > 127;
+        jump Floats::Normalize::ShiftExit ~ _Floats::Normalize::LSB == 1;
+        lab Floats::Normalize::SkipExitCheckAvoidIntOverflow;
+        
+        put _Floats::Normalize::Value = _Floats::Normalize::Value >> 1;
+        put _Floats::Normalize::ShiftCounter = _Floats::Normalize::ShiftCounter + 1;
+    jump Floats::Normalize::ShiftLoop;
+    lab Floats::Normalize::ShiftExit;
+    
+    push _Floats::Normalize::ShiftCounter;
+    sub Stack::Swap;
+    
+    push _Floats::Normalize::Value;
+    sub Stack::Swap;
+    return;
+
+
+
+lab Floats::Int2Float;
+    sub Stack::Swap;
+    
+    push 0; "normal exponent
+    sub Stack::Swap;
+    
+    "normalize (call value is still on the stack from the stack swap)
+    sub Floats::Normalize;
+    pull _Floats::Int2Float::NormFra;
+    pull _Floats::Int2Float::NormExp;
+    
+    put _Floats::Int2Float::FloatResult = _Floats::Int2Float::NormFra | (_Floats::Int2Float::NormExp << 7);
+    push _Floats::Int2Float::FloatResult;
+    
+    sub Stack::Swap;
+    return;
+   
+lab Floats::Float2Int;
+    sub Stack::Swap;
+    sub Stack::Dup;
+    
+    sub Floats::GetExp;
+    pull _Floats::Float2Int::Exp;
+    sub Floats::GetFra;
+    pull _Floats::Float2Int::Fra;
+    
+    "loop for the exp, and shift acordingly
+    put _Floats::Float2Int::ExpSign = (_Floats::Float2Int::Exp >> 7) & 1;
+    
+    jump Floats::Float2Int::ExpNeg ~ _Floats::Float2Int::ExpSign == 1;
+    jump Floats::Float2Int::ExpPos ~ _Floats::Float2Int::ExpSign == 0;
+    return;
+    
+    lab Floats::Float2Int::ExpNeg;
+        jump Floats::Float2Int::Exit ~ _Floats::Float2Int::Exp == 0;
+        put _Floats::Float2Int::Fra = _Floats::Float2Int::Fra >> 1;
+        put _Floats::Float2Int::Exp = _Floats::Float2Int::Exp - 1;
+        jump Floats::Float2Int::ExpNeg;
+    
+    
+    lab Floats::Float2Int::ExpPos;
+        jump Floats::Float2Int::Exit ~ _Floats::Float2Int::Exp == 0;
+        put _Floats::Float2Int::Fra = _Floats::Float2Int::Fra << 1;
+        put _Floats::Float2Int::Exp = _Floats::Float2Int::Exp - 1;
+        jump Floats::Float2Int::ExpPos;
+
+
+    lab Floats::Float2Int::Exit;    
+    push _Floats::Float2Int::Fra;
+    sub Stack::Swap;
+    return;
+    
+    
+
+lab Floats::Print;
+    sub Stack::Swap;
+    sub Stack::Dup;
+    pull _Floats::Print::Value;
+
+    sub Floats::Float2Int;
+    pull _Floats::Print::Int;
+    
+    "print sign
+    put _Floats::Print::Sign = (_Floats::Print::Value >> 15) & 1;
+    jump Floats::Print::SkipPrintSign ~ _Floats::Print::Sign == 0;
+    putstr 45;
+    lab Floats::Print::SkipPrintSign;
+    
+    print _Floats::Print::Int;
+    
+    return;
+
+
+lab Floats::Add;
+    "get the values
+    sub Stack::Swap;
+    pull _Floats::Add::ValueB;
+    sub Stack::Swap;
+    pull _Floats::Add::ValueA;
+
+    print _Floats::Add::ValueA;
+    print _Floats::Add::ValueB;
+
+    "get sign
+    put _Floats::Add::ExpSignA = (_Floats::Add::ValueA >> 14) & 1;
+    put _Floats::Add::ExpSignB = (_Floats::Add::ValueB >> 14) & 1;
+    print _Floats::Add::ExpSignA;
+    print _Floats::Add::ExpSignB;
+
+
+    return;
+	
+	
+lab Floats::Skip; 

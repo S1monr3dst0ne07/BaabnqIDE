@@ -5,6 +5,7 @@ import sys
 import ctypes
 import time
 import shlex
+import logging
 
 from cUtils import *
 
@@ -158,35 +159,48 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         
             
     def SetCompleterStatus(self, xNewStatus):
+        logging.debug(f"Set Completer Status: {xNewStatus}".format())
         self.xCompleterStatus = xNewStatus    
     
     def UpdateCompleterGlobal(self, xNewStatus):
+        logging.debug(f"Set Completer Global: {xNewStatus}".format())
         self.xCompleterStatusGlobal = xNewStatus  
     
     
     #load file from path and update content of editor
     def UpdateFromPath(self):
+        logging.info("Updating to editor")
+        logging.debug(f"Path: {self.xFilePath}".format())
+
         try:
             with open(self.xFilePath, "r") as xFileHandle:
                 self.setPlainText(xFileHandle.read())
                 self.xIsSaved = True
+                logging.info("Update to editor complete")
+                
                 return True
                 
         except FileNotFoundError:
             #if path was not found kill instance
+            logging.error("Error while updating, probably FileNotFoundError")
             QtWidgets.QMessageBox.about(self, "File lost", f"Reference to file at {self.xFilePath} has been lost\nThis my be due to the deletion or renaming of that file".format())
-            self.xSender.CloseTab4QWidget.emit(self)#
+            self.xSender.CloseTab4QWidget.emit(self)
             return False
             
     #write editor content back to path
     def Save(self):
+        logging.info("Saving editor content")
+        logging.debug(f"Path: {self.xFilePath}".format())
+        
         try:
             with open(self.xFilePath, "w") as xFileHandle:
                 xFileHandle.write(self.toPlainText())
                 
             self.xIsSaved = True
-                
+            logging.info("Saving complete")
+            
         except Exception as E:
+            logging.error(f"Error while saving: {E}".format())
             QtWidgets.QMessageBox.about(self, E)
                 
     
@@ -223,7 +237,9 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xSender.UpdateCompleter.emit()
 
     #xCompletionPrefix is give to be excluded
-    def UpdateCompleterModel(self, xCompletionPrefix):      
+    def UpdateCompleterModel(self, xCompletionPrefix):
+        logging.info("Completer Model Updated")
+        
         xDelims = (" ", ";", "\n")
 
         xNewModel = self.xBaseCommands + cUtils.ChopChopSplit(self.toPlainText(), xDelims)
@@ -233,7 +249,9 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                        
                     ]
         
-        self.xCompleter.SetCompleterModel(cUtils.RemoveDups(xNewModelFilter))
+        xFinalModel = cUtils.RemoveDups(xNewModelFilter)
+        logging.debug(f"Model Filtered: {xFinalModel}".format())
+        self.xCompleter.SetCompleterModel(xFinalModel)
 
 
     def UpdateCompleter(self):

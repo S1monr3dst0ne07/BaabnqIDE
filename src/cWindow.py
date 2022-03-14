@@ -22,10 +22,14 @@ class cWindow(QtWidgets.QMainWindow):
             
             def __init__(self, xDisplayWidget, xSourceProcess, xDisplayName):
                 super().__init__()
+                
                 self.xDisplayWidget = xDisplayWidget    #object the progress will be displayed in
                 self.xDisplayName   = xDisplayName      #name the object on display will have
                 self.xSourceProcess = xSourceProcess
                 self.xStopFlag = False
+
+                logging.info("New cAsyncProcessTracker")
+                self.LogReference()
     
             def __del__(self):
                 self.quit()
@@ -35,7 +39,10 @@ class cWindow(QtWidgets.QMainWindow):
                 self.xStopFlag = True
                 self.wait()        
     
-            def run(self):                
+            def run(self):             
+                logging.info("Starting cAsyncProcessTracker, target locked")
+                self.LogReference()
+                
                 xPointAnimation = 1
                 while self.xSourceProcess.state() != QtCore.QProcess.NotRunning and not self.xStopFlag:
                     time.sleep(0.1)
@@ -50,6 +57,12 @@ class cWindow(QtWidgets.QMainWindow):
                 self.xStopFlag = False
                 self.xDisplayWidget.setText("")
 
+            def LogReference(self):
+                logging.debug(f"==={self}=== (WARNING: THIS PROCESS MAY BE DEAD)".format())
+                logging.debug(f"xDisplayName: {self.xDisplayName}".format())
+                logging.debug(f"xSourceProcess: {self.xSourceProcess}".format())
+                
+                
         class cDebug(QtWidgets.QWidget):
             def __init__(self, xParent):
                 super().__init__()
@@ -138,7 +151,6 @@ class cWindow(QtWidgets.QMainWindow):
             
             def SendBreakpointOption(self, xOptionType):
                 if self.xParent.xVirtMachMode == 1:
-                    print("Send Debugger Option")
                     self.xParent.xProcessTracker.xSourceProcess.write(xOptionType.encode("utf-8"))
             
             def SetDebuggerButtonsEnabled(self, xEnabled):
@@ -183,7 +195,8 @@ class cWindow(QtWidgets.QMainWindow):
                 
                 self.xStackDisplay.clear()
                 self.xStackDisplay.addItems(self.xStackDisplayList)
-                    
+                
+
          
         def __init__(self, xParent):
             self.xParent = xParent
@@ -204,8 +217,19 @@ class cWindow(QtWidgets.QMainWindow):
             self.Kill()
 
         def Compile(self, xSourcePath = "", xDestPath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = [], xDisplayName = "Compiling"):
+            logging.info("Core Compiling")
+            logging.debug(f"xSourcePath: {xSourcePath}".format())
+            logging.debug(f"xDestPath  : {xDestPath}".format())
+            logging.debug(f"xAddArgs   : {xAddArgs}".format())
+            
+            
             def HandleOutput():
                 StdoutHandleFunc(self.xCompilerProcess.readAllStandardOutput())
+                xError = self.xCompilerProcess.readAllStandardError()
+                
+                if xError:
+                    logging.error(xError)
+
                 
             #kill tracker first then the process, otherwise the tracker will think the process is done and will call xFinishInvoke
             self.xProcessTracker.stop()
@@ -224,8 +248,16 @@ class cWindow(QtWidgets.QMainWindow):
             self.xProcessTracker.start()
             
         def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = [], xDisplayName = "Running"):
+            logging.info("Core Launching")
+            logging.debug(f"xSourcePath: {xSourcePath}".format())
+            logging.debug(f"xAddArgs   : {xAddArgs}".format())
+
             def HandleOutput():
                 StdoutHandleFunc(self.xVirtMachProcess.readAllStandardOutput())
+                xError = self.xCompilerProcess.readAllStandardError()
+                
+                if xError:
+                    logging.error(xError)
             
             self.xProcessTracker.stop()
             self.xVirtMachProcess.kill()
@@ -243,6 +275,8 @@ class cWindow(QtWidgets.QMainWindow):
         def StartNextProcess(self):
             if len(self.xProcessQueue) > 0:
                 xNextProcess = self.xProcessQueue.pop(0)
+                
+                logging.info("Starting new Handler Subprocess: " + str(xNextProcess))
                 xNextProcess()
     
         def SetRunConfig(self, xCompilerCall, xVirtMachCall):
@@ -250,9 +284,13 @@ class cWindow(QtWidgets.QMainWindow):
             self.xVirtMachCall = xVirtMachCall
     
         def Run(self, xPath):
+            logging.info("RunningProcess")
+
             self.Kill()
             xBuildPath = xThisPath + "/../build.s1"
             self.xCompilerOutputPuffer = []
+
+            logging.debug(f"xBuildPath: {xBuildPath}".format())
             
             def HandleLaunch():
                 self.Launch(xBuildPath, self.xParent.xConsole.Byte2Console, self.StartNextProcess)
@@ -266,14 +304,22 @@ class cWindow(QtWidgets.QMainWindow):
                 self.Compile(xPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess)
             
             self.xProcessQueue = [HandleCompile, HandleParseCompilerOutput, HandleLaunch]
+            logging.debug(f"Launching with xProcessQueue: {self.xProcessQueue}".format())
+
             self.StartNextProcess()
         
         def Debug(self, xPath, xBreakpoints):
+            logging.info("DebugingProcess")
+
             self.Kill()
             self.xVarValues = {} #for new run reset variable buffer
             xBuildPath = xThisPath + "/../build.s1"
             xTempPath  = xThisPath + "/../temp.baabnq"
             self.xCompilerOutputPuffer = []
+            
+            logging.debug(f"xBuildPath: {xBuildPath}".format())
+            logging.debug(f"xTempPath : {xTempPath}".format())
+            
             
             #check if debugger is not opened
             if self.xDebugWindow is None or not self.xDebugWindow.isVisible():
@@ -315,6 +361,8 @@ class cWindow(QtWidgets.QMainWindow):
 
                     elif xCategory == "Mode":
                         self.xVirtMachMode = int(xData)
+                        
+                        logging.debug(f"Mode Change: {self.xVirtMachMode}".format())
                         
                         xModeText = {
                             0 : "Running",
@@ -359,6 +407,8 @@ class cWindow(QtWidgets.QMainWindow):
                 self.Compile(xTempPath, xBuildPath, self.xCompilerOutputPuffer.append, self.StartNextProcess, xAddArgs = ["--MoreInfo"])
             
             self.xProcessQueue = [HandleTempCopy, HandleCompile, HandleParseCompilerOutput, HandleLaunch]
+            logging.debug(f"Launching with xProcessQueue: {self.xProcessQueue}".format())
+            
             self.StartNextProcess()
 
         
@@ -372,6 +422,8 @@ class cWindow(QtWidgets.QMainWindow):
             xText = cUtils.Bytes2Str(xBytes)
             #remove all empty line and then take the last to get the status
             xCompilerExitStatus = [x for x in xText.split("\r\n") if x != ""][-1] 
+            
+            logging.debug(f"Compiler Exit Status: {xCompilerExitStatus}".format())
             
             #compiler fail
             if xCompilerExitStatus != "Compilation was successful":
@@ -392,6 +444,8 @@ class cWindow(QtWidgets.QMainWindow):
                      
         #kills the current process and stops any further ones form running
         def Kill(self):
+            logging.info("KillingProcess")
+            self.xProcessTracker.LogReference()
             
             #clear queue to prevent bullshit
             self.xProcessQueue = []
@@ -565,6 +619,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             self.xSender.SetVirtMachCall.emit(self.xVirtMachCall.text())
 
     def __init__(self):
+        logging.info("Main Window Init")        
         super().__init__()
         
         self.xProcessStatusDisplay = QtWidgets.QLabel()
@@ -576,6 +631,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xSender.RemoteDragEnterEvent.connect(self.dragEnterEvent)
         self.xSender.RemoteDropEvent.connect(self.dropEvent)
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
+
+        self.ConnectLog2Sender(self.xSender)
         
         self.xCompilerCall = ""
         self.xVirtMachCall = ""
@@ -602,6 +659,17 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xBreakpoints = []
         
         self.InitUI()
+
+
+    def ConnectLog2Sender(self, xSender):
+            
+        
+        for xMember in dir(xSender):
+            xSenderObject = getattr(xSender, xMember)
+            
+            if type(xSenderObject) is QtCore.pyqtBoundSignal and not hasattr(QtCore.QObject, xMember):
+                exec("xSenderObject.connect(lambda: logging.debug('Signal: {}'))".format(xMember))
+
 
     def InitUI(self):
         xIconPath = xThisPath.replace("\\", "/") + "/../assets/Icon.png"
@@ -716,16 +784,28 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     def RunCurrentProgram(self):
         xPath = self.xTabHost.currentWidget().xFilePath
         self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
+        
+        logging.info("Run Current Program")
+        logging.debug(f"Path       : {xPath}".format())
+        logging.debug(f"Run Config : {[self.xCompilerCall, self.xVirtMachCall]}".format())
+
         self.xRunner.Run(xPath)
       
     def DebugCurrentProgram(self):
         xPath = self.xTabHost.currentWidget().xFilePath
         self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
+
+        logging.info("Debug Current Program")
+        logging.debug(f"Path      : {xPath}".format())
+        logging.debug(f"Run Config: {[self.xCompilerCall, self.xVirtMachCall]}".format())
+        logging.debug(f"Breakpoints: {self.xBreakpoints}".format())
+
+        
         self.xRunner.Debug(xPath, self.xBreakpoints)
         
         
       
-                
+    #methods handle user setting
     def UpdateCorrector(self):
         xMenuQAction = cUtils.FindQActionInList(self.xMenuOptions.actions(), "Corrector Enabled")
         if xMenuQAction:
@@ -787,11 +867,16 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.CloseTab(self.xTabHost.currentIndex())
 
     def CloseTab(self, xTabIndex):
+        logging.info("CloseTab")
+        logging.debug(f"TabIndex: {xTabIndex}".format())
+        
         if xTabIndex < 0: return
         
         self.xTabHost.removeTab(xTabIndex)
         self.xTabContent[xTabIndex][0].close()
         self.xTabContent.pop(xTabIndex)
+
+        logging.debug(f"New TabContent List: {self.xTabContent}".format())
 
     #user file save
     def SaveFileGui(self):
@@ -809,6 +894,9 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     
     
     def OpenCodeEditorTab(self, xPath):
+        logging.info("OpenCodeEditorTab")
+        logging.debug(f"Path for new editor: {xPath}".format())        
+        
         xCodeEditor = cCodeEditor(self)
         
         self.xTabHost.addTab(xCodeEditor, cUtils.Path2Name(xPath))
@@ -820,6 +908,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xCodeEditor.xIsSaved = True
         self.UpdateTabSaveColor()
         
+        logging.debug(f"New TabContent List: {self.xTabContent}".format())
         return xUpdateSuccess
         
     #tab changes color based on if saved or not
@@ -839,10 +928,13 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             
 
     def ExitGui(self):
-        
         self.close()
 
     def LoadSetttings(self, xSettingsHandle):
+        xLogDict = {xKey : xSettingsHandle.value(xKey) for xKey in xSettingsHandle.allKeys()}
+        logging.info("Loading Settings")
+        logging.debug("LogDict: " + str(xLogDict))
+                
         self.resize(self.xSettingsHandle.value("windowSize"))
         self.move(self.xSettingsHandle.value("windowPos"))
         self.xCompilerCall = self.xSettingsHandle.value("compilerCall")
@@ -882,6 +974,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.UpdateJump2ErrorLine()
         
     def SaveSettings(self, xSettingsHandle):
+        logging.info("Saving Settings")
+
         xSettingsHandle.setValue("windowPos", self.pos())
         xSettingsHandle.setValue("windowSize", self.size())
         xSettingsHandle.setValue("compilerCall", self.xCompilerCall)
@@ -911,6 +1005,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xSettingsHandle.setValue("tabInstanceList",  str(xTabDataList))
         xSettingsHandle.setValue("selectedTabIndex", self.xTabHost.currentIndex())            
         
+        xLogDict = {xKey : xSettingsHandle.value(xKey) for xKey in xSettingsHandle.allKeys()}
+        logging.debug("LogDict: " + str(xLogDict))
 
 
     def dragEnterEvent(self, xEvent):
@@ -925,6 +1021,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.OpenCodeEditorTab(xPath)
 
     def closeEvent(self, xEvent):
+        logging.info("closeEvent called")
+        
         #check for unsaved editor instances
         xIsUnsaved = False
         for xTabIter in self.xTabContent:
@@ -947,3 +1045,6 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             
         self.SaveSettings(self.xSettingsHandle)            
         self.xSender.GlobalClose.emit()
+
+        logging.info("Closing done, shutting down")
+        logging.info("Goodbye, World")

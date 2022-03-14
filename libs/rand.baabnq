@@ -1,0 +1,22 @@
+
+
+"init systemvars
+put _rand::x          = 1;
+put _rand::returnAddr = 0;
+
+jump rand::skip;
+
+
+lab rand::xorshift;
+pull _rand::returnAddr;
+
+put _rand::x = _rand::x ^ (_rand::x << 7);
+put _rand::x = _rand::x ^ (_rand::x >> 9);
+put _rand::x = _rand::x ^ (_rand::x << 8);
+
+push _rand::x;
+push _rand::returnAddr;
+return;
+
+
+lab rand::skip;

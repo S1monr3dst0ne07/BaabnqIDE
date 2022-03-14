@@ -1,0 +1,9 @@
+use 'libs/print69.baabnq';
+
+jump myLib::skip;
+
+lab print69;
+print 69;
+return;
+
+lab myLib::skip;

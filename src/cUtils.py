@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import json
 import os
 import re
+import logging
 
 xThisPath = os.path.dirname(os.path.abspath(__file__))
 

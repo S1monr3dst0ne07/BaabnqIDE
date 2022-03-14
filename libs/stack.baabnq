@@ -1,0 +1,26 @@
+
+jump Stack::Skip;
+
+"swap first two values on stack
+lab Stack::Swap;
+    pull _ReturnAddr;
+    pull _ValueA;
+    pull _ValueB;
+    push _ValueA;
+    push _ValueB;
+    push _ReturnAddr;
+    return;
+
+"duplicate value on the stack
+lab Stack::Dup;
+    pull _ReturnAddr;
+    pull _Value;
+    push _Value;
+    push _Value;
+    push _ReturnAddr;
+    return;
+    
+
+
+
+lab Stack::Skip;

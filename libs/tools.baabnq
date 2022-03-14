@@ -1,0 +1,51 @@
+jump Tools::Skip;
+
+"print chunk of memory starting at PrintBasePtr and with the size of PrintRangeOffset
+"(PrintBasePtr, PrintRangeOffset)
+lab PrintMem;
+pull _ReturnAddr;
+pull _PrintRangeOffset;
+pull _PrintBasePtr;
+push _ReturnAddr;
+
+put _Index = 0;
+
+lab PrintMem::Loop;
+put _Data <- _Index + _PrintBasePtr;
+print _Data;
+put _Index = _Index + 1;
+jump PrintMem::Loop ~ _Index < _PrintRangeOffset;
+
+return;
+
+
+"print the stack till a null terminator is hit
+"note: this will consume the stacks content and terminator
+lab PrintStack;
+pull _ReturnAddr;
+
+lab PrintStack::Loop;
+pull _Data;
+print _Data;
+
+jump PrintStack::Loop ~ _Data != 0;
+push _ReturnAddr;
+return;
+
+
+"same as PrintStack, but instead of printing, this will output the value on the stack as a char
+lab PrintStackAsString;
+pull _ReturnAddr;
+
+lab PrintStackAsString::Loop;
+pull _Data;
+putstr _Data;
+
+jump PrintStackAsString::Loop ~ _Data != 0;
+push _ReturnAddr;
+return;
+
+
+
+
+lab Tools::Skip;

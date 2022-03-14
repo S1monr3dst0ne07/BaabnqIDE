@@ -1,0 +1,95 @@
+jump String::Skip;
+
+
+lab String::PrintString;
+pull _ReturnAddr;
+pull _StringPtr;
+push _ReturnAddr;
+
+lab String::PrintString::PrintLoop;
+put _Data <- _StringPtr;
+jump String::PrintString::Exit ~ _Data == 0;
+
+putstr _Data;
+
+put _StringPtr = _StringPtr + 1;
+jump String::PrintString::PrintLoop;
+lab String::PrintString::Exit;
+return;
+
+
+"takes a list of char from the stack and converts it into an int
+"order of char can be changed be setting config to a 1
+use 'libs/math.baabnq';
+lab String::StackChar2Int;
+pull _ReturnAddr;
+pull _Config;
+put _Buffer = 0;
+put _IndexInit = 0;
+
+"init _Index to a value base on config
+sub String::StackChar2Int::SetIndexInit1     ~ _Config == 0;
+sub String::StackChar2Int::SetIndexInit10000 ~ _Config == 1;
+put _Index = _IndexInit;
+
+lab String::StackChar2Int::AccLoop;
+pull _Data; 
+"check for terminator
+jump String::StackChar2Int::Exit ~ _Data == 0;
+
+push _Data - 48; 
+push _Index; 
+sub math::mul; 
+pull _Data; 
+put _Buffer = _Buffer + _Data;
+
+push _Index;
+push 10;
+sub math::mul ~ _Config == 0;
+sub math::div ~ _Config == 1;
+pull _Index;
+
+jump String::StackChar2Int::AccLoop ~ _Index != _IndexInit;
+lab String::StackChar2Int::Exit;
+
+push _Buffer;
+push _ReturnAddr;
+return;
+
+
+
+lab String::StackChar2Int::SetIndexInit1;
+put _IndexInit = 1;
+return;
+lab String::StackChar2Int::SetIndexInit10000;
+put _IndexInit = 10000;
+return;
+
+
+"takes a string pointer from the stack and returns it's length ('' -> 0, 'a' -> 1)
+lab String::GetSize;
+pull _ReturnAddr;
+pull _StringPtr;
+
+
+put _SizeBuffer = 0;
+lab String::GetSize::CountLoop;
+put _Data <- _SizeBuffer + _StringPtr;
+
+jump String::GetSize::Exit ~ _Data == 0;
+
+put _SizeBuffer = _SizeBuffer + 1;
+jump String::GetSize::CountLoop;
+lab String::GetSize::Exit;
+
+
+push _SizeBuffer;
+push _ReturnAddr;
+return;
+
+lab String::Skip;
+
+
+
+
+

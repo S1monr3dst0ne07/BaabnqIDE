@@ -94,7 +94,7 @@ class cWindow(QtWidgets.QMainWindow):
                 #buttons
                 self.xButtonLayout = QtWidgets.QHBoxLayout(self)
                 
-                self.xContinueButton = QtWidgets.QPushButton("Continue")
+                self.xContinueButton = QtWidgets.QPushButton("Continue Execution")
                 self.xCloseButton = QtWidgets.QPushButton("Close")
                 cUtils.FixWidgetWidth(self.xContinueButton)
                 cUtils.FixWidgetWidth(self.xCloseButton)

@@ -6,7 +6,7 @@ import re
 import logging
 
 #xThisPath = os.path.dirname(os.path.abspath(__file__))
-xThisPath = os.getcwd() + "/src/"
+xThisPath = os.getcwd()
 
 
 #loaing css style from file
@@ -21,7 +21,7 @@ class cStyleHandle:
 
 class cUtils:
         
-    xStyleHandle = cStyleHandle(xThisPath + "/../assets/styles.json")
+    xStyleHandle = cStyleHandle(xThisPath + "/assets/styles.json")
 
     @staticmethod    
     def ChopChopSplit(xStr, xDelimiters):

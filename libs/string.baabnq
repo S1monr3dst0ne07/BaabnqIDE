@@ -184,5 +184,6 @@ lab String::Concat;
 
     push _StrPtrFinal;
     push _ReturnAddr;
+    return;
 
 lab String::Skip;

@@ -287,7 +287,7 @@ class cWindow(QtWidgets.QMainWindow):
             logging.info("RunningProcess")
 
             self.Kill()
-            xBuildPath = xThisPath + "/../build.s1"
+            xBuildPath = xThisPath + "/build.s1"
             self.xCompilerOutputPuffer = []
 
             logging.debug(f"xBuildPath: {xBuildPath}".format())
@@ -313,8 +313,8 @@ class cWindow(QtWidgets.QMainWindow):
 
             self.Kill()
             self.xVarValues = {} #for new run reset variable buffer
-            xBuildPath = xThisPath + "/../build.s1"
-            xTempPath  = xThisPath + "/../temp.baabnq"
+            xBuildPath = xThisPath + "/build.s1"
+            xTempPath  = xThisPath + "/temp.baabnq"
             self.xCompilerOutputPuffer = []
             
             logging.debug(f"xBuildPath: {xBuildPath}".format())
@@ -672,7 +672,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
 
     def InitUI(self):
-        xIconPath = xThisPath.replace("\\", "/") + "/../assets/Icon.png"
+        xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
         self.setWindowIcon(QtGui.QIcon(xIconPath))
 
         self.setStyleSheet(cUtils.xStyleHandle["Main"])

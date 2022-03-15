@@ -27,7 +27,7 @@ def Main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename = xThisPath + '\..\lastest.log', filemode = 'w', format = '%(asctime)-10s    %(levelname)-8s    %(message)s', level = logging.DEBUG)
+    logging.basicConfig(filename = xThisPath + '\lastest.log', filemode = 'w', format = '%(asctime)-10s    %(levelname)-8s    %(message)s', level = logging.DEBUG)
     logging.info("BaabnqIde")
     logging.info("Hello, World")
     logging.info(f"Starting from directory: {xThisPath}".format())

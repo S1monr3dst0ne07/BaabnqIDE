@@ -14,6 +14,18 @@ from cUtils import *
 from cWindow import *       
 
 
+
+def Main():
+    xApp = QtWidgets.QApplication(sys.argv)
+    xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
+    xWindow = cWindow()
+
+    logging.info("Window Opened")    
+    sys.exit(xApp.exec())
+
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(filename = xThisPath + '\..\lastest.log', filemode = 'w', format = '%(asctime)-10s    %(levelname)-8s    %(message)s', level = logging.DEBUG)
     logging.info("BaabnqIde")
@@ -23,9 +35,8 @@ if __name__ == '__main__':
 
 
 
-    xApp = QtWidgets.QApplication(sys.argv)
-    xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
-    xWindow = cWindow()
-
-    logging.info("Window Opened")    
-    sys.exit(xApp.exec())
+    try:
+        Main()
+        
+    except Exception as E:
+        logging.critical(str(E))

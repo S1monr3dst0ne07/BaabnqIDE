@@ -5,7 +5,9 @@ import os
 import re
 import logging
 
-xThisPath = os.path.dirname(os.path.abspath(__file__))
+#xThisPath = os.path.dirname(os.path.abspath(__file__))
+xThisPath = os.getcwd() + "/src/"
+
 
 #loaing css style from file
 class cStyleHandle:

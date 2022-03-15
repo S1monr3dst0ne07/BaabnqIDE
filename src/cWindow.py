@@ -68,6 +68,10 @@ class cWindow(QtWidgets.QMainWindow):
                 super().__init__()
                 self.xParent = xParent
 
+                xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
+                self.setWindowIcon(QtGui.QIcon(xIconPath))
+
+
                 self.xPluginDisplayList = []
                 self.xStackDisplayList  = []
                 self.xMaxCommandListSize = 5
@@ -480,6 +484,10 @@ class cWindow(QtWidgets.QMainWindow):
             super().__init__()
             self.xParent = xParent
 
+            xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
+            self.setWindowIcon(QtGui.QIcon(xIconPath))
+
+
             self.setStyleSheet(cUtils.xStyleHandle["FindDialog"])
             self.setWindowTitle("Find")
 
@@ -554,6 +562,10 @@ class cWindow(QtWidgets.QMainWindow):
         def __init__(self, xSender):
             super().__init__()
             self.xSender = xSender
+
+            xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
+            self.setWindowIcon(QtGui.QIcon(xIconPath))
+
 
             xPointSize = 10
 

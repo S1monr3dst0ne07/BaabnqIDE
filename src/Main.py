@@ -16,13 +16,22 @@ from cWindow import *
 
 
 def Main():
-    xApp = QtWidgets.QApplication(sys.argv)
-    xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
-    xWindow = cWindow()
+    try:
+        xApp = QtWidgets.QApplication(sys.argv)
+        xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
+        xWindow = cWindow()
+        
+        logging.info("Window Opened")    
 
-    logging.info("Window Opened")    
-    sys.exit(xApp.exec())
+        xReturnCode = xApp.exec()
+        
+    except Exception as E:
+        print(E)
+        logging.critical(logging.traceback.format_exc())
+        QtWidgets.QMessageBox.about(logging.traceback.format_exc())
 
+
+    sys.exit(xReturnCode)
 
 
 
@@ -35,8 +44,5 @@ if __name__ == '__main__':
 
 
 
-    try:
-        Main()
+    Main()
         
-    except Exception as E:
-        logging.critical(str(E))

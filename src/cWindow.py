@@ -243,13 +243,25 @@ class cWindow(QtWidgets.QMainWindow):
             self.xCompilerProcess = QtCore.QProcess()
             self.xCompilerProcess.setWorkingDirectory(cUtils.Path2BasePath(xThisPath))
             self.xCompilerProcess.readyReadStandardOutput.connect(HandleOutput)
-            xCallArgs = shlex.split(self.xCompilerCall.replace("<input>", cUtils.Quotes(xSourcePath)).replace("<output>", cUtils.Quotes(xDestPath)))
-            self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
-            #and it's tracker
-            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xCompilerProcess, xDisplayName)
-            self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
-            self.xProcessTracker.start()
+            try: 
+                if any(x not in self.xCompilerCall for x in ["{input}", "{output}"]): raise Exception
+                xCallArgs = shlex.split(self.xCompilerCall.format(input = cUtils.Quotes(xSourcePath), output = cUtils.Quotes(xDestPath)))
+
+                self.xCompilerProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
+            
+                #and it's tracker
+                self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xCompilerProcess, xDisplayName)
+                self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
+                self.xProcessTracker.start()
+
+
+            except Exception:
+                xWarnMsg = "Invalid Run Config: {}".format(self.xCompilerCall)
+                logging.warn(xWarnMsg)
+                self.xParent.xConsole.Write2Console(xWarnMsg)
+
+
             
         def Launch(self, xSourcePath = "", StdoutHandleFunc = None, xFinishInvoke = cUtils.Noop, xAddArgs = [], xDisplayName = "Running"):
             logging.info("Core Launching")
@@ -268,13 +280,23 @@ class cWindow(QtWidgets.QMainWindow):
             
             self.xVirtMachProcess = QtCore.QProcess()
             self.xVirtMachProcess.readyReadStandardOutput.connect(HandleOutput)
-            xCallArgs = shlex.split(self.xVirtMachCall.replace("<file>", cUtils.Quotes(xSourcePath)))
-            self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
             
-            #and it's tracker
-            self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xVirtMachProcess, xDisplayName)
-            self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
-            self.xProcessTracker.start()
+            try:
+                if "{file}" not in self.xVirtMachCall: raise Exception                
+                xCallArgs = shlex.split(self.xVirtMachCall.format(file = cUtils.Quotes(xSourcePath)))
+
+                self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
+                
+                #and it's tracker
+                self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xVirtMachProcess, xDisplayName)
+                self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
+                self.xProcessTracker.start()
+
+            except Exception:
+                xWarnMsg = "Invalid Run Config: {}".format(self.xVirtMachCall)
+                logging.warn(xWarnMsg)
+                self.xParent.xConsole.Write2Console(xWarnMsg)
+
     
         def StartNextProcess(self):
             if len(self.xProcessQueue) > 0:
@@ -313,6 +335,7 @@ class cWindow(QtWidgets.QMainWindow):
             self.StartNextProcess()
         
         def Debug(self, xPath, xBreakpoints):
+            raise Exception
             logging.info("DebugingProcess")
 
             self.Kill()
@@ -417,33 +440,39 @@ class cWindow(QtWidgets.QMainWindow):
 
         
         def ParseCompilerOutput(self, xBytesArrayList):
-            xBytes = QtCore.QByteArray()
-            for xBytesArrayIter in xBytesArrayList:
-                xBytes += xBytesArrayIter
-            
-            
-            #xText = str(xBytes, "utf-8")
-            xText = cUtils.Bytes2Str(xBytes)
-            #remove all empty line and then take the last to get the status
-            xCompilerExitStatus = [x for x in xText.split("\r\n") if x != ""][-1] 
-            
-            logging.debug(f"Compiler Exit Status: {xCompilerExitStatus}".format())
-            
-            #compiler fail
-            if xCompilerExitStatus != "Compilation was successful":
-                self.xParent.xConsole.Write2Console(xCompilerExitStatus + "\r\n")
-            
-                #only further do something if error checking is enabled
-                if self.xParent.xCompilerErrorCheck:
-                    self.Kill() #stop the execution of the old build.s1 by kill the processes when the compiler crashes
-                    
-                    if self.xParent.xJump2ErrorLine:
-                        #try to get the line number at which the error is thrown at to jump there
-                        xMatch = re.search("\s(\d+):", xCompilerExitStatus)
-                        if xMatch:
-                            xErrorLineNumber = int(xMatch.group(1))
-                            self.xParent.MoveCurrentEditor(xErrorLineNumber - 1)
+            try:
+                logging.debug(f"Compiler returned bytes: {xBytesArrayList}".format())
+    
+                xBytes = QtCore.QByteArray()
+                for xBytesArrayIter in xBytesArrayList:
+                    xBytes += xBytesArrayIter
+                
+                
+                #xText = str(xBytes, "utf-8")
+                xText = cUtils.Bytes2Str(xBytes)
+                #remove all empty line and then take the last to get the status
+                xCompilerExitStatus = [x for x in xText.split("\r\n") if x != ""][-1] 
+                
+                logging.debug(f"Compiler Exit Status: {xCompilerExitStatus}".format())
+                
+                #compiler fail
+                if xCompilerExitStatus != "Compilation was successful":
+                    self.xParent.xConsole.Write2Console(xCompilerExitStatus + "\r\n")
+                
+                    #only further do something if error checking is enabled
+                    if self.xParent.xCompilerErrorCheck:
+                        self.Kill() #stop the execution of the old build.s1 by kill the processes when the compiler crashes
                         
+                        if self.xParent.xJump2ErrorLine:
+                            #try to get the line number at which the error is thrown at to jump there
+                            xMatch = re.search("\s(\d+):", xCompilerExitStatus)
+                            if xMatch:
+                                xErrorLineNumber = int(xMatch.group(1))
+                                self.xParent.MoveCurrentEditor(xErrorLineNumber - 1)
+
+            except Exception as E:
+                self.Kill()
+                logging.warn(str(E))
                     
                      
         #kills the current process and stops any further ones form running
@@ -578,9 +607,9 @@ class cWindow(QtWidgets.QMainWindow):
             xHelperLabel = QtWidgets.QLabel("""
 This is the config for compiling/running a program.
 Both the Compiler and the Virtual Machine need to be provided with a call
-Source and Destination for the compiler are: <input> and <ouput>. 
-So a Compiler call would look like this: python "SomePath2Compiler/Compiler vX.X.py" --input <input> --output <output>
-Same for the Virtual Machine, but here only the assembler file needs to be provided, using <file>
+Source and Destination for the compiler are: {input} and {ouput}. 
+So a Compiler call would look like this: python "SomePath2Compiler/Compiler vX.X.py" --input "{input}" --output "{output}"
+Same for the Virtual Machine, but here only the assembler file needs to be provided, using {file}
             
             """)
             self.xLayout.addWidget(xHelperLabel, 0, 1)          
@@ -809,7 +838,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
         logging.info("Debug Current Program")
         logging.debug(f"Path      : {xPath}".format())
-        logging.debug(f"Run Config: {[self.xCompilerCall, self.xVirtMachCall]}".format())
+        logging.debug( "Run Config: [{}, {}]".format(self.xCompilerCall, self.xVirtMachCall))
         logging.debug(f"Breakpoints: {self.xBreakpoints}".format())
 
         

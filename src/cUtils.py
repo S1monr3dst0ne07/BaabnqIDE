@@ -4,9 +4,14 @@ import json
 import os
 import re
 import logging
+import sys
 
-#xThisPath = os.path.dirname(os.path.abspath(__file__))
-xThisPath = os.getcwd()
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    xThisPath = os.path.dirname(sys.executable)
+    
+elif __file__:
+    xThisPath = os.path.dirname(__file__) + "/.."
 
 
 #loaing css style from file

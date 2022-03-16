@@ -17,9 +17,14 @@ from cWindow import *
 
 def Main():
     try:
+        xArgs = sys.argv
+        
         xApp = QtWidgets.QApplication(sys.argv)
         xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
         xWindow = cWindow()
+        
+        if len(xArgs) > 1:
+            xWindow.OpenCodeEditorTab(xArgs[1].replace("\\", "/"))
         
         logging.info("Window Opened")    
 
@@ -41,8 +46,6 @@ if __name__ == '__main__':
     logging.info("Hello, World")
     logging.info(f"Starting from directory: {xThisPath}".format())
     logging.debug(f"Styles dict loaded: {cUtils.xStyleHandle.xStyle}")
-
-
 
     Main()
         

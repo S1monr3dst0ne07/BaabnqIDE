@@ -946,9 +946,13 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xLogDict = {xKey : xSettingsHandle.value(xKey) for xKey in xSettingsHandle.allKeys()}
         logging.info("Loading Settings")
         logging.debug("LogDict: " + str(xLogDict))
-                
-        self.resize(self.xSettingsHandle.value("windowSize"))
-        self.move(self.xSettingsHandle.value("windowPos"))
+        
+        try:
+            self.resize(self.xSettingsHandle.value("windowSize"))
+            self.move(self.xSettingsHandle.value("windowPos"))
+        except Exception as E:
+            logging.warn(str(E))
+        
         self.xCompilerCall = self.xSettingsHandle.value("compilerCall")
         self.xVirtMachCall = self.xSettingsHandle.value("virtMachCall")
         
@@ -967,18 +971,21 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xJump2ErrorLine = self.xSettingsHandle.value("jump2ErrorLine")
         if xJump2ErrorLine: cUtils.FindQActionInList(self.xMenuOptions.actions(), "Jump To Error Line").setChecked(xJump2ErrorLine)
 
-        
-        xTabDataList = eval(self.xSettingsHandle.value("tabInstanceList"))
-        for xTabDataIter in xTabDataList:
-            xSuccess = self.OpenCodeEditorTab(xTabDataIter["filePath"])
-            if xSuccess:
-                try:
-                    self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
-                    self.xTabContent[-1][0].xBreakpoints = xTabDataIter["breakpoints"] 
-            
-                except KeyError:
-                    pass
-            
+
+        try:
+            xTabDataList = eval(self.xSettingsHandle.value("tabInstanceList"))
+            for xTabDataIter in xTabDataList:
+                xSuccess = self.OpenCodeEditorTab(xTabDataIter["filePath"])
+                if xSuccess:
+                    try:
+                        self.xTabContent[-1][0].setFont(QtGui.QFont(self.xFontFamily, xTabDataIter["zoom"]))
+                        self.xTabContent[-1][0].xBreakpoints = xTabDataIter["breakpoints"] 
+                
+                    except KeyError:
+                        pass
+
+        except Exception as E:
+            logging.warn(str(E))
         
         self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
         self.HandleClickAutoScroll()

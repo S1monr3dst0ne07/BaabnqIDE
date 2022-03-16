@@ -984,13 +984,14 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
                     except KeyError:
                         pass
 
+        
+            self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
+            self.HandleClickAutoScroll()
+            self.UpdateCompilerErrorCheck()
+            self.UpdateJump2ErrorLine()
+
         except Exception as E:
             logging.warn(str(E))
-        
-        self.xTabHost.setCurrentIndex(xSettingsHandle.value("selectedTabIndex"))
-        self.HandleClickAutoScroll()
-        self.UpdateCompilerErrorCheck()
-        self.UpdateJump2ErrorLine()
         
     def SaveSettings(self, xSettingsHandle):
         logging.info("Saving Settings")

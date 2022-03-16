@@ -335,7 +335,6 @@ class cWindow(QtWidgets.QMainWindow):
             self.StartNextProcess()
         
         def Debug(self, xPath, xBreakpoints):
-            raise Exception
             logging.info("DebugingProcess")
 
             self.Kill()
@@ -828,7 +827,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         
         logging.info("Run Current Program")
         logging.debug(f"Path       : {xPath}".format())
-        logging.debug(f"Run Config : {[self.xCompilerCall, self.xVirtMachCall]}".format())
+        logging.debug( "Run Config: [{}, {}]".format(self.xCompilerCall, self.xVirtMachCall))
 
         self.xRunner.Run(xPath)
       

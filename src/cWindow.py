@@ -505,7 +505,7 @@ class cWindow(QtWidgets.QMainWindow):
             
             def clicked(self, xItem):
                 xText = xItem.text()
-                xLineIndex = int(xText.split(":")[1]) - 1
+                xLineIndex = int(xText.split(":")[0]) - 1
                 self.xParent.xParent.xSender.MoveCurrentEditor.emit(xLineIndex)
         
         def __init__(self, xParent):
@@ -577,12 +577,25 @@ class cWindow(QtWidgets.QMainWindow):
 
             self.xResultList.clear()
 
-            xFindList = list(re.finditer(xSearchText, xSourceText))
+            xFindList  = list(re.finditer(xSearchText, xSourceText))
+            xFindCount = len(xFindList)
+            
+            #this is used to format the list of found items correctly
+            #so that it looks like this:
+            #1  : <lineContent>
+            #10 : <lineContent>
+            
+            #and not like this:
+            #1 : <lineContent>
+            #10 : <lineContent>
+            
             for xFindIter in xFindList:
                 xStartIndex = xFindIter.span()[0]
                 xLineIndex = xSourceText[:xStartIndex].count("\n")
 
-                self.xResultList.addItem(f"Line: {xLineIndex + 1}".format())    
+                xLineContent = xSourceText.split("\n")[xLineIndex]
+                
+                self.xResultList.addItem(f"{xLineIndex + 1}:\t {xLineContent.strip()}".format())    
      
                 
                 
@@ -796,7 +809,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
             #toggle
             if xIndex in xCurrentWidget.xBreakpoints: xCurrentWidget.xBreakpoints.remove(xIndex)
-            else:                           xCurrentWidget.xBreakpoints.append(xIndex)
+            else:                                     xCurrentWidget.xBreakpoints.append(xIndex)
             xCurrentWidget.xLineNumberArea.update()
 
         def ClearBreakpoint():
@@ -813,6 +826,9 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.show()        
     
     def FindGui(self):
+        try:                self.xFindDialogInstance.close()
+        except Exception:   pass
+        
         self.xFindDialogInstance = self.cFindDialog(self)
         self.xSender.GlobalClose.connect(self.xFindDialogInstance.close)
     

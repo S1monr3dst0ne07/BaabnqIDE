@@ -28,6 +28,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     
     class cCompleter(QtWidgets.QCompleter):
         def __init__(self):
+            self.xModel = None
             QtWidgets.QCompleter.__init__(self)
 
         def splitPath(self, xPath):
@@ -37,6 +38,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             return self.model().data(xIndex, QtCore.Qt.DisplayRole)
 
         def SetCompleterModel(self, xNewModel):
+            self.xModel = xNewModel
             xModel = QtGui.QStandardItemModel(self)
             
             for xModelItemIter in xNewModel:
@@ -250,6 +252,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                     ]
         
         xFinalModel = cUtils.RemoveDups(xNewModelFilter)
+        self.xModel = xFinalModel
         logging.debug(f"Model Filtered: {xFinalModel}".format())
         self.xCompleter.SetCompleterModel(xFinalModel)
 
@@ -266,24 +269,32 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         xCursorRect.setWidth(self.xCompleter.popup().sizeHintForColumn(0) + self.xCompleter.popup().verticalScrollBar().sizeHint().width())
         self.xCompleter.complete(xCursorRect)
 
+        print(f"{self.xModel}".format())
+        print(f"'{xCompletionPrefix}'".format())
         xMatchCount = self.xCompleter.completionCount()
-        xVisible = xCompletionPrefix != "" and xMatchCount > 0 and self.xCompleterStatus and self.xCompleterStatusGlobal
-        
+        xVisible =  xCompletionPrefix != "" and         \
+                    xMatchCount > 0 and                 \
+                    self.xCompleterStatus and           \
+                    self.xCompleterStatusGlobal and     \
+                    xCompletionPrefix not in self.xBaseCommands
+
+                
         #set visibility of pop-up
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()
 
     def keyPressEvent(self, xEvent):
+        
         if xEvent.key() == QtCore.Qt.Key_Tab:
             if self.xCompleter.popup().isVisible():
                 self.InsertCompletion(self.xCompleter.popup().currentIndex().data())
             
             else:
-                self.xSender.UpdateCompleter.emit()
                 self.insertPlainText(" " * 4)
-            
+                self.xSender.UpdateCompleter.emit()
+        
         else:
-            self.xSender.UpdateCompleter.emit()
             super().keyPressEvent(xEvent)
+            self.xSender.UpdateCompleter.emit()
 
 
     def focusInEvent(self, xEvent):

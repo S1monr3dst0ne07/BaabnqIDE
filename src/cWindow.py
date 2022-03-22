@@ -773,7 +773,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xMenuFile.addAction(self.NewMenuSubOption("Close File", self.CloseTabGui, "Ctrl+W"))
         self.xMenuFile.addAction(self.NewMenuSubOption("Save File", self.SaveFileGui, "Ctrl+S"))
         self.xMenuFile.addAction(self.NewMenuSubOption("Refresh Editors", self.RefreshGui, ""))
-        self.xMenuFile.addAction(self.NewMenuSubOption("Exit", self.ExitGui, "Esc"))
+        self.xMenuFile.addAction(self.NewMenuSubOption("Exit", self.ExitGui))
         
         def GlobalZoom(xDelta):
             if any([x[0].hasFocus() for x in self.xTabContent]):

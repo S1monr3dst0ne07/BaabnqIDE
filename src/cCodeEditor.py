@@ -274,7 +274,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
     def keyPressEvent(self, xEvent):
         if xEvent.key() == QtCore.Qt.Key_Tab:
-            if self.xCompleterStatusGlobal:
+            if self.xCompleter.popup().isVisible():
                 self.InsertCompletion(self.xCompleter.popup().currentIndex().data())
             
             else:

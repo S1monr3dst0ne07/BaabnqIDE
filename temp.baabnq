@@ -1,116 +1,40 @@
-
-jump skip;
-
-lab strcmp;
-
-put _str1ptr = 0;
-put _str2ptr = 0;
-put _returnAddr = 0;
-put _str1 = 0;
-put _str2 = 0;
+use 'libs/stack.baabnq';
+use 'libs/string.baabnq';
 
 
-pull _returnAddr;
-pull _str1ptr;
-pull _str2ptr;
+jump Skip;
 
 
-lab strcmp::loop;
-put _str1 <- _str1ptr;
-put _str2 <- _str2ptr;
-
-jump strcmp::exitFalse ~ _str1 != _str2;
-jump strcmp::exitTrue  ~ _str1 == 0;
-
-put _str1ptr = _str1ptr + 1;
-put _str2ptr = _str2ptr + 1;
-jump strcmp::loop;
-
-
-
-lab strcmp::exitTrue;
-push 1;
-push _returnAddr;
-return;
-
-lab strcmp::exitFalse;
-push 0;
-push _returnAddr;
-return;
-
-lab skip;
-
-
-new '
-<html>
-    <head>
-        <link rel = "stylesheet" href = "styles.css">
-        <title>
-            Index
-        </title>
-    </head>
-    <body>
-        <h1>
-            Index
-        </h1>
-        <p>
-            This is the index site and it groups all paths that are not link to any special other sites
-        </p>
-        <a href = "/test">
-            Go to test
-        </a>
-    </body>
-</html>
-' _IndexString;
+    "waits for a string to be typed into stdin followed by a return
+    "the string is being buffered on the stack, because it's not know how long it is
+    "after the string ended the stack will be read and moved into dynamic memory
+    "and at the end the routine will return a point to that string in memory
+    lab AwaitStr;
+        asm 'plugin Terminal::Input';
+        pull _AwaitStr::StringLength;
+        
+        new _AwaitStr::StringLength _AwaitStr::StringPtr;
+        
+        put _AwaitStr::Index = 0;
+        lab AwaitStr::CopyString;
+            pull _AwaitStr::Data;
+            jump AwaitStr::Exit ~ _AwaitStr::Data == 0;
+            put _AwaitStr::Data -> _AwaitStr::StringPtr + _AwaitStr::Index;
+            put _AwaitStr::Index = _AwaitStr::Index + 1;
+            jump AwaitStr::CopyString;
+        lab AwaitStr::Exit;
+        push _AwaitStr::StringPtr;
+        sub Stack::Swap;
+        return;        
 
 
 
-new '
-<html>
-    <head>
-        <link rel = "stylesheet" href = "styles.css">
-        <title>
-            Test
-        </title>
-    </head>
-    <body>
-        <h1>
-            Test
-        </h1>
-        <p>
-            This is a test site and need some additional logic in the virtual server, because it is accessed by the /test path
-        </p>
-        <a href = "/">
-            Go back to index
-        </a>
-    </body>
-</html>
-' _TestString;
+lab Skip;
 
+new 'toki. jan ' _MsgPtr;
+push _MsgPtr;
 
-new 'test' _CmpString;
+sub AwaitStr;
+sub String::Concat;
 
-
-put _InputString = 0;
-put _InputString <- 0 - 1;
-
-put _CmpState = 0;
-
-push _CmpString;
-push _InputString;
-sub strcmp;
-pull _CmpState;
-
-jump renderTest  ~ _CmpState == 1;
-jump renderIndex ~ _CmpState == 0;
-
-lab renderIndex;
-put _IndexString -> 0 - 1;
-jump exit;
-
-lab renderTest;
-put _TestString -> 0 - 1;
-jump exit;
-
-
-lab exit;
+sub String::PrintString;

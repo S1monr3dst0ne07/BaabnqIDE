@@ -308,7 +308,7 @@ class cWindow(QtWidgets.QMainWindow):
         def SetRunConfig(self, xCompilerCall, xVirtMachCall):
             self.xCompilerCall = xCompilerCall
             self.xVirtMachCall = xVirtMachCall
-    
+
         def Run(self, xPath):
             logging.info("RunningProcess")
 
@@ -627,26 +627,22 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             self.xLayout.addWidget(xHelperLabel, 0, 1)          
             
             self.xCompilerCall = QtWidgets.QLineEdit()
-            self.xVirtMachCall = QtWidgets.QLineEdit()           
+            self.xVirtMachCall = QtWidgets.QLineEdit()
             self.xCompilerCall.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
             self.xVirtMachCall.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
             self.xCompilerCall.setStyleSheet(cUtils.xStyleHandle["RunConfigLineEditors"])
             self.xVirtMachCall.setStyleSheet(cUtils.xStyleHandle["RunConfigLineEditors"])
             self.xCompilerCall.setFixedHeight(self.xCompilerCall.font().pointSize() * 2)
             self.xVirtMachCall.setFixedHeight(self.xVirtMachCall.font().pointSize() * 2)
-
             self.xLayout.addWidget(self.xCompilerCall, 1, 1)
             self.xLayout.addWidget(self.xVirtMachCall, 2, 1)
 
-
-
             xCompilerText = QtWidgets.QLabel("Compiler: ")
-            xVirtMachText = QtWidgets.QLabel("VirtMach: ")
+            xVirtMachText = QtWidgets.QLabel("VirtMach: ")            
             xCompilerText.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
             xVirtMachText.setFont(QtGui.QFont(cUtils.xStyleHandle["FontFamily"], xPointSize))
             xCompilerText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
             xVirtMachText.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-            
             self.xLayout.addWidget(xCompilerText, 1, 0)
             self.xLayout.addWidget(xVirtMachText, 2, 0)
             
@@ -666,6 +662,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             xCurrectLaunchConfig = self.xSender.GetLaunchConfig()
             self.xCompilerCall.setText(xCurrectLaunchConfig[0])
             self.xVirtMachCall.setText(xCurrectLaunchConfig[1])
+            
             
         def ApplyChangedFromDialog(self):
             self.xSender.SetCompilerCall.emit(self.xCompilerCall.text())
@@ -838,26 +835,30 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xEditor.setTextCursor(xCursor)
     
     def RunCurrentProgram(self):
-        xPath = self.xTabHost.currentWidget().xFilePath
-        self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
-        
-        logging.info("Run Current Program")
-        logging.debug(f"Path       : {xPath}".format())
-        logging.debug( "Run Config: [{}, {}]".format(self.xCompilerCall, self.xVirtMachCall))
-
-        self.xRunner.Run(xPath)
+        xCurrentTab = self.xTabHost.currentWidget()
+        if xCurrentTab is not None:
+            xPath = xCurrentTab.xFilePath
+            self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
+            
+            logging.info("Run Current Program")
+            logging.debug(f"Path       : {xPath}".format())
+            logging.debug( "Run Config: [{}, {}]".format(self.xCompilerCall, self.xVirtMachCall))
+    
+            self.xRunner.Run(xPath)
       
     def DebugCurrentProgram(self):
-        xPath = self.xTabHost.currentWidget().xFilePath
-        self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
-
-        logging.info("Debug Current Program")
-        logging.debug(f"Path      : {xPath}".format())
-        logging.debug( "Run Config: [{}, {}]".format(self.xCompilerCall, self.xVirtMachCall))
-        logging.debug(f"Breakpoints: {self.xBreakpoints}".format())
-
-        
-        self.xRunner.Debug(xPath, self.xBreakpoints)
+        xCurrentTab = self.xTabHost.currentWidget()
+        if xCurrentTab is not None:
+            xPath = xCurrentTab.xFilePath
+            self.xRunner.SetRunConfig(self.xCompilerCall, self.xVirtMachCall) #update call paths
+    
+            logging.info("Debug Current Program")
+            logging.debug(f"Path      : {xPath}".format())
+            logging.debug( "Run Config: [{}, {}]".format(self.xCompilerCall, self.xVirtMachCall))
+            logging.debug(f"Breakpoints: {self.xBreakpoints}".format())
+    
+            
+            self.xRunner.Debug(xPath, self.xBreakpoints)
         
         
       
@@ -1043,7 +1044,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xSettingsHandle.setValue("windowPos", self.pos())
         xSettingsHandle.setValue("windowSize", self.size())
         xSettingsHandle.setValue("compilerCall", self.xCompilerCall)
-        xSettingsHandle.setValue("virtMachCall", self.xVirtMachCall)
+        xSettingsHandle.setValue("virtMachCall", self.xVirtMachCall)        
 
         xSettingsHandle.setValue("splitterState", self.xSplitterContainer.saveState())
 

@@ -269,8 +269,6 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         xCursorRect.setWidth(self.xCompleter.popup().sizeHintForColumn(0) + self.xCompleter.popup().verticalScrollBar().sizeHint().width())
         self.xCompleter.complete(xCursorRect)
 
-        print(f"{self.xModel}".format())
-        print(f"'{xCompletionPrefix}'".format())
         xMatchCount = self.xCompleter.completionCount()
         xVisible =  xCompletionPrefix != "" and         \
                     xMatchCount > 0 and                 \

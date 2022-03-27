@@ -1,12 +1,12 @@
-"{'_Math::returnAddr': 1, '_Math::arg1': 2, '_Math::arg2': 3, '_Math::output': 4, '_Math::baseBit': 6, '_Math::divisor': 11, '_Math::dividend': 12, '_ReturnAddr': 13, '_StringPtr': 14, '_Data': 15, '_Config': 16, '_Buffer': 17, '_IndexInit': 18, '_Index': 19, '_SizeBuffer': 20, '_Size': 21, '_DestPtr': 22, '_SrcPtr': 23, '_Char': 24, '_StrPtr': 25, '_StrPtr2': 26, '_StrPtr1': 27, '_StrLen1': 28, '_StrLen2': 29, '_StrPtrFinal': 30, '_StrPtrFinalShifted': 31, '_OpAdd': 32, '_OpSub': 33, '_OpMul': 34, '_InputStr': 35, '_ThisNodePtr': 36, '_InputSize': 37, '_ScanPtr': 38, '_ParsedInt': 39, '_Op': 40, '_MainSize': 41, '_SubSize1': 42, '_SubSize2': 43, '_SubStrPtr1': 44, '_SubStrPtr2': 45, '_SubNodePtr1': 46, '_SubNodePtr2': 47, '_Ptr': 48, '_Type': 49, '_Value': 50, '__': 51, '_SubPtr2': 52, '_SubPtr1': 53, '_ReturnValue1': 54, '_ReturnValue2': 55, '_FinalValue': 56, '_MainStr': 57, '_TreePtr': 58, '_TempStr': 59}
+"{'_str1ptr': 1, '_str2ptr': 2, '_returnAddr': 3, '_str1': 4, '_str2': 5, '_IndexString': 7, '_TestString': 8, '_CmpString': 9, '_InputString': 10, '_CmpState': 11}
 
 
+got skip
+lab strcmp
 clr 
 set 0
 add 
 sAD 1
-got Math::Skip
-lab Math::Add
 clr 
 set 0
 add 
@@ -19,1551 +19,1860 @@ clr
 set 0
 add 
 sAD 4
-pla 
-sAD 1
-pla 
-sAD 3
-pla 
-sAD 2
-pha 
-lDA 3
+clr 
+set 0
+add 
 sAD 5
 pla 
-lDR 5
-add 
-sAD 4
-pha 
-lDA 1
-pha 
-ret 
-lab Math::Sub
-clr 
-set 0
-add 
-sAD 2
-clr 
-set 0
-add 
 sAD 3
-clr 
-set 0
-add 
-sAD 4
-pla 
-sAD 1
-pla 
-sAD 3
-pla 
-sAD 2
-pha 
-lDA 3
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 4
-pha 
-lDA 1
-pha 
-ret 
-lab Math::Mul
-clr 
-set 0
-add 
-sAD 2
-clr 
-set 0
-add 
-sAD 3
-clr 
-set 0
-add 
-sAD 4
 pla 
 sAD 1
 pla 
 sAD 2
-pla 
-sAD 3
-lDA 2
-pha 
-clr 
-set 0
-add 
+lab strcmp::loop
+lPA 1
+sAD 4
+lPA 2
 sAD 5
-pla 
-lDR 5
-jmA Math::mulExit
-lDA 3
+lDA 4
 pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Math::mulExit
-lab Math::mulLoop
-lDA 2
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-and 
+lDA 5
 sAD 6
+pla 
+lDR 6
+jmA Temp0
+got strcmp::exitFalse
+lab Temp0
+lDA 4
 pha 
 clr 
 set 0
 add 
-sAD 5
+sAD 6
 pla 
-lDR 5
-jmA Math::mulSkipAdd
-lDA 4
-pha 
-lDA 3
-sAD 5
-pla 
-lDR 5
-add 
-sAD 4
-lab Math::mulSkipAdd
-lDA 3
+lDR 6
+jmA strcmp::exitTrue
+lDA 1
 pha 
 clr 
 set 1
 add 
-sAD 7
+sAD 6
 pla 
-sAD 8
-lab Temp0
-lDA 8
-shg 
-sAD 8
-lDA 7
-set 1
-sub 
-sAD 7
-jm0 Temp1
-got Temp0
-lab Temp1
-lDA 8
-sAD 3
+lDR 6
+add 
+sAD 1
 lDA 2
 pha 
 clr 
 set 1
 add 
-sAD 9
+sAD 6
 pla 
-sAD 10
-lab Temp2
-lDA 10
-shs 
-sAD 10
-lDA 9
-set 1
-sub 
-sAD 9
-jm0 Temp3
-got Temp2
-lab Temp3
-lDA 10
+lDR 6
+add 
 sAD 2
-pha 
+got strcmp::loop
+lab strcmp::exitTrue
 clr 
-set 0
+set 1
 add 
-sAD 5
-pla 
-lDR 5
-jmA Temp4
-got Math::mulLoop
-lab Temp4
-lab Math::mulExit
-lDA 4
 pha 
-lDA 1
+lDA 3
 pha 
 ret 
-lab Math::Div
+lab strcmp::exitFalse
 clr 
 set 0
 add 
-sAD 11
-clr 
-set 0
-add 
-sAD 12
-clr 
-set 0
-add 
-sAD 4
-pla 
-sAD 1
-pla 
-sAD 11
-pla 
-sAD 12
-lDA 11
 pha 
-lDA 12
-sAD 5
-pla 
-lDR 5
-jmG Math::divExit
-lab Math::divLoop
-lDA 4
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 4
-lDA 12
-pha 
-lDA 11
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 12
-pha 
-lDA 11
-sAD 5
-pla 
-lDR 5
-jmG Math::divLoop
-lDA 12
-pha 
-lDA 11
-sAD 5
-pla 
-lDR 5
-jmA Math::divLoop
-lab Math::divExit
-lDA 12
-pha 
-lDA 4
-pha 
-lDA 1
+lDA 3
 pha 
 ret 
-lab Math::Skip
-got String::Skip
-lab String::PrintString
-pla 
-sAD 13
-pla 
-sAD 14
-lDA 13
-pha 
-lab String::PrintString::PrintLoop
-lPA 14
-sAD 15
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA String::PrintString::Exit
-lDA 15
-putstr 
-lDA 14
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 14
-got String::PrintString::PrintLoop
-lab String::PrintString::Exit
-ret 
-lab String::StackChar2Int
-pla 
-sAD 13
-pla 
-sAD 16
-clr 
-set 0
-add 
-sAD 17
-clr 
-set 0
-add 
-sAD 18
-lDA 16
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Temp6
-got Temp5
-lab Temp6
-jmS String::StackChar2Int::SetIndexInit1
-lab Temp5
-lDA 16
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA Temp8
-got Temp7
-lab Temp8
-jmS String::StackChar2Int::SetIndexInit10000
-lab Temp7
-lDA 18
-sAD 19
-lab String::StackChar2Int::AccLoop
-pla 
-sAD 15
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA String::StackChar2Int::Exit
-lDA 15
-pha 
-clr 
-set 48
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-pha 
-lDA 19
-pha 
-jmS Math::Mul
-pla 
-sAD 15
-lDA 17
-pha 
-lDA 15
-sAD 5
-pla 
-lDR 5
-add 
-sAD 17
-lDA 19
-pha 
-clr 
-set 10
-add 
-pha 
-lDA 16
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Temp10
-got Temp9
-lab Temp10
-jmS Math::Mul
-lab Temp9
-lDA 16
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA Temp12
-got Temp11
-lab Temp12
-jmS Math::Div
-lab Temp11
-pla 
-sAD 19
-pha 
-lDA 18
-sAD 5
-pla 
-lDR 5
-jmA Temp13
-got String::StackChar2Int::AccLoop
-lab Temp13
-lab String::StackChar2Int::Exit
-lDA 17
-pha 
-lDA 13
-pha 
-ret 
-lab String::StackChar2Int::SetIndexInit1
-clr 
-set 1
-add 
-sAD 18
-ret 
-lab String::StackChar2Int::SetIndexInit10000
-clr 
-set 10000
-add 
-sAD 18
-ret 
-lab String::GetSize
-pla 
-sAD 13
-pla 
-sAD 14
-clr 
-set 0
-add 
-sAD 20
-lab String::GetSize::CountLoop
-lDA 20
-pha 
-lDA 14
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 15
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA String::GetSize::Exit
-lDA 20
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 20
-got String::GetSize::CountLoop
-lab String::GetSize::Exit
-lDA 20
-pha 
-lDA 13
-pha 
-ret 
-lab String::CopyN
-pla 
-sAD 13
-pla 
-sAD 21
-pla 
-sAD 22
-pla 
-sAD 23
-clr 
-set 0
-add 
-sAD 19
-lab String::CopyN::Loop
-lDA 23
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 15
-pha 
-lDA 22
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-lDA 19
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 19
-lDA 21
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-jmA Temp14
-got String::CopyN::Loop
-lab Temp14
-lDA 13
-pha 
-ret 
-lab String::ScanChar
-pla 
-sAD 13
-pla 
-sAD 24
-pla 
-sAD 25
-lab String::ScanChar::IterLoop
-lPA 25
-sAD 15
-lDA 25
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 25
-lDA 15
-pha 
-lDA 24
-sAD 5
-pla 
-lDR 5
-jmA String::ScanChar::Found
-lDA 15
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Temp15
-got String::ScanChar::IterLoop
-lab Temp15
-clr 
-set 0
-add 
-pha 
-lDA 13
-pha 
-ret 
-lab String::ScanChar::Found
-clr 
-set 1
-add 
-pha 
-lDA 13
-pha 
-ret 
-lab String::Concat
-pla 
-sAD 13
-pla 
-sAD 26
-pla 
-sAD 27
-lDA 13
-pha 
-lDA 27
-pha 
-jmS String::GetSize
-pla 
-sAD 28
-lDA 26
-pha 
-jmS String::GetSize
-pla 
-sAD 29
-pla 
-sAD 13
-lDA 28
-pha 
-lDA 29
-sAD 5
-pla 
-lDR 5
-add 
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-set 1
-add 
-sAD 5
-lDR 5
-ahm 
-sAD 5
-sRP 5
-set 1
-add 
-sAD 30
-clr 
-set 0
-add 
-sAD 19
-lab String::Concat::StrCopyLoop1
-lDA 27
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 15
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA String::Concat::StrCopyExit1
-lDA 15
-pha 
-lDA 30
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-lDA 19
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 19
-got String::Concat::StrCopyLoop1
-lab String::Concat::StrCopyExit1
-clr 
-set 0
-add 
-sAD 19
-lDA 30
-pha 
-lDA 28
-sAD 5
-pla 
-lDR 5
-add 
-sAD 31
-lab String::Concat::StrCopyLoop2
-lDA 26
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 15
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA String::Concat::StrCopyExit2
-lDA 15
-pha 
-lDA 31
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-lDA 19
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 19
-got String::Concat::StrCopyLoop2
-lab String::Concat::StrCopyExit2
-lDA 30
-pha 
-lDA 13
-pha 
-ret 
-lab String::Skip
-clr 
-set 43
-add 
-sAD 32
-clr 
-set 45
-add 
-sAD 33
-clr 
-set 42
-add 
-sAD 34
-got Skip
-lab Parse
-pla 
-sAD 13
-pla 
-sAD 35
-lDA 13
-pha 
-clr 
-set 4
-add 
-set 1
-add 
-sAD 5
-lDR 5
-ahm 
-sAD 5
-sRP 5
-set 1
-add 
-sAD 36
-pla 
-sAD 13
-lDA 36
-pha 
-lDA 13
-pha 
-lDA 35
-pha 
-jmS String::GetSize
-pla 
-sAD 37
-lDA 35
-pha 
-lDA 37
-sAD 5
-pla 
-lDR 5
-add 
-sAD 38
-lab Parse::FindLvL1
-lPA 38
-sAD 15
-pha 
-lDA 32
-sAD 5
-pla 
-lDR 5
-jmA Parse::OpFound
-lDA 15
-pha 
-lDA 33
-sAD 5
-pla 
-lDR 5
-jmA Parse::OpFound
-lDA 38
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 38
-pha 
-lDA 35
-sAD 5
-pla 
-lDR 5
-jmA Temp16
-got Parse::FindLvL1
-lab Temp16
-lDA 35
-pha 
-lDA 37
-sAD 5
-pla 
-lDR 5
-add 
-sAD 38
-lab Parse::FindLvL2
-lPA 38
-sAD 15
-pha 
-lDA 34
-sAD 5
-pla 
-lDR 5
-jmA Parse::OpFound
-lDA 38
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 38
-pha 
-lDA 35
-sAD 5
-pla 
-lDR 5
-jmA Temp17
-got Parse::FindLvL2
-lab Temp17
-clr 
-set 1
-add 
-pha 
-lDA 36
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-clr 
-set 0
-add 
-pha 
-lDA 35
-sAD 38
-lab PushLoop
-lPA 38
-sAD 15
-lDA 38
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 38
-lDA 15
-pha 
-clr 
-set 32
-add 
-sAD 5
-pla 
-lDR 5
-jmA PushLoop
-lDA 15
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA PushExit
-lDA 15
-pha 
-got PushLoop
-lab PushExit
-clr 
-set 0
-add 
-pha 
-jmS String::StackChar2Int
-pla 
-sAD 39
-pha 
-lDA 36
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-ret 
-lab Parse::OpFound
-lDA 15
-sAD 40
-pha 
-lDA 36
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-lDA 35
-pha 
-jmS String::GetSize
-pla 
-sAD 41
-lDA 38
-pha 
-lDA 35
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 42
-lDA 41
-pha 
-lDA 35
-sAD 5
-pla 
-lDR 5
-add 
-pha 
-lDA 38
-sAD 5
-pla 
-lDR 5
-sub 
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 43
-lDA 42
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-set 1
-add 
-sAD 5
-lDR 5
-ahm 
-sAD 5
-sRP 5
-set 1
-add 
-sAD 44
-lDA 43
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-set 1
-add 
-sAD 5
-lDR 5
-ahm 
-sAD 5
-sRP 5
-set 1
-add 
-sAD 45
-lDA 35
-pha 
-lDA 44
-pha 
-lDA 42
-pha 
-jmS String::CopyN
-lDA 38
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-pha 
-lDA 45
-pha 
-lDA 43
-pha 
-jmS String::CopyN
-lDA 36
-pha 
-lDA 44
-pha 
-lDA 45
-pha 
-lDA 45
-pha 
-lDA 44
-pha 
-jmS Parse
-pla 
-sAD 46
-pla 
-sAD 45
-lDA 46
-pha 
-lDA 45
-pha 
-jmS Parse
-pla 
-sAD 47
-pla 
-sAD 46
-pla 
-sAD 45
-pla 
-sAD 44
-set 1
-sub 
-sAD 5
-lPR 5
-fhm 
-lDA 45
-set 1
-sub 
-sAD 5
-lPR 5
-fhm 
-pla 
-sAD 36
-lDA 46
-pha 
-lDA 36
-pha 
-clr 
-set 2
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-lDA 47
-pha 
-lDA 36
-pha 
-clr 
-set 3
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-pla 
-sAP 5
-ret 
-lab Eval
-pla 
-sAD 13
-pla 
-sAD 48
-lDA 13
-pha 
-lDA 48
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 49
-lDA 48
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 50
-lDA 49
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Eval::FoundOp
-pla 
-sAD 51
-lDA 50
-pha 
-lDA 13
-pha 
-ret 
-lab Eval::FoundOp
-lDA 50
-pha 
-lDA 48
-pha 
-clr 
-set 3
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 52
-lDA 48
-pha 
-clr 
-set 2
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 53
-lDA 52
-pha 
-lDA 53
-pha 
-jmS Eval
-pla 
-sAD 54
-pla 
-sAD 52
-lDA 54
-pha 
-lDA 52
-pha 
-jmS Eval
-pla 
-sAD 55
-pla 
-sAD 54
-pla 
-sAD 50
-lDA 54
-pha 
-lDA 55
-pha 
-lDA 50
-pha 
-lDA 32
-sAD 5
-pla 
-lDR 5
-jmA Temp19
-got Temp18
-lab Temp19
-jmS Math::Add
-lab Temp18
-lDA 50
-pha 
-lDA 33
-sAD 5
-pla 
-lDR 5
-jmA Temp21
-got Temp20
-lab Temp21
-jmS Math::Sub
-lab Temp20
-lDA 50
-pha 
-lDA 34
-sAD 5
-pla 
-lDR 5
-jmA Temp23
-got Temp22
-lab Temp23
-jmS Math::Mul
-lab Temp22
-pla 
-sAD 56
-pla 
-sAD 13
-lDA 56
-pha 
-lDA 13
-pha 
-ret 
-lab FreeExprTree
-pla 
-sAD 13
-pla 
-sAD 48
-lDA 13
-pha 
-lDA 48
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 49
-lDA 48
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 50
-lDA 49
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA FreeExprTree::FoundOp
-lDA 48
-set 1
-sub 
-sAD 5
-lPR 5
-fhm 
-ret 
-lab FreeExprTree::FoundOp
-lDA 48
-pha 
-clr 
-set 3
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 52
-lDA 48
-pha 
-clr 
-set 2
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 53
-lDA 48
-set 1
-sub 
-sAD 5
-lPR 5
-fhm 
-lDA 53
-pha 
-lDA 52
-pha 
-jmS FreeExprTree
-jmS FreeExprTree
-ret 
-lab PrintExprTree
-pla 
-sAD 13
-pla 
-sAD 48
-lDA 13
-pha 
-lDA 48
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 49
-lDA 48
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 50
-lDA 49
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA PrintExprTree::FoundOp
-lDA 49
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA PrintExprTree::FoundValue
-ret 
-lab PrintExprTree::FoundOp
-lDA 48
-pha 
-clr 
-set 2
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 46
-lDA 48
-pha 
-clr 
-set 3
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 5
-lPA 5
-sAD 47
-clr 
-set 32
-add 
-putstr 
-lDA 50
-putstr 
-lDA 47
-pha 
-lDA 46
-pha 
-clr 
-set 40
-add 
-putstr 
-jmS PrintExprTree
-clr 
-set 32
-add 
-putstr 
-jmS PrintExprTree
-clr 
-set 41
-add 
-putstr 
-ret 
-lab PrintExprTree::FoundValue
-lDA 50
-sAD 5
-out 5
-ret 
-lab Skip
-set 29
+lab skip
+set 406
 ahm 
 sAD 0
 set 1
 add 
-sAD 57
-set 29
-jmS _WriteChar
-set 49
-jmS _WriteChar
-set 56
+sAD 7
+set 406
 jmS _WriteChar
 set 32
 jmS _WriteChar
-set 43
+set 60
 jmS _WriteChar
-set 32
+set 104
 jmS _WriteChar
-set 53
+set 116
 jmS _WriteChar
-set 49
+set 109
 jmS _WriteChar
-set 32
-jmS _WriteChar
-set 45
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 50
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 45
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 56
-jmS _WriteChar
-set 51
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 43
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 49
-jmS _WriteChar
-set 55
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 42
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 49
-jmS _WriteChar
-set 48
-jmS _WriteChar
-set 48
-jmS _WriteChar
-set 0
-jmS _WriteChar
-lDA 57
-pha 
-jmS Parse
-pla 
-sAD 58
-pha 
-jmS Eval
-pla 
-sAD 56
-lDA 58
-pha 
-jmS PrintExprTree
-set 8
-ahm 
-sAD 0
-set 1
-add 
-sAD 59
-set 8
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 32
-jmS _WriteChar
-set 45
+set 108
 jmS _WriteChar
 set 62
 jmS _WriteChar
-set 10
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 107
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 61
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 102
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 61
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 46
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 73
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 120
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 98
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 73
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 120
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 84
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 120
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 103
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 117
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 107
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 102
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 61
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 71
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 98
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 109
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
 jmS _WriteChar
 set 0
 jmS _WriteChar
-lDA 59
-pha 
-jmS String::PrintString
-lDA 56
-sAD 5
-out 5
-lDA 57
+set 429
+ahm 
+sAD 0
 set 1
-sub 
-sAD 5
-lPR 5
-fhm 
-lDA 59
+add 
+sAD 8
+set 429
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 109
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 107
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 61
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 102
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 61
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 46
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 84
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 98
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 84
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 49
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 84
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 109
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 103
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 118
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 117
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 118
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 44
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 98
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 117
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 98
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 112
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 102
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 61
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 34
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 71
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 98
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 99
+jmS _WriteChar
+set 107
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 110
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 120
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 98
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 121
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 60
+jmS _WriteChar
+set 47
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 109
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 62
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 0
+jmS _WriteChar
+set 6
+ahm 
+sAD 0
 set 1
-sub 
-sAD 5
-lPR 5
-fhm 
-lDA 58
+add 
+sAD 9
+set 6
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 0
+jmS _WriteChar
+clr 
+set 0
+add 
+sAD 10
+clr 
+set 0
+add 
 pha 
-jmS FreeExprTree
+clr 
+set 1
+add 
+sAD 6
+pla 
+lDR 6
+sub 
+sAD 6
+lPA 6
+sAD 10
+clr 
+set 0
+add 
+sAD 11
+lDA 9
+pha 
+lDA 10
+pha 
+jmS strcmp
+pla 
+sAD 11
+pha 
+clr 
+set 1
+add 
+sAD 6
+pla 
+lDR 6
+jmA renderTest
+lDA 11
+pha 
+clr 
+set 0
+add 
+sAD 6
+pla 
+lDR 6
+jmA renderIndex
+lab renderIndex
+lDA 7
+pha 
+clr 
+set 0
+add 
+pha 
+clr 
+set 1
+add 
+sAD 6
+pla 
+lDR 6
+sub 
+sAD 6
+pla 
+sAP 6
+got exit
+lab renderTest
+lDA 8
+pha 
+clr 
+set 0
+add 
+pha 
+clr 
+set 1
+add 
+sAD 6
+pla 
+lDR 6
+sub 
+sAD 6
+pla 
+sAP 6
+got exit
+lab exit
 brk 
 lab _WriteChar
 sRP 0
@@ -1576,4 +1885,4 @@ ret
 
 
 
- "Compiled from source: D:\ProjektePython\Scripts\BaabnqIde\src/../temp.baabnq
+ "Compiled from source: D:\ProjektePython\Scripts\BaabnqIde/temp.baabnq

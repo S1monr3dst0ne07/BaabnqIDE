@@ -143,7 +143,7 @@ lab Floats::Print;
     "print sign
     put _Floats::Print::Sign = (_Floats::Print::Value >> 15) & 1;
     jump Floats::Print::SkipPrintSign ~ _Floats::Print::Sign == 0;
-    putstr 45;
+    putchr 45;
     lab Floats::Print::SkipPrintSign;
     
     print _Floats::Print::Int;

@@ -64,7 +64,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         #regex rules for syntax highlighting
         xRules = [
                 
-                ('put|print|input|putstr|asm|use',          xStyles["normalCommands"]),
+                ('put|print|input|putchr|asm|use',          xStyles["normalCommands"]),
                 ('pull|push|sub|return',                    xStyles["stackCommands"]),
                 ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<|~',  xStyles["ops"]),
                 ('->|<-|new|free|static',                   xStyles["memAlloc"]),
@@ -103,7 +103,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
 
     
-    xBaseCommands = ["put", "print", "input", "putstr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump"]
+    xBaseCommands = ["put", "print", "input", "putchr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump", "static"]
     
 
     def __init__(self, xParent):
@@ -226,6 +226,12 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xSender.RemoteDropEvent.emit(xEvent)
         self.xIsSaved = self.xRestoreIsSavedState
         self.xSender.UpdateTabSaveColor.emit()
+
+        #give empty qdropevent to super, otherwise the qplaintextedit gets confused
+        xDummyMimeData = QtCore.QMimeData()
+        xDummyMimeData.setText("")
+        xDummyEvent = QtGui.QDropEvent(xEvent.posF(), xEvent.possibleActions(), xDummyMimeData, xEvent.mouseButtons(), xEvent.keyboardModifiers())
+        super().dropEvent(xDummyEvent)
 
     def TextUnderCursor(self):
         xTextCursor = self.textCursor()

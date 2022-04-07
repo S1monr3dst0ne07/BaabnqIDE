@@ -1077,6 +1077,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
     def dragEnterEvent(self, xEvent):
         if xEvent.mimeData().hasText():
             xEvent.accept()
+            
         else:
             xEvent.ignore()
 
@@ -1084,6 +1085,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         xRawPath = xEvent.mimeData().text()
         xPath = re.search("file:\/\/\/(.+)", xRawPath).group(1)
         self.OpenCodeEditorTab(xPath)
+        
+        super().dropEvent(xEvent)
 
     def closeEvent(self, xEvent):
         logging.info("closeEvent called")

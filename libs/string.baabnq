@@ -11,7 +11,7 @@ lab String::PrintString;
     put _Data <- _StringPtr;
     jump String::PrintString::Exit ~ _Data == 0;
 
-    putstr _Data;
+    putchr _Data;
 
     put _StringPtr = _StringPtr + 1;
     jump String::PrintString::PrintLoop;
@@ -184,6 +184,5 @@ lab String::Concat;
 
     push _StrPtrFinal;
     push _ReturnAddr;
-    return;
 
 lab String::Skip;

@@ -259,7 +259,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         
         xFinalModel = cUtils.RemoveDups(xNewModelFilter)
         self.xModel = xFinalModel
-        logging.debug(f"Model Filtered: {xFinalModel}".format())
+        logging.debug("Model Filtered: {}".format(xFinalModel))
         self.xCompleter.SetCompleterModel(xFinalModel)
 
 

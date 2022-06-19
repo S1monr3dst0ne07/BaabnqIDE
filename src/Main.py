@@ -35,8 +35,8 @@ def Main():
         logging.critical(logging.traceback.format_exc())
         QtWidgets.QMessageBox.about(logging.traceback.format_exc())
 
-
     sys.exit(xReturnCode)
+
 
 
 

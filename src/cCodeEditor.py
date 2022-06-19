@@ -64,16 +64,17 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         #regex rules for syntax highlighting
         xRules = [
                 
-                ('put|print|input|putchr|asm|use',          xStyles["normalCommands"]),
-                ('pull|push|sub|return',                    xStyles["stackCommands"]),
-                ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<|~',  xStyles["ops"]),
-                ('->|<-|new|free|static',                   xStyles["memAlloc"]),
-                ('lab|jump',                                xStyles["jumpOps"]),
-                ("\W\d+\W",                                 xStyles["const"]),
-                ('_[^ ]*',                                  xStyles["vars"]),
-                ('\".*$',                                   xStyles["fazzedOut"]),
-                (';',                                       xStyles["fazzedOut"]),
-                ("'[^']*'",                                 xStyles["constItal"]),
+                ('put|print|input|putchr|asm|use',                  xStyles["normalCommands"]),
+                ('pull|push|sub|return',                            xStyles["stackCommands"]),
+                ('=|\<|\>|==|!=|\+|-|&|\||\^|\>\>|\<\<|~',          xStyles["ops"]),
+                ('->|<-|new|free|static',                           xStyles["memAlloc"]),
+                ('lab|jump',                                        xStyles["jumpOps"]),
+                ("\W\d+\W",                                         xStyles["const"]),
+                ('_[^ ]*',                                          xStyles["vars"]),
+                ('\(|\)',                                           xStyles["ops"]),
+                ('\".*$',                                           xStyles["fazzedOut"]),
+                (';',                                               xStyles["fazzedOut"]),
+                ("'[^']*'",                                         xStyles["constItal"]),
                 
             
             ]

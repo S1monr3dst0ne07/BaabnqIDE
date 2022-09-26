@@ -180,7 +180,7 @@ class cMain:
     #applies protocol when debugging is enabled
     def AplyProt(self, xRaw, xPrefix):
         if self.xDebug:
-            return xPrefix + "(" + xRaw + ")"
+            return xPrefix + "(" + xRaw.replace("\n", "") + ")"
         
         else:
             return xRaw

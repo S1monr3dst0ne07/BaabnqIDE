@@ -287,7 +287,6 @@ class cWindow(QtWidgets.QMainWindow):
 
                 self.xVirtMachProcess.start(xCallArgs[0], xCallArgs[1:] + xAddArgs)
                 
-                #and it's tracker
                 self.xProcessTracker = self.cAsyncProcessTracker(self.xStatusDisplay, self.xVirtMachProcess, xDisplayName)
                 self.xProcessTracker.TrueFinish.connect(xFinishInvoke)
                 self.xProcessTracker.start()
@@ -357,6 +356,7 @@ class cWindow(QtWidgets.QMainWindow):
             def HandleDebugProtocol(xBytes):
                 #split line by line
                 xLines = cUtils.Bytes2Str(xBytes).split("\r\n")
+                logging.debug(f'Handling Debug Protocol Input: {xLines}')
                 for xLineIter in xLines:
                     #pull category and data from line
                     xLineMatch = re.match("(.+)\((.+)\)", xLineIter)

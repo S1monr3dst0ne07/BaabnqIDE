@@ -1,887 +1,766 @@
-"{'_Math::returnAddr': 1, '_Math::arg1': 2, '_Math::arg2': 3, '_Math::output': 4, '_Math::baseBit': 6, '_Math::divisor': 8, '_Math::dividend': 9, '_ReturnAddr': 10, '_ValueA': 11, '_ValueB': 12, '_Value': 13, '_cx': 14, '_cy': 15, '_x': 16, '_y': 17, '_x2': 18, '_y2': 19, '_iter': 20, '_xmin': 21, '_xmax': 22, '_ymin': 23, '_ymax': 24, '_maxiter': 25, '_dx': 26, '_dy': 27, '_CompTempVal': 28, '_Temp': 29, '_Val1>Val2::Val2': 30, '_Val1>Val2::Val1': 31, '_Val1>Val2::Sign1': 32, '_Val1>Val2::Sign2': 33, '_Val1>Val2::Output': 34, '_Mul::X': 35, '_Mul::Y': 36, '_Mul::Sx': 37, '_Mul::Sy': 38, '_Mul::Temp': 39, '_Mul::Sign': 40}
+"{'_ptr': 1, '_Math::returnAddr': 3, '_Math::arg1': 4, '_Math::arg2': 5, '_Math::output': 6, '_Math::baseBit': 7, '_Math::divisor': 9, '_Math::dividend': 10, '_ReturnAddr': 11, '_StringPtr': 12, '_Data': 13, '_Config': 14, '_Buffer': 15, '_IndexInit': 16, '_Index': 17, '_SizeBuffer': 18, '_Size': 19, '_DestPtr': 20, '_SrcPtr': 21, '_Char': 22, '_StrPtr': 23, '_StrPtr2': 24, '_StrPtr1': 25, '_StrLen1': 26, '_StrLen2': 27, '_StrPtrFinal': 28, '_StrPtrFinalShifted': 29}
 
 
-clr 
-set 0
+set 13
+ahm 
+sAD 0
+set 1
 add 
 sAD 1
+set 13
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 119
+jmS _WriteChar
+set 111
+jmS _WriteChar
+set 114
+jmS _WriteChar
+set 108
+jmS _WriteChar
+set 100
+jmS _WriteChar
+set 0
+jmS _WriteChar
+lDA 1
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+add 
+sAD 1
+set 1
+sub 
+sAD 2
+lPR 2
+fhm 
+clr 
+sAD 3
 got Math::Skip
 lab Math::Add
 clr 
-set 0
-add 
-sAD 2
-clr 
-set 0
-add 
-sAD 3
-clr 
-set 0
-add 
 sAD 4
-pla 
-sAD 1
+clr 
+sAD 5
+clr 
+sAD 6
 pla 
 sAD 3
 pla 
-sAD 2
-pha 
-lDA 3
 sAD 5
 pla 
-lDR 5
-add 
 sAD 4
 pha 
-lDA 1
+lDA 5
+sAD 2
+pla 
+lDR 2
+add 
+sAD 6
+pha 
+lDA 3
 pha 
 ret 
 lab Math::Sub
 clr 
-set 0
-add 
-sAD 2
-clr 
-set 0
-add 
-sAD 3
-clr 
-set 0
-add 
 sAD 4
-pla 
-sAD 1
+clr 
+sAD 5
+clr 
+sAD 6
 pla 
 sAD 3
 pla 
-sAD 2
-pha 
-lDA 3
 sAD 5
 pla 
-lDR 5
-sub 
 sAD 4
 pha 
-lDA 1
+lDA 5
+sAD 2
+pla 
+lDR 2
+sub 
+sAD 6
+pha 
+lDA 3
 pha 
 ret 
 lab Math::Mul
 clr 
-set 0
-add 
-sAD 2
+sAD 4
 clr 
-set 0
-add 
+sAD 5
+clr 
+sAD 6
+pla 
 sAD 3
-clr 
-set 0
-add 
+pla 
 sAD 4
 pla 
-sAD 1
-pla 
-sAD 2
-pla 
-sAD 3
-lDA 2
-pha 
-clr 
-set 0
-add 
 sAD 5
-pla 
-lDR 5
-jmA Math::mulExit
-lDA 3
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Math::mulExit
-lab Math::mulLoop
-lDA 2
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-and 
-sAD 6
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Math::mulSkipAdd
 lDA 4
 pha 
-lDA 3
-sAD 5
+clr 
+sAD 2
 pla 
-lDR 5
-add 
-sAD 4
-lab Math::mulSkipAdd
-lDA 3
+lDR 2
+jmA Math::mulExit
+lDA 5
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA Math::mulExit
+lab Math::mulLoop
+lDA 4
 pha 
 clr 
 set 1
 add 
-sAD 5
+sAD 2
 pla 
+lDR 2
+and 
 sAD 7
-lab Temp0
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA Math::mulSkipAdd
+lDA 6
+pha 
 lDA 5
+sAD 2
+pla 
+lDR 2
+add 
+sAD 6
+lab Math::mulSkipAdd
+lDA 5
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+sAD 8
+lab Temp0
+lDA 2
 jm0 Temp1
 set 1
 sub 
-sAD 5
-lDA 7
+sAD 2
+lDA 8
 shg 
-sAD 7
+sAD 8
 got Temp0
 lab Temp1
-lDA 7
-sAD 3
-lDA 2
+lDA 8
+sAD 5
+lDA 4
 pha 
 clr 
 set 1
 add 
-sAD 5
+sAD 2
 pla 
-sAD 7
+sAD 8
 lab Temp2
-lDA 5
+lDA 2
 jm0 Temp3
 set 1
 sub 
-sAD 5
-lDA 7
+sAD 2
+lDA 8
 shs 
-sAD 7
+sAD 8
 got Temp2
 lab Temp3
-lDA 7
-sAD 2
+lDA 8
+sAD 4
 pha 
 clr 
-set 0
-add 
-sAD 5
+sAD 2
 pla 
-lDR 5
+lDR 2
 jmA Temp4
 got Math::mulLoop
 lab Temp4
 lab Math::mulExit
-lDA 4
+lDA 6
 pha 
-lDA 1
+lDA 3
 pha 
 ret 
 lab Math::Div
 clr 
-set 0
-add 
-sAD 8
-clr 
-set 0
-add 
 sAD 9
 clr 
-set 0
-add 
-sAD 4
+sAD 10
+clr 
+sAD 6
 pla 
-sAD 1
-pla 
-sAD 8
+sAD 3
 pla 
 sAD 9
-lDA 8
-pha 
+pla 
+sAD 10
 lDA 9
-sAD 5
+pha 
+lDA 10
+sAD 2
 pla 
-lDR 5
+lDR 2
 jmG Math::divExit
 lab Math::divLoop
-lDA 4
+lDA 6
 pha 
 clr 
 set 1
 add 
-sAD 5
+sAD 2
 pla 
-lDR 5
+lDR 2
 add 
-sAD 4
-lDA 9
+sAD 6
+lDA 10
 pha 
-lDA 8
-sAD 5
+lDA 9
+sAD 2
 pla 
-lDR 5
+lDR 2
 sub 
-sAD 9
+sAD 10
 pha 
-lDA 8
-sAD 5
-pla 
-lDR 5
-jmG Math::divLoop
 lDA 9
-pha 
-lDA 8
-sAD 5
+sAD 2
 pla 
-lDR 5
+lDR 2
+jmG Math::divLoop
+lDA 10
+pha 
+lDA 9
+sAD 2
+pla 
+lDR 2
 jmA Math::divLoop
 lab Math::divExit
-lDA 9
+lDA 10
 pha 
-lDA 4
+lDA 6
 pha 
-lDA 1
+lDA 3
 pha 
 ret 
 lab Math::Skip
-got Stack::Skip
-lab Stack::Swap
-pla 
-sAD 10
+got String::Skip
+lab String::PrintString
 pla 
 sAD 11
 pla 
 sAD 12
 lDA 11
 pha 
+lab String::PrintString::PrintLoop
+lPA 12
+sAD 13
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA String::PrintString::Exit
+lDA 13
+putstr 
 lDA 12
 pha 
-lDA 10
-pha 
-ret 
-lab Stack::Dup
+clr 
+set 1
+add 
+sAD 2
 pla 
-sAD 10
+lDR 2
+add 
+sAD 12
+got String::PrintString::PrintLoop
+lab String::PrintString::Exit
+ret 
+lab String::StackChar2Int
+pla 
+sAD 11
+pla 
+sAD 14
+clr 
+sAD 15
+clr 
+sAD 16
+lDA 14
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA Temp6
+got Temp5
+lab Temp6
+jmS String::StackChar2Int::SetIndexInit1
+lab Temp5
+lDA 14
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+jmA Temp8
+got Temp7
+lab Temp8
+jmS String::StackChar2Int::SetIndexInit10000
+lab Temp7
+lDA 16
+sAD 17
+lab String::StackChar2Int::AccLoop
 pla 
 sAD 13
 pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA String::StackChar2Int::Exit
 lDA 13
 pha 
-lDA 10
-pha 
-ret 
-lab Stack::Skip
 clr 
-set 0
+set 48
 add 
-sAD 14
-clr 
-set 0
-add 
-sAD 15
-clr 
-set 0
-add 
-sAD 16
-clr 
-set 0
-add 
-sAD 17
-clr 
-set 0
-add 
-sAD 18
-clr 
-set 0
-add 
-sAD 19
-clr 
-set 0
-add 
-sAD 20
-clr 
-set 56936
-add 
-sAD 21
-clr 
-set 2867
-add 
-sAD 22
-clr 
-set 60622
-add 
-sAD 23
-clr 
-set 4915
-add 
-sAD 24
-clr 
-set 0
-add 
-sAD 25
-clr 
-set 0
-add 
-sAD 26
-clr 
-set 0
-add 
-sAD 27
-clr 
-set 32
-add 
-sAD 25
-lDA 22
-pha 
-lDA 21
-sAD 5
+sAD 2
 pla 
-lDR 5
+lDR 2
 sub 
-pha 
-clr 
-set 79
-add 
-pha 
-jmS Math::Div
-pla 
-sAD 26
-lDA 24
-pha 
-lDA 23
-sAD 5
-pla 
-lDR 5
-sub 
-pha 
-clr 
-set 24
-add 
-pha 
-jmS Math::Div
-pla 
-sAD 27
-lDA 23
-sAD 15
-lab While1
-lDA 15
-pha 
-lDA 24
-pha 
-jmS Val1>Val2
-pla 
-sAD 28
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA Exit1
-lDA 21
-sAD 14
-lab While2
-lDA 14
-pha 
-lDA 22
-pha 
-jmS Val1>Val2
-pla 
-sAD 28
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA Exit2
-clr 
-set 0
-add 
-sAD 16
-clr 
-set 0
-add 
-sAD 17
-clr 
-set 0
-add 
-sAD 18
-clr 
-set 0
-add 
-sAD 19
-clr 
-set 0
-add 
-sAD 20
-lab While3
-lDA 20
-pha 
-lDA 25
-sAD 5
-pla 
-lDR 5
-jmG Exit3
-lDA 18
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-add 
-pha 
-clr 
-set 16384
-add 
-pha 
-jmS Val1>Val2
-pla 
-sAD 28
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA Exit3
-lDA 16
 pha 
 lDA 17
-pha 
-jmS Mul
-pla 
-sAD 29
-sAD 5
-out 5
-lDA 29
-pha 
-clr 
-set 11
-add 
-sAD 5
-pla 
-sAD 7
-lab Temp5
-lDA 5
-jm0 Temp6
-set 1
-sub 
-sAD 5
-lDA 7
-shs 
-sAD 7
-got Temp5
-lab Temp6
-lDA 7
-pha 
-lDA 15
-sAD 5
-pla 
-lDR 5
-add 
-sAD 17
-lDA 18
-pha 
-lDA 19
-sAD 5
-pla 
-lDR 5
-sub 
-pha 
-lDA 14
-sAD 5
-pla 
-lDR 5
-add 
-sAD 16
-pha 
-lDA 16
-pha 
-jmS Mul
-pla 
-sAD 29
-pha 
-clr 
-set 12
-add 
-sAD 5
-pla 
-sAD 7
-lab Temp7
-lDA 5
-jm0 Temp8
-set 1
-sub 
-sAD 5
-lDA 7
-shs 
-sAD 7
-got Temp7
-lab Temp8
-lDA 7
-sAD 18
-lDA 17
-pha 
-lDA 17
-pha 
-jmS Mul
-pla 
-sAD 29
-pha 
-clr 
-set 12
-add 
-sAD 5
-pla 
-sAD 7
-lab Temp9
-lDA 5
-jm0 Temp10
-set 1
-sub 
-sAD 5
-lDA 7
-shs 
-sAD 7
-got Temp9
-lab Temp10
-lDA 7
-sAD 19
-lDA 20
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 20
-got While3
-lab Exit3
-lDA 20
-pha 
-clr 
-set 32
-add 
-sAD 5
-pla 
-lDR 5
-add 
-putstr 
-lDA 14
-pha 
-lDA 26
-sAD 5
-pla 
-lDR 5
-add 
-sAD 14
-got While2
-lab Exit2
-clr 
-set 10
-add 
-putstr 
-lDA 15
-pha 
-lDA 27
-sAD 5
-pla 
-lDR 5
-add 
-sAD 15
-got While1
-lab Exit1
-got Exit
-lab Val1>Val2
-jmS Stack::Swap
-pla 
-sAD 30
-jmS Stack::Swap
-pla 
-sAD 31
-pha 
-clr 
-set 32768
-add 
-sAD 5
-pla 
-lDR 5
-and 
-sAD 32
-lDA 30
-pha 
-clr 
-set 32768
-add 
-sAD 5
-pla 
-lDR 5
-and 
-sAD 33
-lDA 32
-pha 
-lDA 33
-sAD 5
-pla 
-lDR 5
-jmA Temp11
-got Val1>Val2::QuickSign
-lab Temp11
-lDA 32
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA Val1>Val2::Neg
-clr 
-set 1
-add 
-sAD 34
-lDA 31
-pha 
-lDA 30
-sAD 5
-pla 
-lDR 5
-jmG Val1>Val2::Exit
-clr 
-set 0
-add 
-sAD 34
-lab Val1>Val2::Exit
-lDA 34
-pha 
-jmS Stack::Swap
-ret 
-lab Val1>Val2::Neg
-lDA 31
-pha 
-clr 
-set 65534
-add 
-sAD 5
-pla 
-lDR 5
-xor 
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 31
-lDA 30
-pha 
-clr 
-set 65534
-add 
-sAD 5
-pla 
-lDR 5
-xor 
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 30
-clr 
-set 1
-add 
-sAD 34
-lDA 31
-pha 
-lDA 30
-sAD 5
-pla 
-lDR 5
-jmL Val1>Val2::Neg::Exit
-clr 
-set 0
-add 
-sAD 34
-lab Val1>Val2::Neg::Exit
-lDA 34
-pha 
-jmS Stack::Swap
-ret 
-lab Val1>Val2::QuickSign
-clr 
-set 1
-add 
-sAD 34
-lDA 32
-pha 
-lDA 33
-sAD 5
-pla 
-lDR 5
-jmL Val1>Val2::QuickSign::Exit
-clr 
-set 0
-add 
-sAD 34
-lab Val1>Val2::QuickSign::Exit
-lDA 34
-pha 
-jmS Stack::Swap
-ret 
-lab Mul
-jmS Stack::Swap
-pla 
-sAD 35
-jmS Stack::Swap
-pla 
-sAD 36
-lDA 35
-pha 
-clr 
-set 32768
-add 
-sAD 5
-pla 
-lDR 5
-and 
-sAD 37
-lDA 36
-pha 
-clr 
-set 32768
-add 
-sAD 5
-pla 
-lDR 5
-and 
-sAD 38
-lDA 37
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Mul::SkipSignX
-lDA 35
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-pha 
-clr 
-set 65534
-add 
-sAD 5
-pla 
-lDR 5
-xor 
-sAD 35
-lab Mul::SkipSignX
-lDA 38
-pha 
-clr 
-set 0
-add 
-sAD 5
-pla 
-lDR 5
-jmA Mul::SkipSignY
-lDA 36
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-pha 
-clr 
-set 65534
-add 
-sAD 5
-pla 
-lDR 5
-xor 
-sAD 36
-lab Mul::SkipSignY
-lDA 35
-pha 
-lDA 36
 pha 
 jmS Math::Mul
 pla 
-sAD 39
-lDA 37
+sAD 13
+lDA 15
 pha 
-lDA 38
-sAD 5
+lDA 13
+sAD 2
 pla 
-lDR 5
-xor 
-sAD 40
+lDR 2
+add 
+sAD 15
+lDA 17
 pha 
 clr 
-set 0
+set 10
 add 
-sAD 5
-pla 
-lDR 5
-jmA Mul::SkipSign
-lDA 39
+pha 
+lDA 14
 pha 
 clr 
-set 65534
-add 
-sAD 5
+sAD 2
 pla 
-lDR 5
-xor 
+lDR 2
+jmA Temp10
+got Temp9
+lab Temp10
+jmS Math::Mul
+lab Temp9
+lDA 14
 pha 
 clr 
 set 1
 add 
-sAD 5
+sAD 2
 pla 
-lDR 5
-add 
-sAD 39
-lab Mul::SkipSign
-lDA 39
+lDR 2
+jmA Temp12
+got Temp11
+lab Temp12
+jmS Math::Div
+lab Temp11
+pla 
+sAD 17
 pha 
-jmS Stack::Swap
+lDA 16
+sAD 2
+pla 
+lDR 2
+jmA Temp13
+got String::StackChar2Int::AccLoop
+lab Temp13
+lab String::StackChar2Int::Exit
+lDA 15
+pha 
+lDA 11
+pha 
 ret 
-lab Exit
+lab String::StackChar2Int::SetIndexInit1
+clr 
+set 1
+add 
+sAD 16
+ret 
+lab String::StackChar2Int::SetIndexInit10000
+clr 
+set 10000
+add 
+sAD 16
+ret 
+lab String::GetSize
+pla 
+sAD 11
+pla 
+sAD 12
+clr 
+sAD 18
+lab String::GetSize::CountLoop
+lDA 18
+pha 
+lDA 12
+sAD 2
+pla 
+lDR 2
+add 
+sAD 2
+lPA 2
+sAD 13
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA String::GetSize::Exit
+lDA 18
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+add 
+sAD 18
+got String::GetSize::CountLoop
+lab String::GetSize::Exit
+lDA 18
+pha 
+lDA 11
+pha 
+ret 
+lab String::CopyN
+pla 
+sAD 11
+pla 
+sAD 19
+pla 
+sAD 20
+pla 
+sAD 21
+clr 
+sAD 17
+lab String::CopyN::Loop
+lDA 21
+pha 
+lDA 17
+sAD 2
+pla 
+lDR 2
+add 
+sAD 2
+lPA 2
+sAD 13
+pha 
+lDA 20
+pha 
+lDA 17
+sAD 2
+pla 
+lDR 2
+add 
+sAD 2
+pla 
+sAP 2
+lDA 17
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+add 
+sAD 17
+lDA 19
+pha 
+lDA 17
+sAD 2
+pla 
+lDR 2
+jmA Temp14
+got String::CopyN::Loop
+lab Temp14
+lDA 11
+pha 
+ret 
+lab String::ScanChar
+pla 
+sAD 11
+pla 
+sAD 22
+pla 
+sAD 23
+lab String::ScanChar::IterLoop
+lPA 23
+sAD 13
+lDA 23
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+add 
+sAD 23
+lDA 13
+pha 
+lDA 22
+sAD 2
+pla 
+lDR 2
+jmA String::ScanChar::Found
+lDA 13
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA Temp15
+got String::ScanChar::IterLoop
+lab Temp15
+clr 
+pha 
+lDA 11
+pha 
+ret 
+lab String::ScanChar::Found
+clr 
+set 1
+add 
+pha 
+lDA 11
+pha 
+ret 
+lab String::Concat
+pla 
+sAD 11
+pla 
+sAD 24
+pla 
+sAD 25
+lDA 11
+pha 
+lDA 25
+pha 
+jmS String::GetSize
+pla 
+sAD 26
+lDA 24
+pha 
+jmS String::GetSize
+pla 
+sAD 27
+pla 
+sAD 11
+lDA 26
+pha 
+lDA 27
+sAD 2
+pla 
+lDR 2
+add 
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+add 
+set 1
+add 
+sAD 2
+lDR 2
+ahm 
+sAD 2
+sRP 2
+set 1
+add 
+sAD 28
+clr 
+sAD 17
+lab String::Concat::StrCopyLoop1
+lDA 25
+pha 
+lDA 17
+sAD 2
+pla 
+lDR 2
+add 
+sAD 2
+lPA 2
+sAD 13
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA String::Concat::StrCopyExit1
+lDA 13
+pha 
+lDA 28
+pha 
+lDA 17
+sAD 2
+pla 
+lDR 2
+add 
+sAD 2
+pla 
+sAP 2
+lDA 17
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+add 
+sAD 17
+got String::Concat::StrCopyLoop1
+lab String::Concat::StrCopyExit1
+clr 
+sAD 17
+lDA 28
+pha 
+lDA 26
+sAD 2
+pla 
+lDR 2
+add 
+sAD 29
+lab String::Concat::StrCopyLoop2
+lDA 24
+pha 
+lDA 17
+sAD 2
+pla 
+lDR 2
+add 
+sAD 2
+lPA 2
+sAD 13
+pha 
+clr 
+sAD 2
+pla 
+lDR 2
+jmA String::Concat::StrCopyExit2
+lDA 13
+pha 
+lDA 29
+pha 
+lDA 17
+sAD 2
+pla 
+lDR 2
+add 
+sAD 2
+pla 
+sAP 2
+lDA 17
+pha 
+clr 
+set 1
+add 
+sAD 2
+pla 
+lDR 2
+add 
+sAD 17
+got String::Concat::StrCopyLoop2
+lab String::Concat::StrCopyExit2
+lDA 28
+pha 
+lDA 11
+pha 
+ret 
+lab String::Skip
+clr 
+set 30
+add 
+sAD 0
+set 1
+add 
+sAD 1
+set 17
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 104
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 105
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 97
+jmS _WriteChar
+set 32
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 101
+jmS _WriteChar
+set 115
+jmS _WriteChar
+set 116
+jmS _WriteChar
+set 10
+jmS _WriteChar
+set 0
+jmS _WriteChar
+lDA 1
+pha 
+jmS String::PrintString
 brk 
 lab _WriteChar
 sRP 0
@@ -894,4 +773,4 @@ ret
 
 
 
- "Compiled from source: D:\ProjektePython\Scripts\BaabnqIde/temp.baabnq
+ "Compiled from source: D:\ProjektePython\Scripts\BaabnqIde\src/../temp.baabnq

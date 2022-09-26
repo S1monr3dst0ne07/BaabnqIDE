@@ -282,7 +282,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                     self.xCompleterStatus and           \
                     self.xCompleterStatusGlobal and     \
                     xCompletionPrefix not in self.xBaseCommands
-
+        
                 
         #set visibility of pop-up
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()

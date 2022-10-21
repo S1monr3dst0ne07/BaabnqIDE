@@ -1,9 +1,341 @@
-new 'hello world' _ptr;
-put _ptr = _ptr + 1;
-free _ptr;
+"the will eval an expr that contains:
+"0123456789+-*
+"so all positive ints and 3 opperators +-*
+"also there is a int limit of, well 16, because i dont want to represent an int in the expr with more that one byte
 
 
-use 'libs/string.baabnq';
-static 'this is a test\n' _ptr;
-push _ptr;
-sub String::PrintString;
+"we need basic math stuff
+use 'libs/math.baabnq';
+
+
+
+put _ReturnAddr = 0;
+put _Temp       = 0;
+
+put _PrintString::ArgPtr = 0;
+put _PrintStringNoSpace::ArgPtr = 0;
+put _Eval::IterPtr       = 0;
+put _EvalOpp::Result     = 0;
+
+put _ExprStringPtr = 0;
+
+jump skip;
+
+
+
+
+lab PrintString;
+pull _ReturnAddr;
+pull _PrintString::ArgPtr;
+push _ReturnAddr;
+
+lab PrintString::Loop;
+put _Temp <- _PrintString::ArgPtr;
+put _PrintString::ArgPtr = _PrintString::ArgPtr + 1;
+putchr _Temp; 
+
+jump PrintString::Loop ~ _Temp != 0;
+putchr 10;
+return;
+
+
+
+lab PrintStringNoSpace;
+pull _ReturnAddr;
+pull _PrintStringNoSpace::ArgPtr;
+push _ReturnAddr;
+
+
+
+lab PrintStringNoSpace::Loop;
+put _Temp <- _PrintStringNoSpace::ArgPtr;
+put _PrintStringNoSpace::ArgPtr = _PrintStringNoSpace::ArgPtr + 1;
+
+jump PrintStringNoSpace::SkipPrint ~ _Temp == 32;
+putchr _Temp; 
+lab PrintStringNoSpace::SkipPrint;
+
+jump PrintStringNoSpace::Loop ~ _Temp != 0;
+putchr 10;
+
+return;
+
+
+
+
+lab FindBounds;
+put _FindBounds::MinPtr   = _Eval::IterPtr - 1;
+put _FindBounds::LimitPtr = _Eval::IterPtr + 1;
+
+"find the minimum and limit of the given (by the _Eval::IterPtr) opperator and its attributes
+"in the example the wall represents the minimum and limit
+"a + |b * c| - d
+
+lab FindBounds::FindMinLoop;
+put _FindBounds::MinPtr = _FindBounds::MinPtr - 1;
+put _Temp <- _FindBounds::MinPtr;
+
+"run this loop while there is a digit
+"so ascii range 48 to 57
+
+"ignore space
+jump FindBounds::FindLimitLoop ~ _Temp == 32;
+
+jump FindBounds::FindMinExit ~ _Temp < 48;
+jump FindBounds::FindMinExit ~ _Temp > 57;
+jump FindBounds::FindMinLoop;
+lab FindBounds::FindMinExit;
+"because we want the minimum and not the negativ limit we need to increment the ptr after we have hit a non-digit
+put _FindBounds::MinPtr = _FindBounds::MinPtr + 1;
+
+
+lab FindBounds::FindLimitLoop;
+put _FindBounds::LimitPtr = _FindBounds::LimitPtr + 1;
+put _Temp <- _FindBounds::LimitPtr;
+
+"run this loop while there is a digit
+"so ascii range 48 to 57
+
+"ignore space
+jump FindBounds::FindLimitLoop ~ _Temp == 32;
+
+jump FindBounds::FindLimitExit ~ _Temp < 48;
+jump FindBounds::FindLimitExit ~ _Temp > 57;
+jump FindBounds::FindLimitLoop;
+lab FindBounds::FindLimitExit;
+put _FindBounds::MinPtr = _FindBounds::MinPtr - 1;
+
+return;
+
+
+
+lab Atoi;
+put _Atoi::ReturnAddr = 0;
+put _Atoi::BasePtr    = 0;
+put _Atoi::Output     = 0;
+put _Atoi::Scale      = 1;
+
+pull _Atoi::ReturnAddr;
+pull _Atoi::BasePtr;
+asm 'breakpoint 0'; 
+lab Atoi::Loop;
+put _Temp <- _Atoi::BasePtr;
+put _Atoi::BasePtr = _Atoi::BasePtr - 1;
+
+jump Atoi::Exit ~ _Temp < 48;
+jump Atoi::Exit ~ _Temp > 57;
+
+put _Temp = _Temp - 48;
+sub Atoi::AmpMul;
+put _Atoi::Output = _Atoi::Output + _Temp;
+
+"scale by 10
+put _Atoi::Scale = _Atoi::Scale + _Atoi::Scale + _Atoi::Scale + _Atoi::Scale + _Atoi::Scale + _Atoi::Scale + _Atoi::Scale + _Atoi::Scale + _Atoi::Scale + _Atoi::Scale;
+
+jump Atoi::Loop;
+lab Atoi::Exit;
+
+push _Atoi::Output;
+push _Atoi::ReturnAddr;
+return;
+
+lab Atoi::AmpMul;
+"yes this is a namespace nightmare but this routine only works for Atoi, sorry
+put _AmpMul::Index = _Atoi::Scale;
+put _TempOuput = 0;
+
+lab Atoi::AmpMul::Loop;
+put _TempOuput = _TempOuput + _Temp;
+put _AmpMul::Index = _AmpMul::Index - 1;
+jump Atoi::AmpMul::Loop ~ _AmpMul::Index != 0;
+
+put _Temp = _TempOuput;
+asm 'breakpoint 0'; return;
+
+
+
+
+
+lab Itoa;
+"int to ascii
+put _Itoa::BasePtr    = 0;
+put _Itoa::ReturnAddr = 0;
+put _Itoa::Value      = _EvalOpp::Result;
+
+pull _Itoa::ReturnAddr;
+pull _Itoa::BasePtr;
+
+put _Itoa::Digit10000 = 0;
+put _Itoa::Digit1000  = 0;
+put _Itoa::Digit100   = 0;
+put _Itoa::Digit10    = 0;
+put _Itoa::Digit1     = 0;
+
+jump Itoa::Exit10000 ~ _Itoa::Value < 10000;
+lab Itoa::Loop10000;
+put _Itoa::Value = _Itoa::Value - 10000;
+put _Itoa::Digit10000 = _Itoa::Digit10000 + 1;
+jump Itoa::Loop10000 ~ _Itoa::Value > 10000;
+jump Itoa::Loop10000 ~ _Itoa::Value == 10000;
+lab Itoa::Exit10000;
+
+jump Itoa::Exit1000 ~ _Itoa::Value < 1000;
+lab Itoa::Loop1000;
+put _Itoa::Value = _Itoa::Value - 1000;
+put _Itoa::Digit1000 = _Itoa::Digit1000 + 1;
+jump Itoa::Loop1000 ~ _Itoa::Value > 1000;
+jump Itoa::Loop1000 ~ _Itoa::Value == 1000;
+lab Itoa::Exit1000;
+
+jump Itoa::Exit100 ~ _Itoa::Value < 100;
+lab Itoa::Loop100;
+put _Itoa::Value = _Itoa::Value - 100;
+put _Itoa::Digit100 = _Itoa::Digit100 + 1;
+jump Itoa::Loop100 ~ _Itoa::Value > 100;
+jump Itoa::Loop100 ~ _Itoa::Value == 100;
+lab Itoa::Exit100;
+
+jump Itoa::Exit10 ~ _Itoa::Value < 10;
+lab Itoa::Loop10;
+put _Itoa::Value = _Itoa::Value - 10;
+put _Itoa::Digit10 = _Itoa::Digit10 + 1;
+jump Itoa::Loop10 ~ _Itoa::Value > 10;
+jump Itoa::Loop10 ~ _Itoa::Value == 10;
+lab Itoa::Exit10;
+
+put _Itoa::Digit1 = _Itoa::Value;
+
+jump Itoa::Render5 ~ _Itoa::Digit10000 != 0;
+jump Itoa::Render4 ~ _Itoa::Digit1000  != 0;
+jump Itoa::Render3 ~ _Itoa::Digit100   != 0;
+jump Itoa::Render2 ~ _Itoa::Digit10    != 0;
+jump Itoa::Render1 ~ _Itoa::Digit1     != 0;
+jump Itoa::Render0;
+
+lab Itoa::Render5;
+put _Itoa::Digit10000 + 48 -> _Itoa::BasePtr - 4;
+
+lab Itoa::Render4;
+put _Itoa::Digit1000  + 48 -> _Itoa::BasePtr - 3;
+
+lab Itoa::Render3;
+put _Itoa::Digit100   + 48 -> _Itoa::BasePtr - 2;
+
+lab Itoa::Render2;
+put _Itoa::Digit10    + 48 -> _Itoa::BasePtr - 1;
+
+lab Itoa::Render1;
+put _Itoa::Digit1     + 48 -> _Itoa::BasePtr - 0;
+
+lab Itoa::Render0;
+
+
+
+
+push _Itoa::ReturnAddr;
+return;
+
+
+
+lab EvalOpp;
+sub FindBounds;
+
+"Attr1 Opp Attr2, in this order
+put _EvalOpp::Attr1BasePtr = _Eval::IterPtr;
+put _EvalOpp::Attr2BasePtr = _FindBounds::LimitPtr;
+
+lab EvalOpp::FindStartLoop1;
+put _EvalOpp::Attr1BasePtr = _EvalOpp::Attr1BasePtr - 1;
+put _Temp <- _EvalOpp::Attr1BasePtr;
+jump EvalOpp::FindStartLoop1 ~ _Temp == 32;
+lab EvalOpp::FindStartLoop2;
+put _EvalOpp::Attr2BasePtr = _EvalOpp::Attr2BasePtr - 1;
+put _Temp <- _EvalOpp::Attr2BasePtr;
+jump EvalOpp::FindStartLoop2 ~ _Temp == 32;
+
+"print _EvalOpp::Attr1BasePtr - _ExprStringPtr;
+"print _EvalOpp::Attr2BasePtr - _ExprStringPtr;
+
+put _EvalOpp::Attr1Base = 0;
+put _EvalOpp::Attr2Base = 0;
+
+push _EvalOpp::Attr1BasePtr;
+sub Atoi;
+pull _EvalOpp::Attr1Base;
+push _EvalOpp::Attr2BasePtr;
+sub Atoi;
+pull _EvalOpp::Attr2Base;
+
+
+put _Temp <- _Eval::IterPtr;
+push _EvalOpp::Attr1Base;
+push _EvalOpp::Attr2Base;
+
+sub Math::Mul ~ _Temp == 42;
+sub Math::Add ~ _Temp == 43;
+sub Math::Sub ~ _Temp == 45;
+
+put _EvalOpp::Result = 0;
+pull _EvalOpp::Result;
+
+"clear the space between the attr1 and attr2 and replace it with the result
+put _EvalOpp::OverrideIndex = _FindBounds::MinPtr + 1;
+lab EvalOpp::OverrideLoop;
+put 32 -> _EvalOpp::OverrideIndex;
+put _EvalOpp::OverrideIndex = _EvalOpp::OverrideIndex + 1;
+jump EvalOpp::OverrideLoop ~ _EvalOpp::OverrideIndex != _FindBounds::LimitPtr;
+
+"push the set base
+push _FindBounds::LimitPtr - 1;
+sub Itoa;
+
+
+return;
+
+
+lab Eval;
+"first eval the multiplication, because it has presence
+"to iterate make a copy
+put _Eval::IterPtr   = _ExprStringPtr;
+put _Eval::IndexChar = 0;
+lab Eval::MulIter;
+put _Eval::IndexChar <- _Eval::IterPtr;
+
+sub EvalOpp ~ _Eval::IndexChar == 42;
+
+put _Eval::IterPtr = _Eval::IterPtr + 1;
+jump Eval::MulIter ~ _Eval::IndexChar != 0;
+
+"then the other opperators
+put _Eval::IterPtr   = _ExprStringPtr;
+put _Eval::IndexChar = 0;
+lab Eval::AddSubIter;
+put _Eval::IndexChar <- _Eval::IterPtr;
+
+sub EvalOpp ~ _Eval::IndexChar == 43;
+sub EvalOpp ~ _Eval::IndexChar == 45;
+
+put _Eval::IterPtr = _Eval::IterPtr + 1;
+jump Eval::AddSubIter ~ _Eval::IndexChar != 0;
+
+
+return;
+
+lab skip;
+
+
+static '18 + 51 - 2 - 83 + 17 * 100' _ExprStringPtr;
+sub Eval;
+
+lab StripLoop;
+put _data <- _ExprStringPtr;
+put _ExprStringPtr = _ExprStringPtr + 1;
+jump StripLoop ~ _data == 32;
+
+push _ExprStringPtr - 1;
+sub Atoi;
+pull _temp;
+print _temp;
+
+
+lab exit;

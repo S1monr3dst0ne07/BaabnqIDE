@@ -234,10 +234,18 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         xDummyEvent = QtGui.QDropEvent(xEvent.posF(), xEvent.possibleActions(), xDummyMimeData, xEvent.mouseButtons(), xEvent.keyboardModifiers())
         super().dropEvent(xDummyEvent)
 
-    def TextUnderCursor(self):
+    def TextUnderCursor(self):        
         xTextCursor = self.textCursor()
-        xTextCursor.select(QtGui.QTextCursor.WordUnderCursor)
-        return xTextCursor.selectedText()
+        xWords = xTextCursor.block().text().split(" ")
+        xCursorPos = xTextCursor.positionInBlock()
+        
+        #find word from xCursorPos
+        for xWord in xWords:
+            xCursorPos -= len(xWord)
+            if xCursorPos < 0:
+                break
+        
+        return xWord
 
     #trigger that's called when the editor content changes, need for updating status stuff and such
     def Change(self):        
@@ -282,7 +290,6 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                     self.xCompleterStatus and           \
                     self.xCompleterStatusGlobal and     \
                     xCompletionPrefix not in self.xBaseCommands
-        
                 
         #set visibility of pop-up
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()

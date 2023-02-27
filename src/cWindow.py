@@ -682,6 +682,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xSender.RemoteDragEnterEvent.connect(self.dragEnterEvent)
         self.xSender.RemoteDropEvent.connect(self.dropEvent)
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
+        self.xSender.UpdateEditorFocus.connect(self.UpdateEditorFocus)
         
         self.xSender.OpenCodeEditorTab.connect(self.OpenCodeEditorTab)
         self.xSender.RaiseMainWindow.connect(self.SetTopLevelWindow)
@@ -994,6 +995,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         #select new tab
         self.xTabHost.setCurrentIndex(xIndex)
         
+        #update tabs
+        self.UpdateEditorFocus()
         
         logging.debug(f"New TabContent List: {self.xTabContent}".format())
         return xUpdateSuccess

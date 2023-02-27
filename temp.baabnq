@@ -1,34 +1,13 @@
-use 'libs/math.baabnq';
 
-put _a = 355;
-put _b = 113;
+put _a = 0;
+put _b = 1;
+put _c = 0;
 
-put _doDecPt = 1;
-
-put _i = 0;
 lab loop;
-    push _i;
+put _c = _a + _b;
+put _a = _b;
+put _b = _c;
 
-    push _a;
-    push _b;
-    push _a;
-    push _b;
+print _c;
 
-    sub Math::Div;
-    pull _d;
-    putchr _d + 48;
-
-    jump skipDecPt ~ _doDecPt != 1;
-        putchr 46;
-        put _doDecPt = 0;
-    lab skipDecPt;
-
-    sub Math::Mod;
-    push 10;
-    sub Math::Mul;
-    pull _a;
-    
-    pull _i;        
-    put _i = _i + 1;
-jump loop ~ _i < 10;
-
+jump loop ~ _c != 233;

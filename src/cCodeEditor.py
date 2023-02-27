@@ -276,14 +276,14 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.SetCompleterModel(xFinalModel)
 
 
-    def UpdateCompleter(self):
-        
+    def UpdateCompleter(self):        
         #update completer
         xCompletionPrefix = self.TextUnderCursor()
         self.xCompleter.setCompletionPrefix(xCompletionPrefix)
         self.UpdateCompleterModel(xCompletionPrefix)
 
         print(f"'{xCompletionPrefix}'")
+        logging.debug(f"xCompletionPrefix: '{xCompletionPrefix}'")
 
         xCursorRect = self.cursorRect()
         xCursorRect.setWidth(self.xCompleter.popup().sizeHintForColumn(0) + self.xCompleter.popup().verticalScrollBar().sizeHint().width())
@@ -295,6 +295,11 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                     self.xCompleterStatus and           \
                     self.xCompleterStatusGlobal and     \
                     xCompletionPrefix not in self.xBaseCommands
+
+        logging.debug(f"Visible: '{xVisible}'")
+        logging.debug(f"xCompStatus: '{self.xCompleterStatus}'")
+        logging.debug(f"xCompGlobal: '{self.xCompleterStatusGlobal}'")
+
                 
         #set visibility of pop-up
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()

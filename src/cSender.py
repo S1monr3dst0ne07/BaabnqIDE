@@ -10,6 +10,7 @@ class cSender(QtCore.QObject):
     UpdateCompleterState        = QtCore.pyqtSignal(bool)
     UpdateCompleterGlobal       = QtCore.pyqtSignal(bool)
     UpdateCompleter             = QtCore.pyqtSignal()
+    UpdateEditorFocus           = QtCore.pyqtSignal()
     SetCompilerCall             = QtCore.pyqtSignal(str)
     SetVirtMachCall             = QtCore.pyqtSignal(str)
     MoveCurrentEditor           = QtCore.pyqtSignal(int)

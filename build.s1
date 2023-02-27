@@ -1,385 +1,38 @@
-"{'_ReturnAddr': 1, '_ValueA': 2, '_ValueB': 3, '_Value': 4, '_arg1': 6, '_arg2': 7, '_output': 8, '_d': 10, '_n': 11, '_q': 12, '_r': 13, '_i': 14, '_a': 15, '_b': 16, '_doDecPt': 17}
-
-
-got Stack::Skip
-lab Stack::Swap
-pla 
+clr 
 sAD 1
-pla 
+clr 
+set 1
+add 
 sAD 2
+clr 
+sAD 3
+lab loop
+lDA 1
+pha 
+lDA 2
+sAD 4
 pla 
+lDR 4
+add 
 sAD 3
 lDA 2
-pha 
+sAD 1
+lDA 3
+sAD 2
+lDA 3
+sAD 4
+out 4
 lDA 3
 pha 
-lDA 1
-pha 
-ret 
-lab Stack::Dup
-pla 
-sAD 1
-pla 
+clr 
+set 233
+add 
 sAD 4
-pha 
-lDA 4
-pha 
-lDA 1
-pha 
-ret 
-lab Stack::Skip
-got Math::Skip
-lab Math::Add
-jmS Stack::Swap
 pla 
-sAD 5
-lDR 5
-jmS Stack::Swap
-pla 
-add 
-pha 
-jmS Stack::Swap
-ret 
-lab Math::Sub
-jmS Stack::Swap
-pla 
-sAD 5
-lDR 5
-jmS Stack::Swap
-pla 
-sub 
-pha 
-jmS Stack::Swap
-ret 
-lab Math::Mul
-clr 
-sAD 6
-clr 
-sAD 7
-clr 
-sAD 8
-jmS Stack::Swap
-pla 
-sAD 6
-jmS Stack::Swap
-pla 
-sAD 7
-lDA 6
-pha 
-clr 
-sAD 5
-pla 
-lDR 5
-jmA Math::mulExit
-lDA 7
-pha 
-clr 
-sAD 5
-pla 
-lDR 5
-jmA Math::mulExit
-lab Math::mulLoop
-lDA 6
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-and 
-pha 
-clr 
-sAD 5
-pla 
-lDR 5
-jmA Math::mulSkipAdd
-lDA 8
-pha 
-lDA 7
-sAD 5
-pla 
-lDR 5
-add 
-sAD 8
-lab Math::mulSkipAdd
-lDA 7
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-sAD 9
+lDR 4
+jmA Temp0
+got loop
 lab Temp0
-lDA 5
-jm0 Temp1
-set 1
-sub 
-sAD 5
-lDA 9
-shg 
-sAD 9
-got Temp0
-lab Temp1
-lDA 9
-sAD 7
-lDA 6
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-sAD 9
-lab Temp2
-lDA 5
-jm0 Temp3
-set 1
-sub 
-sAD 5
-lDA 9
-shs 
-sAD 9
-got Temp2
-lab Temp3
-lDA 9
-sAD 6
-pha 
-clr 
-sAD 5
-pla 
-lDR 5
-jmA Temp4
-got Math::mulLoop
-lab Temp4
-lab Math::mulExit
-lDA 8
-pha 
-jmS Stack::Swap
-ret 
-lab Math::Div
-jmS Stack::Swap
-pla 
-sAD 10
-jmS Stack::Swap
-pla 
-sAD 11
-clr 
-sAD 12
-clr 
-sAD 13
-clr 
-set 15
-add 
-sAD 14
-lab Math::Div::Loop
-lDA 13
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-sAD 9
-lab Temp5
-lDA 5
-jm0 Temp6
-set 1
-sub 
-sAD 5
-lDA 9
-shg 
-sAD 9
-got Temp5
-lab Temp6
-lDA 9
-pha 
-lDA 11
-pha 
-lDA 14
-sAD 5
-pla 
-sAD 9
-lab Temp7
-lDA 5
-jm0 Temp8
-set 1
-sub 
-sAD 5
-lDA 9
-shs 
-sAD 9
-got Temp7
-lab Temp8
-lDA 9
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-and 
-sAD 5
-pla 
-lDR 5
-lor 
-sAD 13
-lDA 10
-pha 
-lDA 13
-sAD 5
-pla 
-lDR 5
-jmG Math::Div::SkipSub
-lDA 13
-pha 
-lDA 10
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 13
-lDA 12
-pha 
-clr 
-set 1
-add 
-pha 
-lDA 14
-sAD 5
-pla 
-sAD 9
-lab Temp9
-lDA 5
-jm0 Temp10
-set 1
-sub 
-sAD 5
-lDA 9
-shg 
-sAD 9
-got Temp9
-lab Temp10
-lDA 9
-sAD 5
-pla 
-lDR 5
-lor 
-sAD 12
-lab Math::Div::SkipSub
-lDA 14
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-sub 
-sAD 14
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-pha 
-clr 
-sAD 5
-pla 
-lDR 5
-jmG Math::Div::Loop
-lDA 12
-pha 
-jmS Stack::Swap
-ret 
-lab Math::Skip
-clr 
-set 355
-add 
-sAD 15
-clr 
-set 113
-add 
-sAD 16
-clr 
-set 1
-add 
-sAD 17
-clr 
-sAD 14
-lab loop
-lDA 14
-pha 
-lDA 15
-pha 
-lDA 16
-pha 
-lDA 15
-pha 
-lDA 16
-pha 
-jmS Math::Div
-pla 
-sAD 10
-pha 
-clr 
-set 48
-add 
-sAD 5
-pla 
-lDR 5
-add 
-putstr 
-lDA 17
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-jmA Temp11
-got skipDecPt
-lab Temp11
-clr 
-set 46
-add 
-putstr 
-clr 
-sAD 17
-lab skipDecPt
-jmS Math::Mod
-clr 
-set 10
-add 
-pha 
-jmS Math::Mul
-pla 
-sAD 15
-pla 
-sAD 14
-pha 
-clr 
-set 1
-add 
-sAD 5
-pla 
-lDR 5
-add 
-sAD 14
-pha 
-clr 
-set 10
-add 
-sAD 5
-pla 
-lDR 5
-jmL loop
 brk 
 lab _WriteChar
 sRP 0
@@ -392,4 +45,4 @@ ret
 
 
 
- "Compiled from source: D:\ProjektePython\Scripts\BaabnqIde\src/../temp.baabnq
+ "Compiled from source: D:/ConsoleEnv/baabnq/ProgrammsV5.x/Fib.baabnq

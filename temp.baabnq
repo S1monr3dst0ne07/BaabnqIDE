@@ -1,13 +1,5 @@
+use 'libs/string.baabnq';
+static 'Hello World' _ptr;
+push _ptr;
+sub String::PrintString;
 
-put _a = 0;
-put _b = 1;
-put _c = 0;
-
-lab loop;
-put _c = _a + _b;
-put _a = _b;
-put _b = _c;
-
-print _c;
-
-jump loop ~ _c != 233;

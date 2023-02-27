@@ -106,7 +106,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
     
     xBaseCommands = ["put", "print", "input", "putchr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump", "static"]
-    xDelims = (" ", ";", "\n")    
+    xDelims = (" ", ";", "\n")
+    xUseTerm = "use"
 
     def __init__(self, xParent):
         super().__init__()
@@ -240,10 +241,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         xWordsNoDelim = cUtils.ChopChopSplit(xTextCursor.block().text(), self.xDelims)
         xWords = functools.reduce(lambda x,y: x+y, zip(xWordsNoDelim, " " * len(xWordsNoDelim)))
         xCursorPos = xTextCursor.positionInBlock()
-        
-        print(xWords)
-        print(xCursorPos)
-        
+                
         
         #find word from xCursorPos
         for xWord in xWords:
@@ -257,33 +255,69 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     def Change(self):        
         self.xIsSaved = False
         self.xSender.UpdateTabSaveColor.emit()
-        self.xSender.UpdateCompleter.emit()
+        
+        if self.xCompleterStatusGlobal:
+            self.xSender.UpdateCompleter.emit()
+
+
+    @functools.lru_cache(maxsize=None)
+    def StaticReadFileByPath(self, xPath):
+        with open(xPath, "r") as xFile:
+            return xFile.read()
+
+    #recursivly parse use, from list of parent terminals
+    def ParseUseByPath(self, xTerms):
+        xUseIndices = [i for i, x in enumerate(xTerms) if x == self.xUseTerm]
+        xSubTerms = []
+        
+        for xUseI in xUseIndices:
+            try:
+                #read path
+                xPath = ""
+                xI = 1
+                while (qC := xPath.count("'")) < 1 or qC % 2 == 1:
+                    xPath += xTerms[xUseI + xI] + " "
+                    xI += 1
+
+                xPath = xPath.strip(" '")
+                
+                #check if file at path exists
+                if not os.path.isfile(xPath): continue
+                
+                xRaw = self.StaticReadFileByPath(xPath)
+                xTerms = cUtils.ChopChopSplit(xRaw, self.xDelims)
+                xSubTerms += self.ParseUseByPath(xTerms)
+
+            except IndexError:
+                break
+        
+        return xTerms + xSubTerms
+        
+        
+
 
     #xCompletionPrefix is give to be excluded
     def UpdateCompleterModel(self, xCompletionPrefix):
         logging.info("Completer Model Updated")
         
-        xNewModel = self.xBaseCommands + cUtils.ChopChopSplit(self.toPlainText(), self.xDelims)
-        xNewModelFilter = [x for x in xNewModel \
-                       if x not in (xCompletionPrefix, '')
-                       
-                       
-                    ]
+        xTerms = cUtils.ChopChopSplit(self.toPlainText(), self.xDelims)
         
+        xNewModel = self.xBaseCommands + xTerms + self.ParseUseByPath(xTerms)
+        xNewModelFilter = [x for x in xNewModel if \
+                           x not in (xCompletionPrefix, '') and \
+                           len(x) > 0 and x[0] != '"']
         xFinalModel = cUtils.RemoveDups(xNewModelFilter)
+        
         self.xModel = xFinalModel
         logging.debug("Model Filtered: {}".format(xFinalModel))
         self.xCompleter.SetCompleterModel(xFinalModel)
 
 
-    def UpdateCompleter(self):        
+    def UpdateCompleter(self): 
         #update completer
         xCompletionPrefix = self.TextUnderCursor()
         self.xCompleter.setCompletionPrefix(xCompletionPrefix)
         self.UpdateCompleterModel(xCompletionPrefix)
-
-        print(f"'{xCompletionPrefix}'")
-        logging.debug(f"xCompletionPrefix: '{xCompletionPrefix}'")
 
         xCursorRect = self.cursorRect()
         xCursorRect.setWidth(self.xCompleter.popup().sizeHintForColumn(0) + self.xCompleter.popup().verticalScrollBar().sizeHint().width())
@@ -295,10 +329,6 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                     self.xCompleterStatus and           \
                     self.xCompleterStatusGlobal and     \
                     xCompletionPrefix not in self.xBaseCommands
-
-        logging.debug(f"Visible: '{xVisible}'")
-        logging.debug(f"xCompStatus: '{self.xCompleterStatus}'")
-        logging.debug(f"xCompGlobal: '{self.xCompleterStatusGlobal}'")
 
                 
         #set visibility of pop-up
@@ -312,11 +342,11 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             
             else:
                 self.insertPlainText(" " * 4)
-                self.xSender.UpdateCompleter.emit()
+                if self.xCompleterStatusGlobal: self.xSender.UpdateCompleter.emit()
         
         else:
             super().keyPressEvent(xEvent)
-            self.xSender.UpdateCompleter.emit()
+            if self.xCompleterStatusGlobal: self.xSender.UpdateCompleter.emit()
 
 
     def focusInEvent(self, xEvent):

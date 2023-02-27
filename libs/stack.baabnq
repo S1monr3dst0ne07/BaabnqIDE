@@ -19,8 +19,5 @@ lab Stack::Dup;
     push _Value;
     push _ReturnAddr;
     return;
-    
-
-
 
 lab Stack::Skip;

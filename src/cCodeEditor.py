@@ -6,6 +6,7 @@ import ctypes
 import time
 import shlex
 import logging
+import functools
 
 from cUtils import *
 
@@ -105,7 +106,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
     
     xBaseCommands = ["put", "print", "input", "putchr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump", "static"]
-    
+    xDelims = (" ", ";", "\n")    
 
     def __init__(self, xParent):
         super().__init__()
@@ -236,13 +237,18 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
     def TextUnderCursor(self):        
         xTextCursor = self.textCursor()
-        xWords = xTextCursor.block().text().split(" ")
+        xWordsNoDelim = cUtils.ChopChopSplit(xTextCursor.block().text(), self.xDelims)
+        xWords = functools.reduce(lambda x,y: x+y, zip(xWordsNoDelim, " " * len(xWordsNoDelim)))
         xCursorPos = xTextCursor.positionInBlock()
+        
+        print(xWords)
+        print(xCursorPos)
+        
         
         #find word from xCursorPos
         for xWord in xWords:
             xCursorPos -= len(xWord)
-            if xCursorPos < 0:
+            if xCursorPos <= 0:
                 break
         
         return xWord
@@ -257,9 +263,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     def UpdateCompleterModel(self, xCompletionPrefix):
         logging.info("Completer Model Updated")
         
-        xDelims = (" ", ";", "\n")
-
-        xNewModel = self.xBaseCommands + cUtils.ChopChopSplit(self.toPlainText(), xDelims)
+        xNewModel = self.xBaseCommands + cUtils.ChopChopSplit(self.toPlainText(), self.xDelims)
         xNewModelFilter = [x for x in xNewModel \
                        if x not in (xCompletionPrefix, '')
                        
@@ -279,6 +283,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         self.xCompleter.setCompletionPrefix(xCompletionPrefix)
         self.UpdateCompleterModel(xCompletionPrefix)
 
+        print(f"'{xCompletionPrefix}'")
 
         xCursorRect = self.cursorRect()
         xCursorRect.setWidth(self.xCompleter.popup().sizeHintForColumn(0) + self.xCompleter.popup().verticalScrollBar().sizeHint().width())

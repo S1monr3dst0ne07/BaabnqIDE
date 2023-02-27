@@ -1,76 +1,75 @@
-put _Math::returnAddr = 0;
+use 'libs/stack.baabnq';
 
 
 jump Math::Skip;
 
 
 lab Math::Add;
-put _Math::arg1 = 0;
-put _Math::arg2 = 0;
-put _Math::output = 0;
+    asm '
+    jmS Stack::Swap;    
+    pla;
+    sAD -Temp;
+    lDR -Temp;
 
-pull _Math::returnAddr;
-pull _Math::arg2;
-pull _Math::arg1;
-
-put _Math::output = _Math::arg1 + _Math::arg2;
-
-push _Math::output;
-push _Math::returnAddr;
-return;
-
-
-
+    jmS Stack::Swap;    
+    pla;
+    add;
+    pha;
+    
+    jmS Stack::Swap;
+    ';
+    return;
 
 lab Math::Sub;
-put _Math::arg1 = 0;
-put _Math::arg2 = 0;
-put _Math::output = 0;
+    asm '
+    jmS Stack::Swap;    
+    pla;
+    sAD -Temp;
+    lDR -Temp;
 
-pull _Math::returnAddr;
-pull _Math::arg2;
-pull _Math::arg1;
-
-put _Math::output = _Math::arg1 - _Math::arg2;
-
-push _Math::output;
-push _Math::returnAddr;
-return;
+    jmS Stack::Swap;    
+    pla;
+    sub;
+    pha;
+    
+    jmS Stack::Swap;
+    ';
+    return;
 
 
 
 
 lab Math::Mul;
-put _Math::arg1 = 0;
-put _Math::arg2 = 0;
-put _Math::output = 0;
+put _arg1 = 0;
+put _arg2 = 0;
+put _output = 0;
 
-pull _Math::returnAddr;
-pull _Math::arg1;
-pull _Math::arg2;
+sub Stack::Swap;
+pull _arg1;
+sub Stack::Swap;
+pull _arg2;
 
-jump Math::mulExit ~ _Math::arg1 == 0;
-jump Math::mulExit ~ _Math::arg2 == 0;
+jump Math::mulExit ~ _arg1 == 0;
+jump Math::mulExit ~ _arg2 == 0;
 lab Math::mulLoop;
 
-put _Math::baseBit = _Math::arg1 & 1;
-jump Math::mulSkipAdd ~ _Math::baseBit == 0;
-put _Math::output = _Math::output + _Math::arg2;
+jump Math::mulSkipAdd ~ _arg1 & 1 == 0;
+put _output = _output + _arg2;
 lab Math::mulSkipAdd;
 
-put _Math::arg2 = _Math::arg2 << 1;
-put _Math::arg1 = _Math::arg1 >> 1;
+put _arg2 = _arg2 << 1;
+put _arg1 = _arg1 >> 1;
 
-jump Math::mulLoop ~ _Math::arg1 != 0;
+jump Math::mulLoop ~ _arg1 != 0;
 lab Math::mulExit;
 
-push _Math::output;
-push _Math::returnAddr;
+push _output;
+sub Stack::Swap;
 return;
 
 
 
-lab Math::Div;
+"lab Math::Div;
 "i know, this is not a very efficient division alogrithem, but i don't care
 "call this subroutine like this;
 "push dividend
@@ -79,28 +78,55 @@ lab Math::Div;
 "pull output
 "pull remainder
 
-put _Math::divisor = 0;
-put _Math::dividend = 0;
-put _Math::output = 0;
+"put _Math::divisor = 0;
+"put _Math::dividend = 0;
+"put _Math::output = 0;
 
-pull _Math::returnAddr;
-pull _Math::divisor;
-pull _Math::dividend;
+"pull _Math::returnAddr;
+"pull _Math::divisor;
+"pull _Math::dividend;
 
-jump Math::divExit ~ _Math::divisor > _Math::dividend;
-lab Math::divLoop;
+"jump Math::divExit ~ _Math::divisor > _Math::dividend;
+"lab Math::divLoop;
 
-put _Math::output = _Math::output + 1;
-put _Math::dividend = _Math::dividend - _Math::divisor;
+"put _Math::output = _Math::output + 1;
+"put _Math::dividend = _Math::dividend - _Math::divisor;
 
-jump Math::divLoop ~ _Math::dividend > _Math::divisor;
-jump Math::divLoop ~ _Math::dividend == _Math::divisor;
-lab Math::divExit;
+"jump Math::divLoop ~ _Math::dividend > _Math::divisor;
+"jump Math::divLoop ~ _Math::dividend == _Math::divisor;
+"lab Math::divExit;
 
-push _Math::dividend;
-push _Math::output;
-push _Math::returnAddr;
-return;
+"push _Math::dividend;
+"push _Math::output;
+"push _Math::returnAddr;
+"return;
+
+"translated from https://en.wikipedia.org/wiki/Division_algorithm#Long_division
+"dividend
+"divisor
+lab Math::Div; 
+    sub Stack::Swap;
+    pull _d;
+    sub Stack::Swap;    
+    pull _n;
+
+
+    put _q = 0;
+    put _r = 0;
+    put _i = 15;
+    
+    lab Math::Div::Loop;
+        put _r = (_r << 1) | ((_n >> _i) & 1);
+        jump Math::Div::SkipSub ~ _d > _r;
+            put _r = _r - _d;
+            put _q = _q | (1 << _i);
+        lab Math::Div::SkipSub;
+        put _i = _i - 1;
+    jump Math::Div::Loop ~ _i + 1 > 0;
+
+    push _q;
+    sub Stack::Swap;
+    return;
 
 
 lab Math::Skip;

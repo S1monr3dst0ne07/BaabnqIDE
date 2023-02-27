@@ -15,20 +15,38 @@ from cWindow import *
 
 
 
-def Main():
+def Main():    
     try:
         xArgs = sys.argv
-        
-        xApp = QtWidgets.QApplication(sys.argv)
-        xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
-        xWindow = cWindow()
-        
-        if len(xArgs) > 1:
-            xWindow.OpenCodeEditorTab(xArgs[1].replace("\\", "/"))
-        
-        logging.info("Window Opened")    
+        xLockfile = QtCore.QLockFile(QtCore.QDir.tempPath() + '/BaabnqIde.lock')
+                    
+        if xLockfile.tryLock(100):
+            xApp = QtWidgets.QApplication(sys.argv)
+            xApp.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
+            xWindow = cWindow()
+                        
+            if len(xArgs) > 1:
+                xWindow.OpenCodeEditorTab(xArgs[1].replace("\\", "/"))
+            
+            logging.info("Window Opened")    
+    
+            xReturnCode = xApp.exec()
+            xLockfile.unlock()
 
-        xReturnCode = xApp.exec()
+        elif len(xArgs) > 1:
+            #send call path to main instance via shared memory
+            xSharedMem = QtCore.QSharedMemory("BaabnqIdeShare")            
+
+            if xSharedMem.attach(QtCore.QSharedMemory.ReadWrite):
+                xRaw = QtCore.QByteArray(xArgs[1].replace("\\", "/").encode("ascii"))
+                
+                xSharedMem.lock()
+                xSharedMem.data()[:xRaw.size()] = xRaw
+                xSharedMem.unlock()            
+            
+            xReturnCode = 0
+        else:
+            xReturnCode = 0
         
     except Exception as E:
         print(E)

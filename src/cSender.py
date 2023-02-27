@@ -16,6 +16,7 @@ class cSender(QtCore.QObject):
     GlobalClose                 = QtCore.pyqtSignal()
     UpdateLinenumberDisplay     = QtCore.pyqtSignal()
 
+    OpenCodeEditorTab           = QtCore.pyqtSignal(str)
 
 
 

@@ -11,6 +11,7 @@ from cUtils import *
 from cSender import *
 from cCodeEditor import *
 from cRunConsole import *
+from cAltInstanceRecvChecker import *
 
 
 class cWindow(QtWidgets.QMainWindow):
@@ -681,6 +682,8 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xSender.RemoteDragEnterEvent.connect(self.dragEnterEvent)
         self.xSender.RemoteDropEvent.connect(self.dropEvent)
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
+        
+        self.xSender.OpenCodeEditorTab.connect(self.OpenCodeEditorTab)
 
         self.ConnectLog2Sender(self.xSender)
         
@@ -707,6 +710,15 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xJump2ErrorLine = False
         
         self.xBreakpoints = []
+        
+        
+        #setup shared memory and 
+        self.xSharedMem = QtCore.QSharedMemory("BaabnqIdeShare")        
+        self.xSharedMem.create(1024, mode = QtCore.QSharedMemory.ReadWrite)
+
+        #start checker thread
+        self.xAltInstanceRecvChecker = cAltInstanceRecvChecker(self, self.xSharedMem)
+        self.xAltInstanceRecvChecker.start()
         
         self.InitUI()
 
@@ -956,7 +968,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         
         xCodeEditor = cCodeEditor(self)
         
-        self.xTabHost.addTab(xCodeEditor, cUtils.Path2Name(xPath))
+        xIndex = self.xTabHost.addTab(xCodeEditor, cUtils.Path2Name(xPath))
         self.xTabContent.append((xCodeEditor, ))
         
         xCodeEditor.xFilePath = xPath
@@ -964,6 +976,10 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         
         xCodeEditor.xIsSaved = True
         self.UpdateTabSaveColor()
+
+        #select new tab
+        self.xTabHost.setCurrentIndex(xIndex)
+        
         
         logging.debug(f"New TabContent List: {self.xTabContent}".format())
         return xUpdateSuccess
@@ -1113,6 +1129,9 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
             
         self.SaveSettings(self.xSettingsHandle)            
         self.xSender.GlobalClose.emit()
+        
+        #kill xAltInstanceRecvChecker
+        self.xAltInstanceRecvChecker.Kill()
 
         logging.info("Closing done, shutting down")
         logging.info("Goodbye, World")

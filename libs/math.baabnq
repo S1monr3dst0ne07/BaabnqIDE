@@ -128,5 +128,30 @@ lab Math::Div;
     sub Stack::Swap;
     return;
 
+lab Math::Mod; 
+    sub Stack::Swap;    
+    pull _d;
+    sub Stack::Swap;    
+    pull _n;
+
+
+    put _q = 0;
+    put _r = 0;
+    put _i = 15;
+    
+    lab Math::Mod::Loop;
+        put _r = (_r << 1) | ((_n >> _i) & 1);
+        jump Math::Mod::SkipSub ~ _d > _r;
+            put _r = _r - _d;
+            put _q = _q | (1 << _i);
+        lab Math::Mod::SkipSub;
+        put _i = _i - 1;
+    jump Math::Mod::Loop ~ _i + 1 > 0;
+
+    push _r;
+    sub Stack::Swap;
+    return;
+
+
 
 lab Math::Skip;

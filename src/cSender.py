@@ -17,7 +17,7 @@ class cSender(QtCore.QObject):
     UpdateLinenumberDisplay     = QtCore.pyqtSignal()
 
     OpenCodeEditorTab           = QtCore.pyqtSignal(str)
-
+    RaiseMainWindow             = QtCore.pyqtSignal()
 
 
 

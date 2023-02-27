@@ -684,6 +684,7 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xSender.UpdateTabSaveColor.connect(self.UpdateTabSaveColor)
         
         self.xSender.OpenCodeEditorTab.connect(self.OpenCodeEditorTab)
+        self.xSender.RaiseMainWindow.connect(self.SetTopLevelWindow)
 
         self.ConnectLog2Sender(self.xSender)
         
@@ -721,6 +722,19 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
         self.xAltInstanceRecvChecker.start()
         
         self.InitUI()
+        
+    def SetTopLevelWindow(self):    
+        if self.windowState() != QtCore.Qt.WindowMaximized:
+            self.showMaximized()
+            self.showNormal()
+
+        else:
+            self.showNormal()
+            self.showMaximized()
+
+        self.raise_()
+        self.activateWindow()
+
 
 
     def ConnectLog2Sender(self, xSender):

@@ -24,8 +24,7 @@ class cAltInstanceRecvChecker(QtCore.QThread):
                 self.xParent.xSender.OpenCodeEditorTab.emit(xPath)
 
                 #raise window
-                self.xParent.setWindowState(self.xParent.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-                self.xParent.activateWindow()
+                self.xParent.xSender.RaiseMainWindow.emit()
             
             self.xSharedMem.unlock()
             time.sleep(0.5)

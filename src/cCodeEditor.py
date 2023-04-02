@@ -269,7 +269,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     def ParseUseByPath(self, xTerms):
         xUseIndices = [i for i, x in enumerate(xTerms) if x == self.xUseTerm]
         xSubTerms = []
-        
+                                
         for xUseI in xUseIndices:
             try:
                 #read path
@@ -278,15 +278,16 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                 while (qC := xPath.count("'")) < 1 or qC % 2 == 1:
                     xPath += xTerms[xUseI + xI] + " "
                     xI += 1
+                    
 
                 xPath = xPath.strip(" '")
                 
                 #check if file at path exists
                 if not os.path.isfile(xPath): continue
                 
-                xRaw = self.StaticReadFileByPath(xPath)
-                xTerms = cUtils.ChopChopSplit(xRaw, self.xDelims)
-                xSubTerms += self.ParseUseByPath(xTerms)
+                xRaw         = self.StaticReadFileByPath(xPath)
+                xSubTermsRaw = cUtils.ChopChopSplit(xRaw, self.xDelims)
+                xSubTerms += self.ParseUseByPath(xSubTermsRaw)
 
             except IndexError:
                 break

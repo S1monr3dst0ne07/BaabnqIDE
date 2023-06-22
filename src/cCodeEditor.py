@@ -46,6 +46,9 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                 xModel.appendRow(QtGui.QStandardItem(xModelItemIter))
             
             self.setModel(xModel)
+
+    xStrDelim = "'"
+    xComDelim = '"'
         
     class cSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         #color for syntax highlighting
@@ -75,7 +78,6 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
                 ('\(|\)',                                           xStyles["ops"]),
                 ('\".*$',                                           xStyles["fazzedOut"]),
                 (';',                                               xStyles["fazzedOut"]),
-                ("'[^']*'",                                         xStyles["constItal"]),
                 
             
             ]
@@ -83,7 +85,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         xRulesQRegExp = [(QtCore.QRegExp(xExp), xStyle) for (xExp, xStyle) in xRules]
         
         def __init__(self, xDoc):
-            QtGui.QSyntaxHighlighter.__init__(self, xDoc)
+            #QtGui.QSyntaxHighlighter.__init__(self, xDoc)
+            super().__init__(xDoc)
     
         def getFormat(self, xStyle):
             xFormat = QtGui.QTextCharFormat()
@@ -92,17 +95,44 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             return xFormat
     
         def highlightBlock(self, xText):
-            
             for (xExp, xStyle) in self.xRulesQRegExp:
-                
+                                
                 #xIndex = xText.indexOf(xExp)
-                xIndex = xExp.indexIn(xText)            
+                xIndex = xExp.indexIn(xText)
                 while xIndex >= 0:
                     xLengh = xExp.matchedLength()
                     
                     self.setFormat(xIndex, xLengh, self.getFormat(xStyle))
                     xIndex = xExp.indexIn(xText, xIndex + xLengh)
 
+            #multiline string
+            xStrStyle = self.getFormat(self.xStyles["constItal"])
+            
+            xPrevBlock = self.previousBlockState()
+            if xPrevBlock == -1:
+                self.setCurrentBlockState(False) #no comment by default
+                return
+            
+            #load last state and continue parsing
+            xComState = bool(xPrevBlock)
+            
+            #skip comments
+            if cCodeEditor.xComDelim not in xText:
+                for xIndex, xChar in enumerate(xText):
+                    #check for delim
+                    if xChar == cCodeEditor.xStrDelim:
+                        self.setFormat(xIndex, 1, xStrStyle)
+                        xComState = not xComState
+                        continue
+                    
+                    if xComState:
+                        self.setFormat(xIndex, 1, xStrStyle)
+                    
+            #save state for next block
+            self.setCurrentBlockState(xComState)
+                
+            
+            
 
     
     xBaseCommands = ["put", "print", "input", "putchr", "asm", "use", "pull", "push", "sub", "return", "new", "free", "lab", "jump", "static"]

@@ -108,13 +108,10 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             #multiline string
             xStrStyle = self.getFormat(self.xStyles["constItal"])
             
-            xPrevBlock = self.previousBlockState()
-            if xPrevBlock == -1:
-                self.setCurrentBlockState(False) #no comment by default
-                return
             
             #load last state and continue parsing
-            xComState = bool(xPrevBlock)
+            xPrevBlock = self.previousBlockState()
+            xComState = bool(xPrevBlock if xPrevBlock >= 0 else 0)
             
             #skip comments
             if cCodeEditor.xComDelim not in xText:

@@ -1,157 +1,165 @@
-"{'_CountrSize': 1, '_pCountr': 2, '_Index': 4, '_Digit': 5}
+"{'_list::value': 1, '_list::address': 2, '_list::latestPointer': 3, '_list::firstPointer': 5, '_list::counter': 6, '_list::size': 7, '_list::newPtr': 8, '_list::ptr': 9, '_list::temp': 10}
 
 
+got List::skip
+lab List::makeList
 clr 
-set 7
-add 
 sAD 1
-set 1
-add 
-sAD 3
-lDR 3
-ahm 
-sAD 3
-sRP 3
-set 1
-add 
+clr 
 sAD 2
-lab mainLoop
-clr 
-sAD 4
-lab cntLoop
+pla 
+sAD 2
+pla 
+sAD 1
 lDA 2
 pha 
-lDA 4
-sAD 3
-pla 
-lDR 3
+clr 
+set 2
+add 
+set 1
+add 
+sAD 4
+lDR 4
+ahm 
+sAD 4
+sRP 4
+set 1
 add 
 sAD 3
-lPA 3
 sAD 5
-pha 
-clr 
-set 9
-add 
-sAD 3
-pla 
-lDR 3
-jmL cntLoop::Done
-clr 
-pha 
-lDA 2
-pha 
-lDA 4
-sAD 3
-pla 
-lDR 3
-add 
-sAD 3
-pla 
-sAP 3
-lDA 4
-pha 
-clr 
-set 1
-add 
-sAD 3
-pla 
-lDR 3
-add 
-sAD 4
-got cntLoop
-lab cntLoop::Done
-lDA 5
-pha 
-clr 
-set 1
-add 
-sAD 3
-pla 
-lDR 3
-add 
-pha 
-lDA 2
-pha 
-lDA 4
-sAD 3
-pla 
-lDR 3
-add 
-sAD 3
-pla 
-sAP 3
 lDA 1
+sAP 3
+clr 
+sAD 6
+clr 
+set 1
+add 
+sAD 7
+ret 
+lab List::add
+clr 
+sAD 1
+clr 
+sAD 2
+pla 
+sAD 2
+pla 
+sAD 1
+lDA 2
+pha 
+clr 
+set 2
+add 
+set 1
+add 
 sAD 4
-lab pntLoop
-lDA 4
+lDR 4
+ahm 
+sAD 4
+sRP 4
+set 1
+add 
+sAD 8
+pha 
+lDA 3
 pha 
 clr 
 set 1
 add 
-sAD 3
-pla 
-lDR 3
-sub 
 sAD 4
-lDA 2
-pha 
-lDA 4
-sAD 3
 pla 
-lDR 3
+lDR 4
 add 
-sAD 3
-lPA 3
-sAD 5
-pha 
-clr 
-set 48
-add 
-sAD 3
+sAD 4
 pla 
-lDR 3
-add 
-putstr 
-lDA 4
+sAP 4
+lDA 1
+sAP 8
+lDA 8
+sAD 3
+lDA 7
 pha 
 clr 
-sAD 3
+set 1
+add 
+sAD 4
 pla 
-lDR 3
-jmG pntLoop
+lDR 4
+add 
+sAD 7
+ret 
+lab List::printList
+lDA 5
+sAD 9
+jmS List::printList::print
+clr 
+sAD 6
+ret 
+lab List::printList::print
+lPA 9
+sAD 10
+sAD 4
+out 4
 clr 
 set 10
 add 
 putstr 
-lDA 2
-pha 
-clr 
-set 6
-add 
-sAD 3
-pla 
-lDR 3
-add 
-sAD 3
-lPA 3
-sAD 5
+lDA 9
 pha 
 clr 
 set 1
 add 
-sAD 3
+sAD 4
 pla 
-lDR 3
+lDR 4
+add 
+sAD 4
+lPA 4
+sAD 9
+lDA 6
+pha 
+clr 
+set 1
+add 
+sAD 4
+pla 
+lDR 4
+add 
+sAD 6
+pha 
+lDA 7
+sAD 4
+pla 
+lDR 4
 jmA Temp0
-got mainLoop
+got List::printList::print
 lab Temp0
-lDA 2
+ret 
+lab List::skip
+clr 
+pha 
+jmS List::makeList
+clr 
 set 1
-sub 
-sAD 3
-lPR 3
-fhm 
+add 
+pha 
+clr 
+set 2
+add 
+pha 
+clr 
+set 3
+add 
+pha 
+clr 
+set 4
+add 
+pha 
+jmS List::add
+jmS List::add
+jmS List::add
+jmS List::add
+jmS List::printList
 brk 
 lab _WriteChar
 sRP 0

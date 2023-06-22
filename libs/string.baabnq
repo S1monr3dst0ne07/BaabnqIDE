@@ -133,33 +133,32 @@ lab String::Int2Str;
 "general string manipulation ---------
 
 "takes a string pointer from the stack and returns it's length ('' -> 0, 'a' -> 1)
-lab String::GetSize;
+lab String::StrLen;
     pull _ReturnAddr;
     pull _StringPtr;
 
 
     put _SizeBuffer = 0;
-    lab String::GetSize::CountLoop;
+    lab String::StrLen::CountLoop;
     put _Data <- _SizeBuffer + _StringPtr;
 
-    jump String::GetSize::Exit ~ _Data == 0;
+    jump String::StrLen::Exit ~ _Data == 0;
 
     put _SizeBuffer = _SizeBuffer + 1;
-    jump String::GetSize::CountLoop;
-    lab String::GetSize::Exit;
+    jump String::StrLen::CountLoop;
+    lab String::StrLen::Exit;
 
 
     push _SizeBuffer;
     push _ReturnAddr;
     return;
-
-
+    
 "string copy
 "SrcPtr
 "DestPtr
 "Size
 "name totally not stolen from c
-lab String::CopyN;
+lab String::MemCpy;
     pull _ReturnAddr;
     pull _Size;
     pull _DestPtr;
@@ -167,12 +166,12 @@ lab String::CopyN;
 
     put _Index = 0;
 
-    lab String::CopyN::Loop;
+    lab String::MemCpy::Loop;
     put _Data <- _SrcPtr  + _Index;
     put _Data -> _DestPtr + _Index;
 
     put _Index = _Index + 1;
-    jump String::CopyN::Loop ~ _Size != _Index;
+    jump String::MemCpy::Loop ~ _Size != _Index;
 
 
     push _ReturnAddr;
@@ -213,10 +212,10 @@ lab String::Concat;
     push _ReturnAddr;    
 
     push _StrPtr1;
-    sub String::GetSize;
+    sub String::StrLen;
     pull _StrLen1;
     push _StrPtr2;
-    sub String::GetSize;
+    sub String::StrLen;
     pull _StrLen2;
 
     "restore retrun address
@@ -232,7 +231,7 @@ lab String::Concat;
 
         put _Data -> _StrPtrFinal + _Index;
         put _Index = _Index + 1;
-        jump String::Concat::StrCopyLoop1;        
+        jump String::Concat::StrCopyLoop1;
     lab String::Concat::StrCopyExit1;
 
     put _Index = 0;
@@ -252,4 +251,56 @@ lab String::Concat;
     push _ReturnAddr;
     return;
 
+
+"takes const char** and join strings into one DOES NOT DEALLOC
+"substr most contain size at -1, too lazy to implement properlly
+lab String::Join;
+    sub Stack::Swap;
+    pull _pStrs;
+
+    "calculate final len
+    put _Count = 0;
+    put _Index = 0;
+    lab String::Join::Count;
+        put _pSub <- _pStrs + _Index;
+        jump String::Join::CountDone ~ _pSub == 0;
+        push _pSub; 
+        sub String::StrLen; 
+        pull _Size;
+        put _Count = _Count + _Size;
+        put _Index = _Index + 1;
+    jump String::Join::Count;
+    lab String::Join::CountDone;
+
+    "alloc
+    new _Count + 1 _pOut;
+    put 0 -> _pOut + _Count;    
+
+    "copy
+    put _iStrs = 0;
+    put _iOut = 0;
+    lab String::Join::Copy;
+        put _pSub <- _pStrs + _iStrs;
+        put _iStrs = _iStrs + 1;
+        jump String::Join::CopyDone ~ _pSub == 0;
+
+        push _pSub; 
+        sub String::StrLen; 
+        pull _Size;
+
+        push _pSub;
+        push _pOut + _iOut;
+        push _Size;
+        put _iOut = _iOut + _Size; "move _pOut over to free memory
+        sub String::MemCpy;
+
+    jump String::Join::Copy;
+    lab String::Join::CopyDone;
+
+    push _pOut;
+    sub Stack::Swap;
+    return;
+
+
 lab String::Skip;
+

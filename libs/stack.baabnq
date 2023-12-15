@@ -12,12 +12,24 @@ lab Stack::Swap;
     return;
 
 "duplicate value on the stack
-lab Stack::Dup;
+lab Stack::DupSafe;
     pull _ReturnAddr;
     pull _Value;
     push _Value;
     push _Value;
     push _ReturnAddr;
     return;
+
+lab Stack::Dup;
+    asm '
+pla;
+sAD -temp;
+pla;
+pha;
+pha;
+lDA -temp;
+pha;
+ret;
+';
 
 lab Stack::Skip;

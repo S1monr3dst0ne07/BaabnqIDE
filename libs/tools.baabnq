@@ -39,7 +39,7 @@ pull _ReturnAddr;
 
 lab PrintStackAsString::Loop;
 pull _Data;
-putstr _Data;
+putchr _Data;
 
 jump PrintStackAsString::Loop ~ _Data != 0;
 push _ReturnAddr;

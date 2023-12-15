@@ -1,22 +1,20 @@
-
+use 'libs/stack.baabnq';
 
 "init systemvars
-put _rand::x          = 1;
-put _rand::returnAddr = 0;
+put _Rand::X = 1;
 
-jump rand::skip;
+jump Rand::Skip;
 
 
-lab rand::xorshift;
-pull _rand::returnAddr;
+lab Rand::Xorshift;
 
-put _rand::x = _rand::x ^ (_rand::x << 7);
-put _rand::x = _rand::x ^ (_rand::x >> 9);
-put _rand::x = _rand::x ^ (_rand::x << 8);
+put _Rand::X = _Rand::X ^ (_Rand::X << 7);
+put _Rand::X = _Rand::X ^ (_Rand::X >> 9);
+put _Rand::X = _Rand::X ^ (_Rand::X << 8);
 
-push _rand::x;
-push _rand::returnAddr;
+push _Rand::X;
+sub Stack::Swap;
 return;
 
 
-lab rand::skip;
+lab Rand::Skip;

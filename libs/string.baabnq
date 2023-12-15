@@ -4,6 +4,7 @@ jump String::Skip;
 
 
 lab String::PrintString;
+lab String::Print;
     sub Stack::Swap;
     pull _StringPtr;
 
@@ -167,12 +168,15 @@ lab String::MemCpy;
     put _Index = 0;
 
     lab String::MemCpy::Loop;
+    jump String::MemCpy::Exit ~ _Index == _Size;
+
     put _Data <- _SrcPtr  + _Index;
     put _Data -> _DestPtr + _Index;
 
     put _Index = _Index + 1;
-    jump String::MemCpy::Loop ~ _Size != _Index;
-
+    jump String::MemCpy::Loop;
+    lab String::MemCpy::Exit;
+    
 
     push _ReturnAddr;
     return;

@@ -4,6 +4,83 @@ use 'libs/stack.baabnq';
 jump Math::Skip;
 
 
+lab Math::Inc;
+    asm '
+    jmS Stack::Swap;    
+    pla;
+    set 1;
+    add;
+    pha;
+    jmS Stack::Swap;    
+    ';
+    return;
+
+lab Math::Dec;
+    asm '
+    jmS Stack::Swap;    
+    pla;
+    set 1;
+    sub;
+    pha;
+    jmS Stack::Swap;    
+    ';
+    return;
+
+
+lab Math::Min;
+    pull _ReturnAddr; "nasty, but best solution in this case
+    pull _1;
+    pull _2;
+    push _ReturnAddr; "save
+    push _2;
+    push _1;
+    
+    sub Stack::Swap ~ _1 < _2;
+      
+    pull __; "pull smaller value
+    sub Stack::Swap;
+    return;
+
+lab Math::Max;
+    pull _ReturnAddr; "nasty, but best solution in this case
+    pull _1;
+    pull _2;
+    push _ReturnAddr; "save
+    push _2;
+    push _1;
+
+    sub Stack::Swap ~ _1 > _2;
+       
+    pull __; "pull smaller value
+    sub Stack::Swap;
+    return;
+
+"(Value::Int, Offset::Int) => (Value::Int)
+"Value::Int =<< Offset::Int
+lab Math::Shg;
+    sub Stack::Swap;
+    pull _2;
+    sub Stack::Swap;
+    pull _1;
+
+    push _1 << _2;
+    sub Stack::Swap;
+    return;    
+
+"(Value::Int, Offset::Int) => (Value::Int)
+"Value::Int =>> Offset::Int
+lab Math::Shs;
+    sub Stack::Swap;
+    pull _2;
+    sub Stack::Swap;
+    pull _1;
+
+    push _1 >> _2;
+    sub Stack::Swap;
+    return;    
+    
+
+
 lab Math::Add;
     asm '
     jmS Stack::Swap;    
@@ -151,7 +228,6 @@ lab Math::Mod;
     push _r;
     sub Stack::Swap;
     return;
-
 
 
 lab Math::Skip;

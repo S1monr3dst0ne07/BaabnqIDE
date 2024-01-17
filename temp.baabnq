@@ -1,5 +1,36 @@
-use 'libs/string.baabnq';
-static 'Hello World' _ptr;
-push _ptr;
-sub String::Print;
+
+use 'libs/stack.baabnq';
+use 'libs/no.baabnq';
+
+
+push 10;
+sub fib;
+pull __;
+print __;
+
+asm 'brk';
+
+
+lab fib;
+    sub Stack::Swap;
+    pull _i;
+
+    "base case
+    put __ = _i & (0 - 2);
+    jump fib::skipbase ~ __ != 0;
+        push 1;
+        sub Stack::Swap;
+        return;
+    lab fib::skipbase;
+
+    push _i - 2;
+    push _i - 1;
+    sub fib;
+    sub Stack::Swap;
+    sub fib;
+
+    sub Math::Add;
+    sub Stack::Swap;
+    return;    
+
 

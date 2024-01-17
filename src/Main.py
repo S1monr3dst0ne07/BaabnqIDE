@@ -35,7 +35,7 @@ def Main():
 
         elif len(xArgs) > 1:
             #send call path to main instance via shared memory
-            xSharedMem = QtCore.QSharedMemory("BaabnqIdeShare")            
+            xSharedMem = QtCore.QSharedMemory("BaabnqIdeShare")       
 
             if xSharedMem.attach(QtCore.QSharedMemory.ReadWrite):
                 xRaw = QtCore.QByteArray(xArgs[1].replace("\\", "/").encode("ascii"))

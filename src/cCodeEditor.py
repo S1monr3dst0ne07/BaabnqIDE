@@ -136,6 +136,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
     xDelims = (" ", ";", "\n")
     xUseTerm = "use"
 
+    xTabWidth = 4
+
     def __init__(self, xParent):
         super().__init__()
         self.xFilePath = ""
@@ -362,19 +364,57 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         #set visibility of pop-up
         self.xCompleter.popup().show() if xVisible else self.xCompleter.popup().hide()
 
+
+    def getCurLine(self):
+        xCursor = self.textCursor()
+        xLineNum = xCursor.blockNumber()
+        xCurBlock = self.document().findBlockByLineNumber(xLineNum)
+        return xCurBlock.text()
+
+
+    def getCurLineSpaceCount(self):
+        xCurLine = self.getCurLine()
+        return len(xCurLine)  - len(xCurLine.lstrip(" "))
+
     def keyPressEvent(self, xEvent):
         
-        if xEvent.key() == QtCore.Qt.Key_Tab:
+        xKey = xEvent.key()
+
+        #auto tab to space
+        if xKey == QtCore.Qt.Key_Tab:
             if self.xCompleter.popup().isVisible():
                 self.InsertCompletion(self.xCompleter.popup().currentIndex().data())
             
             else:
-                self.insertPlainText(" " * 4)
+                self.insertPlainText(" " * self.xTabWidth)
                 if self.xCompleterStatusGlobal: self.xSender.UpdateCompleter.emit()
         
+        #auto indent on newline
+        elif xKey == QtCore.Qt.Key_Return:
+            xSpaceCount = self.getCurLineSpaceCount()
+            super().keyPressEvent(xEvent)
+            self.insertPlainText(" " * xSpaceCount)
+            
+        #auto tab
+            #skip if text is highlighted
+        elif xKey == QtCore.Qt.Key_Backspace and \
+            self.textCursor().selection().isEmpty() and \
+            (xCurIndex := self.textCursor().columnNumber()) <= self.getCurLineSpaceCount() and \
+            xCurIndex != 0:
+            
+            xOffset2TabWidth = xCurIndex % self.xTabWidth   
+            xBackCount = xOffset2TabWidth if xOffset2TabWidth > 0 else self.xTabWidth
+            
+            for i in range(xBackCount):
+                super().keyPressEvent(xEvent)
+                
+                    
         else:
             super().keyPressEvent(xEvent)
-            if self.xCompleterStatusGlobal: self.xSender.UpdateCompleter.emit()
+
+
+        if self.xCompleterStatusGlobal: 
+            self.xSender.UpdateCompleter.emit()
 
 
     def focusInEvent(self, xEvent):

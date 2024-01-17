@@ -1,6 +1,3 @@
-"{'_ReturnAddr': 1, '_ValueA': 2, '_ValueB': 3, '_Value': 4, '_1': 6, '_2': 7, '__': 8, '_arg1': 10, '_arg2': 11, '_output': 12, '_d': 13, '_n': 14, '_q': 15, '_r': 16, '_i': 17, '_StringPtr': 18, '_Data': 19, '_Config': 20, '_Buffer': 21, '_IndexInit': 22, '_Index': 23, '_Num': 24, '_pStr': 25, '_pWrite': 26, '_IsContent': 27, '_PlaceVal': 28, '_Count': 29, '_SizeBuffer': 30, '_Size': 31, '_DestPtr': 32, '_SrcPtr': 33, '_Char': 34, '_StrPtr': 35, '_StrPtr2': 36, '_StrPtr1': 37, '_StrLen1': 38, '_StrLen2': 39, '_StrPtrFinal': 40, '_StrPtrFinalShifted': 41, '_pStrs': 42, '_pSub': 43, '_pOut': 44, '_iStrs': 45, '_iOut': 46, '_ptr': 47}
-
-
 got Stack::Skip
 lab Stack::Swap
 pla 
@@ -1332,35 +1329,130 @@ sAD 0
 set 1
 add 
 sAD 47
-set 13
+set 8
 jmS _WriteChar
-set 72
+set 80
 jmS _WriteChar
-set 101
+set 65
 jmS _WriteChar
-set 108
+set 78
 jmS _WriteChar
-set 108
+set 73
 jmS _WriteChar
-set 111
+set 67
 jmS _WriteChar
-set 32
-jmS _WriteChar
-set 87
-jmS _WriteChar
-set 111
-jmS _WriteChar
-set 114
-jmS _WriteChar
-set 108
-jmS _WriteChar
-set 100
+set 10
 jmS _WriteChar
 set 0
 jmS _WriteChar
+got No::Skip
+lab No::Panic
 lDA 47
 pha 
 jmS String::Print
+lab No::Panic::Loop
+pla 
+sAD 8
+sAD 5
+out 5
+lDA 8
+pha 
+clr 
+sAD 5
+pla 
+lDR 5
+jmA Temp36
+got No::Panic::Loop
+lab Temp36
+brk 
+lab No::Return
+pla 
+sAD 8
+ret 
+lab No::Skip
+clr 
+sAD 56
+lab loop
+lDA 56
+pha 
+jmS fib
+pla 
+sAD 8
+sAD 5
+out 5
+lDA 56
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+add 
+sAD 56
+pha 
+clr 
+set 20
+add 
+sAD 5
+pla 
+lDR 5
+jmL loop
+brk 
+lab fib
+jmS Stack::Swap
+pla 
+sAD 17
+pha 
+clr 
+set 65534
+add 
+sAD 5
+pla 
+lDR 5
+and 
+sAD 8
+pha 
+clr 
+sAD 5
+pla 
+lDR 5
+jmA Temp37
+got fib::skipbase
+lab Temp37
+clr 
+set 1
+add 
+pha 
+jmS Stack::Swap
+ret 
+lab fib::skipbase
+lDA 17
+pha 
+clr 
+set 2
+add 
+sAD 5
+pla 
+lDR 5
+sub 
+pha 
+lDA 17
+pha 
+clr 
+set 1
+add 
+sAD 5
+pla 
+lDR 5
+sub 
+pha 
+jmS fib
+jmS Stack::Swap
+jmS fib
+jmS Math::Add
+jmS Stack::Swap
+ret 
 brk 
 lab _WriteChar
 sRP 0
@@ -1373,4 +1465,4 @@ ret
 
 
 
- "Compiled from source: D:\ProjektePython\Scripts\BaabnqIde/temp.baabnq
+ "Compiled from source: D:/ConsoleEnv/baabnq/ProgrammsV5.x/FibRec.baabnq

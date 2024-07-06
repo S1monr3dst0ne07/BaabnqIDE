@@ -12,6 +12,8 @@ if getattr(sys, 'frozen', False):
     
 elif __file__:
     xThisPath = os.path.dirname(__file__) + "/.."
+    
+xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
 
 
 #loaing css style from file
@@ -101,4 +103,7 @@ class cUtils:
         xWidget.adjustSize()
         xWidget.setFixedWidth(xWidget.width())
 
+    @staticmethod
+    def OpenErrorDialogBox(self, xMsg):
+        QtWidgets.QMessageBox.about(self, "Error", str(xMsg))        
     

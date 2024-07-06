@@ -69,7 +69,6 @@ class cWindow(QtWidgets.QMainWindow):
                 super().__init__()
                 self.xParent = xParent
 
-                xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
                 self.setWindowIcon(QtGui.QIcon(xIconPath))
 
 
@@ -513,7 +512,6 @@ class cWindow(QtWidgets.QMainWindow):
             super().__init__()
             self.xParent = xParent
 
-            xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
             self.setWindowIcon(QtGui.QIcon(xIconPath))
 
 
@@ -605,7 +603,6 @@ class cWindow(QtWidgets.QMainWindow):
             super().__init__()
             self.xSender = xSender
 
-            xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
             self.setWindowIcon(QtGui.QIcon(xIconPath))
 
 
@@ -749,7 +746,6 @@ Same for the Virtual Machine, but here only the assembler file needs to be provi
 
 
     def InitUI(self):
-        xIconPath = xThisPath.replace("\\", "/") + "/assets/Icon.png"
         self.setWindowIcon(QtGui.QIcon(xIconPath))
 
         self.setStyleSheet(cUtils.xStyleHandle["Main"])

@@ -208,7 +208,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         logging.debug(f"Path: {self.xFilePath}".format())
 
         try:
-            with open(self.xFilePath, "r") as xFileHandle:
+            with open(self.xFilePath, "r", encoding='utf-8') as xFileHandle:
                 self.setPlainText(xFileHandle.read())
                 self.xIsSaved = True
                 logging.info("Update to editor complete")
@@ -228,7 +228,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         logging.debug(f"Path: {self.xFilePath}".format())
         
         try:
-            with open(self.xFilePath, "w") as xFileHandle:
+            with open(self.xFilePath, "w", encoding='utf-8') as xFileHandle:
                 xFileHandle.write(self.toPlainText())
                 
             self.xIsSaved = True
@@ -236,7 +236,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             
         except Exception as E:
             logging.error(f"Error while saving: {E}".format())
-            QtWidgets.QMessageBox.about(self, E)
+            cUtils.OpenErrorDialogBox(self, E)
                 
     
     def InitUI(self):

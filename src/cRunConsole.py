@@ -23,8 +23,8 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
 
         #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
         xHandleColor = cUtils.xStyleHandle["ScrollStyleHandelColor"]
-        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handleColor = xHandleColor))
-        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handleColor = xHandleColor))
+        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width: 20px;", handleColor = xHandleColor))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "height:20px;", handleColor = xHandleColor))
         
         self.textChanged.connect(self.Change)
     
@@ -44,7 +44,7 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
             self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
     def keyPressEvent(self, xEvent):
-        xParentProcess = self.xParent.xRunner.xProcessTracker.xSourceProcess
+        xSourceProcess = self.xParent.xRunner.xProcessTracker.xSourceProcess
 
         if xEvent.key() not in [QtCore.Qt.Key_Up, QtCore.Qt.Key_Down, QtCore.Qt.Key_Left, QtCore.Qt.Key_Right]:
             super().keyPressEvent(xEvent)
@@ -52,16 +52,8 @@ class cRunConsole(QtWidgets.QPlainTextEdit):
         xChar = xEvent.text()
         xBytes = xChar.encode("utf-8")
 
-        
-        try:
-            if xBytes == b"\r":
-                xParentProcess.write(b"\n")
-            
-            else:    
-                xParentProcess.write(xBytes)
-
+        if xSourceProcess is not None:
+            xSourceProcess.write(b"\n" if xBytes == b"\r" else xBytes)
             sys.stdout.flush()
             
-        except Exception as E:
-            print(E)
         

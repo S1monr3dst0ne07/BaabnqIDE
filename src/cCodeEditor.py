@@ -246,8 +246,8 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
 
         #override the look of the scroll bar to match the overall theme (which btw is a pain in the ass)
         xHandleColor = cUtils.xStyleHandle["ScrollStyleHandelColor"]
-        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width:20px;", handleColor = xHandleColor))
-        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "hight:20px;", handleColor = xHandleColor))
+        self.verticalScrollBar().setStyleSheet(  cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "width: 20px;", handleColor = xHandleColor))
+        self.horizontalScrollBar().setStyleSheet(cUtils.xStyleHandle["ScrollStyle"].format(sizeMod = "height:20px;", handleColor = xHandleColor))
 
 
     #drag and drop events
@@ -393,7 +393,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
         #auto indent on newline
         elif xKey == QtCore.Qt.Key_Return:
             xSpaceCount = self.getCurLineSpaceCount()
-            super().keyPressEvent(xEvent)
+            super().keyPressEvent(QtGui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_Return, QtCore.Qt.NoModifier))
             self.insertPlainText(" " * xSpaceCount)
             
         #auto tab
@@ -408,7 +408,7 @@ class cCodeEditor(QtWidgets.QPlainTextEdit):
             
             for i in range(xBackCount):
                 super().keyPressEvent(xEvent)
-                
+
                     
         else:
             super().keyPressEvent(xEvent)
